@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login / Signup</title>
+    <style>
+        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f4f4f9; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: 300px; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .toggle { text-align: center; margin-top: 15px; cursor: pointer; color: #007bff; font-size: 14px; }
+        #message { text-align: center; margin-top: 10px; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2 id="form-title" style="text-align: center;">Login</h2>
+    <input type="email" id="email" placeholder="Email address" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button id="submit-btn" onclick="handleSubmit()">Log In</button>
+    <div class="toggle" onclick="toggleMode()"><span id="toggle-text">Need an account? Sign up</span></div>
+    <div id="message"></div>
+</div>
+
+<script>
+    // REPLACE WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
+    const SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
+    
+    let isSignup = false;
+
+    function toggleMode() {
+        isSignup = !isSignup;
+        document.getElementById("form-title").innerText = isSignup ? "Sign Up" : "Login";
+        document.getElementById("submit-btn").innerText = isSignup ? "Sign Up" : "Log In";
+        document.getElementById("toggle-text").innerText = isSignup ? "Already have an account? Login" : "Need an account? Sign up";
+        document.getElementById("message").innerText = "";
+    }
+
+    async function handleSubmit() {
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const msgDiv = document.getElementById("message");
+
+        if (!email || !password) {
+            msgDiv.style.color = "red";
+            msgDiv.innerText = "Please fill in all fields.";
+            return;
+        }
+
+        msgDiv.style.color = "black";
+        msgDiv.innerText = "Processing...";
+
+        const payload = {
+            action: isSignup ? "signup" : "login",
+            email: email,
+            password: password
+        };
+
+        try {
+            // Note: mode 'no-cors' can sometimes obscure response data in strict configurations, 
+            // but standard CORS works fine if Apps Script is deployed to 'Anyone'.
+            const response = await fetch(SCRIPT_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            });
+            
+            const result = await response.json();
+            
+            if (result.status === "success") {
+                msgDiv.style.color = "green";
+                msgDiv.innerText = result.message;
+                if (!isSignup) {
+                    // Handle successful login routing here (e.g., redirect or show dashboard)
+                }
+            } else {
+                msgDiv.style.color = "red";
+                msgDiv.innerText = result.message;
+            }
+        } catch (error) {
+            msgDiv.style.color = "red";
+            msgDiv.innerText = "An error occurred. Check connection.";
+            console.error(error);
+        }
+    }
+</script>
+
+</body>
+</html>
