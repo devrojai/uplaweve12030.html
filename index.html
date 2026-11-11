@@ -670,7 +670,7 @@
                     <input type="file" id="r-file" class="hidden" multiple>
                     <div class="file-list" id="r-file-list"></div>
                 </div>
-                <p class="hint">Optional. Up to 5 files allowed (max 4 MB total).</p>
+                <p class="hint">Optional. Up to 5 files allowed (max 10 MB total).</p>
                 <button type="submit" class="btn" id="r-send">Send</button>
                 <div class="msg" id="r-message"></div>
             </form>
@@ -713,7 +713,7 @@
                     <input type="file" id="b-file" class="hidden" multiple>
                     <div class="file-list" id="b-file-list"></div>
                 </div>
-                <p class="hint">Optional. Up to 5 files allowed (max 4 MB total).</p>
+                <p class="hint">Optional. Up to 5 files allowed (max 10 MB total).</p>
 
                 <button type="submit" class="btn" id="b-send">Post announcement</button>
                 <button type="button" class="btn ghost hidden" id="b-cancel">Cancel editing</button>
@@ -1414,8 +1414,8 @@
         setMessage(rm, "Downloaded " + repoUsers.length + " user" + (repoUsers.length === 1 ? "" : "s") + ".", OK);
     }
 
-    /* MULTIPLE ATTACHMENT SUPPORT (4MB Safety Cap) */
-    const MAX_TOTAL_FILE_SIZE = 4 * 1024 * 1024;
+    /* MULTIPLE ATTACHMENT SUPPORT (10MB Cap) */
+    const MAX_TOTAL_FILE_SIZE = 10 * 1024 * 1024;
     let reqFiles = [];
     let binFiles = [];
 
@@ -1471,7 +1471,7 @@
         let currentTotal = fileArray.reduce((sum, f) => sum + f.size, 0);
         let newTotal = currentTotal + files.reduce((sum, f) => sum + f.size, 0);
         if (newTotal > MAX_TOTAL_FILE_SIZE) {
-            setMessage($(msgId), "Total file attachment size exceeds 4 MB safety limit.", ERR);
+            setMessage($(msgId), "Total file attachment size exceeds the 10 MB limit.", ERR);
             return;
         }
 
@@ -1479,11 +1479,12 @@
             const readPromises = files.map(f => readFileAsBase64(f));
             const results = await Promise.all(readPromises);
             fileArray.push(...results);
-            renderFileList(containerId, fileArray, (index) => {
+            const rerender = () => renderFileList(containerId, fileArray, (index) => {
                 fileArray.splice(index, 1);
-                renderFileList(containerId, fileArray, arguments.callee);
+                rerender();
                 if (dirtyCallback) dirtyCallback();
             });
+            rerender();
             setMessage($(msgId), "", "");
             if (dirtyCallback) dirtyCallback();
         } catch (err) {
@@ -1706,7 +1707,7 @@
         editingId = a.id;
         $("b-title").value = a.title; $("b-course").value = a.course; $("b-text").value = a.message;
         binDeadline = a.deadline || ""; binStart = a.periodStart || ""; binEnd = a.periodEnd || "";
-        binFiles = (a.files || []).map(f => ({ name: f.name, type: f.type, size: f.size, data: f.data }));
+        binFiles = (a.files || []).map(f => f.id ? { id: f.id, name: f.name, type: f.type, size: f.size } : { name: f.name, type: f.type, size: f.size, data: f.data });
         renderFileList("b-file-list", binFiles, (idx) => { binFiles.splice(idx, 1); resetBinFormFileRender(); binDirty(); });
         pkDeadline.show(); pkStart.show(); pkEnd.show();
         mentionSel = (a.mentions || []).filter(m => m.email).map(m => ({ email: m.email, name: m.name }));
@@ -1785,10 +1786,32 @@
         });
     }
 
-    function openFileModal(file) {
+    let fileModalToken = 0;
+    async function openFileModal(file) {
+        const token = ++fileModalToken;
         $("file-modal-title").textContent = file.name;
         const body = $("file-modal-body");
         body.textContent = "";
+        $("file-modal-dl").removeAttribute("href");
+        $("file-modal").classList.remove("hidden");
+
+        if (!file.data && file.id) {
+            body.appendChild(mk("div", "preview-fallback", "Loading file…"));
+            let msg = "";
+            try {
+                const r = await authCall("announcement_file", { id: file.id });
+                if (r.status === "success" && r.file && r.file.data) {
+                    file.data = r.file.data;
+                    file.type = r.file.type || file.type;
+                } else msg = r.message || "Couldn't load this file.";
+            } catch (err) {
+                if (err.message === "auth") return;
+                msg = netError(err);
+            }
+            if (token !== fileModalToken || $("file-modal").classList.contains("hidden")) return;
+            body.textContent = "";
+            if (msg) { body.appendChild(mk("div", "preview-fallback", msg)); return; }
+        }
 
         const mime = file.type || "";
         const dataUrl = file.data ? (file.data.startsWith("data:") ? file.data : `data:${mime};base64,${file.data}`) : "";
@@ -1796,8 +1819,6 @@
         if (dataUrl) {
             $("file-modal-dl").href = dataUrl;
             $("file-modal-dl").download = file.name;
-        } else {
-            $("file-modal-dl").removeAttribute("href");
         }
 
         if (mime.startsWith("image/") || (file.name && /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(file.name))) {
@@ -1824,14 +1845,12 @@
             }
             body.appendChild(pre);
         } else {
-            const fb = mk("div", "preview-fallback", "Preview not available for this file type.");
-            body.appendChild(fb);
+            body.appendChild(mk("div", "preview-fallback", "Preview not available for this file type. Use Download File."));
         }
-
-        $("file-modal").classList.remove("hidden");
     }
 
     function closeFileModal() {
+        fileModalToken++;
         $("file-modal").classList.add("hidden");
         $("file-modal-body").textContent = "";
     }
