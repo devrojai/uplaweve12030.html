@@ -1873,6 +1873,14 @@ if (courseAdminShown !== isAdmin) { courseAdminShown = isAdmin; renderCourses();
         return e;
     }
 
+    const CLOCK_SVG = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>';
+function setEdited(el, text) {
+    el.textContent = "";
+    if (!text) return;
+    el.insertAdjacentHTML("afterbegin", CLOCK_SVG);
+    el.appendChild(document.createTextNode(text));
+}
+    
     function showSkeleton(box, cls, n) {
     box.textContent = "";
     for (let i = 0; i < n; i++) box.appendChild(mk("div", "skeleton " + cls));
@@ -2574,8 +2582,7 @@ pre.className = "file-text";
         }
 
         const edited = $("ann-modal-edited");
-        edited.textContent = a.edited ? "✎ Edited by the author on " + a.edited : "";
-        
+setEdited(edited, a.edited ? "Edited by the author on " + a.edited : "");        
         const actions = $("ann-modal-actions");
         actions.textContent = "";
         if (isAdmin) {
@@ -2620,8 +2627,7 @@ pre.className = "file-text";
         const body = mk("div", "ann-body");
         richText(body, a.message, a.mentions);
         c.appendChild(body);
-        if (a.edited) c.appendChild(mk("div", "ann-edited", "✎ Edited by the author on " + a.edited));
-
+if (a.edited) { const ed = mk("div", "ann-edited"); setEdited(ed, "Edited by the author on " + a.edited); c.appendChild(ed); }
         c.addEventListener("click", () => openAnnModal(a));
         c.addEventListener("keydown", (e) => {
             if (e.key === "Enter" || e.key === " ") {
@@ -2894,8 +2900,7 @@ function openCourseModal(c) {
         files.forEach(f => list.appendChild(courseFileBtn(f)));
         addRow(label, list);
     });
-    $("course-modal-edited").textContent = c.edited ? "\u270E Last edited on " + c.edited : "";
-
+setEdited($("course-modal-edited"), c.edited ? "Last edited on " + c.edited : "");
     const actions = $("course-modal-actions"); actions.textContent = "";
     if (isAdmin) {
         const eb = mk("button", "btn sm ghost", "Edit"); eb.type = "button";        eb.onclick = () => { closeCourseModal(); startCourseEdit(c); };
