@@ -477,6 +477,7 @@
         .cal-course { display: block; font-weight: 400; opacity: .85; overflow: hidden; text-overflow: ellipsis; }
         .cal-more { font-size: var(--fs-n1); font-weight: 700; color: var(--maroon); }
         .cal-kind { margin: 12px 0 4px; font-size: var(--fs-n1); font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--maroon); }
+        #dl-detail { scroll-margin-top: 76px; }
         @media (max-width: 520px) {
             .cal-cell { min-height: 56px; padding: 4px; align-items: center; }
             .cal-chip { width: 7px; height: 7px; padding: 0; font-size: 0; border-radius: 50%; }
@@ -2243,7 +2244,11 @@ function mentionHandle(u) {
                 cell.appendChild(chip);
             });
             if (list.length > 2) cell.appendChild(mk("span", "cal-more", "+" + (list.length - 2) + " more"));
-            cell.onclick = () => { dlSel = iso; renderCalendar(); };
+                        cell.onclick = () => {
+                dlSel = iso;
+                renderCalendar();
+                $("dl-detail").scrollIntoView({ behavior: "smooth", block: "start" });
+            };
             g.appendChild(cell);
         }
         const dd = $("dl-detail"); dd.textContent = "";
@@ -2588,8 +2593,7 @@ $("logout-btn").addEventListener("click", leaveApp);    $("delete-open").addEven
     $("dl-next").addEventListener("click", () => shiftMonth(1));
     $("dl-month").addEventListener("change", () => { dlM = Number($("dl-month").value); renderCalendar(); });
     $("dl-year").addEventListener("change", () => { dlY = Number($("dl-year").value); renderCalendar(); });
-    $("dl-today").addEventListener("click", () => { const t = new Date(); dlY = t.getFullYear(); dlM = t.getMonth(); dlSel = todayIso(); renderCalendar(); });
-    
+    $("dl-today").addEventListener("click", () => { const t = new Date(); dlY = t.getFullYear(); dlM = t.getMonth(); dlSel = todayIso(); renderCalendar(); $("dl-detail").scrollIntoView({ behavior: "smooth", block: "start" }); });    
     $("ann-filter").addEventListener("change", () => { annFilter = $("ann-filter").value; carIdx = 0; renderAnnouncements(); });
     $("car-prev").addEventListener("click", () => carGo(carIdx - 1));
     $("car-next").addEventListener("click", () => carGo(carIdx + 1));
