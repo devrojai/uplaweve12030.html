@@ -921,6 +921,18 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
 .read-tick input { width: 18px; height: 18px; margin: 0; cursor: pointer; accent-color: var(--accent); }
 .ann-readby { margin-top: 8px; font-size: var(--fs-n1); color: var(--muted); word-break: break-word; }
 .ann-readby b { color: var(--accent-text); }
+
+/* Archive button on the same row as the topic filter */
+.ann-right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+
+/* Archive buttons filled in Classic and Night */
+html[data-theme="classic"] .archive-btn,
+html[data-theme="night"] .archive-btn { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+html[data-theme="classic"] .archive-btn:hover:not(:disabled),
+html[data-theme="night"] .archive-btn:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); color: var(--on-accent); }
+
+/* "No announcements" / "Nothing archived" boxes use the full width */
+.ann-list > .empty { flex: 0 0 100%; min-width: 100%; }
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
@@ -1119,15 +1131,16 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
 
             <div class="ann-tools hidden" id="ann-tools">
                 <select id="ann-filter" aria-label="Filter by Topic"></select>
-                <div class="car-nav" id="car-nav">
-                    <button type="button" class="dp-nav" id="car-prev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
-                    <span class="car-count" id="car-count"></span>
-                    <button type="button" class="dp-nav" id="car-next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+                <div class="ann-right">
+                    <div class="car-nav" id="car-nav">
+                        <button type="button" class="dp-nav" id="car-prev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+                        <span class="car-count" id="car-count"></span>
+                        <button type="button" class="dp-nav" id="car-next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+                    </div>
+                    <button type="button" class="btn sm ghost archive-btn" id="ann-archive-toggle">Archive</button>
                 </div>
             </div>
-            <div class="ann-archive-bar hidden" id="ann-archive-bar">
-    <button type="button" class="btn sm ghost" id="ann-archive-toggle">Archive</button>
-</div>
+            
             <div class="ann-list" id="ann-list" tabindex="0"></div>
             <div class="car-dots" id="car-dots"></div>
             <div class="msg" id="ann-msg"></div>
@@ -2639,9 +2652,12 @@ setEdited(edited, a.edited ? "Edited by the author on " + a.edited : "");
         const prev = { myRead: a.myRead, myArchived: a.myArchived, readBy: a.readBy };
         if ("read" in changes) {
             a.myRead = changes.read;
-            a.readBy = (a.readBy || []).filter(n => !n.mine);
-            if (changes.read) a.readBy.unshift({ name: annSelfName(), mine: true });
+            // ticking or opening adds you to "Read by"; unticking never removes you
+            if (changes.read && !(a.readBy || []).some(n => n.mine)) {
+                a.readBy = (a.readBy || []).concat({ name: annSelfName(), mine: true });
+            }
         }
+        
         if ("archived" in changes) a.myArchived = changes.archived;
         annRefresh();
         try {
@@ -2667,8 +2683,7 @@ setEdited(edited, a.edited ? "Edited by the author on " + a.edited : "");
         const cb = mk("input"); cb.type = "checkbox"; cb.checked = !!a.myRead;
         cb.addEventListener("change", () => setAnnStatus(a, { read: cb.checked }));
         lab.append(cb, document.createTextNode("I have read this"));
-        const ab = mk("button", "btn sm ghost", a.myArchived ? "Unarchive" : "Archive"); ab.type = "button";
-        ab.addEventListener("click", () => { setAnnStatus(a, { archived: !a.myArchived }); if (full) closeAnnModal(); });
+        const ab = mk("button", "btn sm ghost archive-btn", a.myArchived ? "Unarchive" : "Archive"); ab.type = "button";        ab.addEventListener("click", () => { setAnnStatus(a, { archived: !a.myArchived }); if (full) closeAnnModal(); });
         foot.append(lab, ab);
         wrap.appendChild(foot);
 
@@ -2766,7 +2781,6 @@ let annFilter = "", carIdx = 0, annShowArchive = false, openAnnId = "";    const
         const box = $("ann-list"), fs = $("ann-filter");
         box.textContent = "";
         $("ann-tools").classList.toggle("hidden", !annList.length);
-                $("ann-archive-bar").classList.toggle("hidden", !annList.length);
         $("ann-archive-toggle").textContent = annShowArchive
             ? "\u2190 Back to announcements"
             : "Archive (" + annList.filter(a => a.myArchived).length + ")";
