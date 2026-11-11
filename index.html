@@ -303,6 +303,8 @@
         .pbody { flex: 1; overflow-y: auto; padding: 22px 22px 10px; }
         .pfoot { flex: none; padding: 14px 22px 18px; border-top: 1px solid rgba(58,58,58,.15); background: var(--white); }
         .pfoot .btn { margin-top: 0; }
+        .pfoot .msg { margin-top: 8px; }
+        .pfoot #admin-claim { margin-top: 4px; }
 
         .photo-box { text-align: center; margin-bottom: 20px; }
         .photo-preview {
@@ -425,7 +427,7 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                 Requests
             </button>
-            <button type="button" data-section="announcements">
+            <button type="button" data-section="announcements" class="hidden">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h3l5 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M16 8a5 5 0 0 1 0 8"/></svg>
                 Announcement Bin
             </button>
@@ -473,6 +475,7 @@
             <div class="pfoot">
                 <button type="submit" class="btn" id="p-save">Save changes</button>
                 <div class="msg" id="p-message"></div>
+                <button type="button" class="btn ghost" id="admin-claim">Claim Admin Access</button>
             </div>
         </form>
     </aside>
@@ -743,6 +746,7 @@
         showSection("requests");
         renderAvatars();
         loadProfile();
+        refreshAdmin();
     }
     function leaveApp() {
         if (token && currentEmail) callScript({ action: "logout", email: currentEmail, token }).catch(() => {});
@@ -753,6 +757,8 @@
         pending = null;
         resetProfileState();
         resetRequestForm();
+        isAdmin = false;
+        applyAdmin();
         closeProfile();
         closeMenu();
         closeDelete();
@@ -772,6 +778,7 @@
         $("burger").classList.remove("open"); $("burger").setAttribute("aria-expanded", "false");
     }
     function showSection(name) {
+        if (name === "announcements" && !isAdmin) name = "requests";   // Announcement Bin is admin-only
         Object.keys(titles).forEach(k => $("sec-" + k).classList.toggle("hidden", k !== name));
         document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("active", b.dataset.section === name));
         $("page-title").textContent = titles[name];
@@ -863,6 +870,7 @@
         closeMenu();
         setMessage($("p-message"), "", "");
         if (!profileLoaded) loadProfile();
+        refreshAdmin();
         $("pdrawer").classList.add("open");
         $("overlay").classList.add("show");
     }
@@ -957,6 +965,43 @@
     }
 
 
+    /* ---------- admin access ---------- */
+    let isAdmin = false;
+    function applyAdmin() {
+        document.querySelector('.nav button[data-section="announcements"]').classList.toggle("hidden", !isAdmin);
+        const b = $("admin-claim");
+        b.textContent = isAdmin ? "Admin Access Granted" : "Claim Admin Access";
+        b.disabled = isAdmin;
+        if (!isAdmin && !$("sec-announcements").classList.contains("hidden")) showSection("requests");
+    }
+    async function refreshAdmin() {
+        if (!currentEmail || !token) return;
+        try {
+            const r = await authCall("admin_status");
+            if (r.status === "success") { isAdmin = !!r.admin; applyAdmin(); }
+        } catch (err) { if (err.message !== "auth") console.error(err); }
+    }
+    async function claimAdmin() {
+        const btn = $("admin-claim"), pm = $("p-message");
+        if (isAdmin) return;
+        setLoading(btn, true);
+        setMessage(pm, "", "");
+        try {
+            const r = await authCall("admin_claim");
+            if (r.status === "success") {
+                if (r.admin) isAdmin = true;
+                setMessage(pm, r.message, OK);
+            } else {
+                setMessage(pm, r.message, ERR);
+            }
+        } catch (err) {
+            if (err.message !== "auth") { console.error(err); setMessage(pm, netError(err), ERR); }
+        } finally {
+            setLoading(btn, false);
+            applyAdmin();
+        }
+    }
+
     /* ---------- requests (emailed to the Beadle) ---------- */
     function resetRequestForm() {
         ["r-beadle", "r-course", "r-text"].forEach(id => { $(id).value = ""; });
@@ -1017,6 +1062,8 @@
     $("del-form").addEventListener("submit", handleDelete);
 
     $("req-form").addEventListener("submit", sendRequest);
+    $("admin-claim").addEventListener("click", claimAdmin);
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshAdmin(); });
     ["r-beadle", "r-course", "r-text"].forEach(id => $(id).addEventListener("input", markRequestDirty));
     $("avatar-btn").addEventListener("click", openProfile);
     $("pclose").addEventListener("click", closeProfile);
