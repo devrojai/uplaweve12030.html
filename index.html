@@ -333,7 +333,8 @@
         .pfoot { flex: none; padding: 14px 22px 18px; border-top: 1px solid rgba(58,58,58,.15); background: var(--white); }
         .pfoot .btn { margin-top: 0; }
         .pfoot .msg { margin-top: 8px; }
-        .pfoot #admin-claim { margin-top: 4px; }
+        .pfoot .msg:empty { display: none; }
+        .pfoot #admin-claim { margin-top: 10px; }
 
         .photo-box { text-align: center; margin-bottom: 20px; }
         .photo-preview {
@@ -508,7 +509,7 @@
             <div class="pfoot">
                 <button type="submit" class="btn" id="p-save">Save changes</button>
                 <div class="msg" id="p-message"></div>
-                <button type="button" class="btn ghost" id="admin-claim">Claim Admin Access</button>
+                <button type="button" class="btn ghost" id="admin-claim">Request Admin Access</button>
             </div>
         </form>
     </aside>
@@ -807,6 +808,7 @@
         resetProfileState();
         resetRequestForm();
         isAdmin = false;
+        adminPending = false;
         applyAdmin();
         closeProfile();
         closeMenu();
@@ -1017,11 +1019,13 @@
 
     /* ---------- admin access ---------- */
     let isAdmin = false;
+    let adminPending = false;   // request sent, waiting for approval
     function applyAdmin() {
         document.querySelectorAll(".nav button[data-admin]").forEach(b => b.classList.toggle("hidden", !isAdmin));
         const b = $("admin-claim");
-        b.textContent = isAdmin ? "Admin Access Granted" : "Claim Admin Access";
-        b.disabled = isAdmin;
+        b.classList.toggle("submitted", !isAdmin && adminPending);   // green once the request is sent
+        b.textContent = isAdmin ? "Admin Access Granted" : (adminPending ? "Request Sent" : "Request Admin Access");
+        b.disabled = isAdmin || adminPending;
         if (!isAdmin) { repoUsers = []; $("repo-list").textContent = ""; $("repo-detail").textContent = ""; }
         if (!isAdmin && ADMIN_SECTIONS.some(k => !$("sec-" + k).classList.contains("hidden"))) showSection("requests");
     }
@@ -1029,7 +1033,7 @@
         if (!currentEmail || !token) return;
         try {
             const r = await authCall("admin_status");
-            if (r.status === "success") { isAdmin = !!r.admin; applyAdmin(); }
+            if (r.status === "success") { isAdmin = !!r.admin; adminPending = !isAdmin && !!r.pending; applyAdmin(); }
         } catch (err) { if (err.message !== "auth") console.error(err); }
     }
     async function claimAdmin() {
@@ -1040,8 +1044,7 @@
         try {
             const r = await authCall("admin_claim");
             if (r.status === "success") {
-                if (r.admin) isAdmin = true;
-                setMessage(pm, r.message, OK);
+                if (r.admin) isAdmin = true; else adminPending = true;
             } else {
                 setMessage(pm, r.message, ERR);
             }
