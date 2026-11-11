@@ -778,16 +778,29 @@ html[data-theme="night"] {
 .blob.b1 { background: var(--blob1); }
 .blob.b2 { background: var(--blob2); }
 .blob.b3 { background: var(--blob1); opacity: .35; }
+/* Law-themed decoration: columns (top-right) and scales of justice (bottom-left) */
+.bg { --law: rgba(118,9,12,.14); }
+html[data-theme="classic"] .bg { --law: rgba(255,255,255,.16); }
+html[data-theme="night"] .bg { --law: rgba(255,255,255,.09); }
+
 .bg::before, .bg::after {
-    content: ""; position: absolute; border: 1px solid var(--pat); transform: rotate(45deg); pointer-events: none;
+    content: ""; position: absolute; pointer-events: none;
+    background: var(--law);
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-size: contain; mask-size: contain;
+    -webkit-mask-position: center; mask-position: center;
 }
+/* Courthouse columns */
 .bg::before {
-    width: 420px; height: 420px; top: -210px; right: -120px;
-    box-shadow: 0 0 0 36px transparent, 0 0 0 37px var(--pat), 0 0 0 76px transparent, 0 0 0 77px var(--pat);
+    width: 440px; height: 367px; top: -30px; right: -70px;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 200' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 22H232V36H8ZM30 46V158M48 46V158M39 50V154M25 40H53V46H25ZM25 158H53V164H25ZM84 46V158M102 46V158M93 50V154M79 40H107V46H79ZM79 158H107V164H79ZM138 46V158M156 46V158M147 50V154M133 40H161V46H133ZM133 158H161V164H133ZM192 46V158M210 46V158M201 50V154M187 40H215V46H187ZM187 158H215V164H187ZM0 172H240V180H0ZM12 180H228V188H12Z'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 200' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 22H232V36H8ZM30 46V158M48 46V158M39 50V154M25 40H53V46H25ZM25 158H53V164H25ZM84 46V158M102 46V158M93 50V154M79 40H107V46H79ZM79 158H107V164H79ZM138 46V158M156 46V158M147 50V154M133 40H161V46H133ZM133 158H161V164H133ZM192 46V158M210 46V158M201 50V154M187 40H215V46H187ZM187 158H215V164H187ZM0 172H240V180H0ZM12 180H228V188H12Z'/%3E%3C/svg%3E");
 }
+/* Scales of justice */
 .bg::after {
-    width: 320px; height: 320px; bottom: -170px; left: -90px;
-    box-shadow: 0 0 0 36px transparent, 0 0 0 37px var(--pat), 0 0 0 76px transparent, 0 0 0 77px var(--pat);
+    width: 340px; height: 340px; bottom: -50px; left: -50px;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='100' cy='24' r='6'/%3E%3Cpath d='M100 30V168M30 52Q100 40 170 52M30 52L12 112M30 52L48 112M170 52L152 112M170 52L188 112M6 112Q30 138 54 112ZM146 112Q170 138 194 112ZM76 176H124M64 188H136'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='100' cy='24' r='6'/%3E%3Cpath d='M100 30V168M30 52Q100 40 170 52M30 52L12 112M30 52L48 112M170 52L152 112M170 52L188 112M6 112Q30 138 54 112ZM146 112Q170 138 194 112ZM76 176H124M64 188H136'/%3E%3C/svg%3E");
 }
 
 /* ---------- Site background ---------- */
