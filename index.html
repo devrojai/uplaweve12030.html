@@ -545,14 +545,14 @@ html[data-theme="classic"] {
     --shadow-md: 0 6px 18px rgba(60,20,20,.12);
 }
 
-/* ---------- NIGHT: near-black, maroon, green ---------- */
+/* ---------- NIGHT: near-black, maroon ---------- */
 html[data-theme="night"] {
     color-scheme: dark;
     --bg: #0a0a0b; --surface: #141416; --surface2: #101012; --hover: #1e1e21;
     --line: #2a2a2e; --line-strong: #44444a; --ink: #f7f6f4; --muted: #b9b5ae;
     --accent: #a3171e; --accent-hover: #bd1f27; --accent-text: #ff9296; --accent-soft: rgba(255,146,150,.14); --on-accent: #ffffff;
-    --accent2: #5fd08f; --ok: #2e9e63; --err: #ff9296; --okmsg: #9be5bb;
-    --badge-bg: rgba(95,208,143,.16); --badge-ink: #8fe3b4; --badge-line: rgba(95,208,143,.45);
+    --accent2: #d65d63; --ok: #b83b43; --err: #ff9296; --okmsg: #d65d63;
+    --badge-bg: rgba(214,93,99,.16); --badge-ink: #d65d63; --badge-line: rgba(214,93,99,.45);
     --period: #6b7078; --avatar: #3a3a40;
     --cal-head: #1e1e21; --cal-head-ink: #f0ede9;
     --top-bg: #050505; --top-ink: #f7f6f4; --top-site: #ff9296; --top-accent: #a3171e; --top-line: #26262a;
@@ -751,10 +751,10 @@ html[data-theme="classic"] .bg {
 }
 html[data-theme="night"] {
     --pat: rgba(255,255,255,.035);
-    --glow1: rgba(163,23,30,.20);
-    --glow2: rgba(95,208,143,.07);
-    --blob1: rgba(163,23,30,.30);
-    --blob2: rgba(95,208,143,.14);
+    --glow1: transparent;
+    --glow2: transparent;
+    --blob1: transparent;
+    --blob2: transparent;
 }
 
 /* ---------- Login background ---------- */
@@ -770,7 +770,7 @@ html[data-theme="night"] {
 /* Flowing waves + soft moving gradient */
 .bg { --sheen: rgba(118,9,12,.12); --wave-a: rgba(118,9,12,.16); --wave-b: rgba(118,9,12,.03); }
 html[data-theme="classic"] .bg { --sheen: rgba(255,255,255,.10); --wave-a: rgba(255,255,255,.16); --wave-b: rgba(10,68,36,.10); }
-html[data-theme="night"] .bg { --sheen: rgba(163,23,30,.16); --wave-a: rgba(163,23,30,.20); --wave-b: rgba(95,208,143,.05); }
+html[data-theme="night"] .bg { --sheen: transparent; --wave-a: transparent; --wave-b: transparent; }
 
 /* Moving gradient glow */
 .bg::before {
