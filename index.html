@@ -417,10 +417,10 @@ html[data-theme="night"] { --sb-track: #0b0b0c; --sb-thumb: #5a2226; --sb-thumb-
             position: relative; display: flex; flex-direction: row; gap: 16px; padding: 2px 0 8px;
             overflow-x: auto; scroll-snap-type: x mandatory; outline: none;
         }
-        .ann-page {
-            flex: 0 0 100%; min-width: 100%; height: 600px; overflow-y: auto;
-            scroll-snap-align: start; scroll-snap-stop: always; display: flex; flex-direction: column; gap: 16px; padding-right: 6px;
-        }
+       .ann-page {
+    flex: 0 0 100%; min-width: 100%; align-self: flex-start;
+    scroll-snap-align: start; scroll-snap-stop: always; display: flex; flex-direction: column; gap: 16px;
+}
         .car-dots { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
         .car-dot { width: 10px; height: 10px; padding: 0; border: none; border-radius: 999px; background: rgba(58,58,58,.25); cursor: pointer; transition: width .25s var(--ease), background .2s; }
         .car-dot.on { width: 26px; background: var(--maroon); }
@@ -862,8 +862,8 @@ html[data-theme="night"] .drawer-foot .btn-danger:hover {
 }        
 
 /* ================= NEW: urgency badges ================= */
-.ann-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; flex: none; }
-.badge.due-now { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.ann-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-start; margin: 6px 0 10px; }
+        .badge.due-now { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
 .badge.due-soon { background: transparent; color: var(--accent-text); border-color: var(--accent-text); }
 
 /* ================= NEW: skeleton loaders ================= */
@@ -880,6 +880,7 @@ html[data-theme="night"] .drawer-foot .btn-danger:hover {
 .modal-card.modal-wide { text-align: left; width: 520px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }.modal-card.modal-file { text-align: left; width: 640px; max-width: 95vw; }
 #file-modal { z-index: 80; }
 .modal-head { margin-bottom: 8px; }
+.modal-head { flex-wrap: wrap; }
 .modal-gap { margin-bottom: 14px; }
 .modal-actions-end { justify-content: flex-end; gap: 10px; margin-top: 16px; }
 .file-title { word-break: break-all; }
@@ -935,7 +936,7 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
         
 .ann-archive-bar { display: flex; justify-content: flex-end; margin: 0 0 10px; }
 .ann-status { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line-strong); cursor: default; }
-.ann-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.ann-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: nowrap; }
 .read-tick { display: inline-flex; align-items: center; gap: 8px; font-size: var(--fs-n1); font-weight: 700; color: var(--accent-text); cursor: pointer; }
 .read-tick input { width: 18px; height: 18px; margin: 0; cursor: pointer; accent-color: var(--accent); }
 .ann-readby { margin-top: 8px; font-size: var(--fs-n1); color: var(--muted); word-break: break-word; }
@@ -2649,7 +2650,7 @@ pre.className = "file-text";
         }
 
         const edited = $("ann-modal-edited");
-setEdited(edited, a.edited ? "Edited by the author on " + a.edited : "");        
+setEdited(edited, a.edited ? "Edited by the author on " + longDate(a.edited) : "");        
         const actions = $("ann-modal-actions");
         actions.textContent = "";
         if (isAdmin) {
@@ -2679,12 +2680,9 @@ setEdited(edited, a.edited ? "Edited by the author on " + a.edited : "");
 
    function annRefresh() {
     const box = $("ann-list"), dd = $("dl-detail");
-    const pg = box.children[carIdx], top = pg ? pg.scrollTop : 0;
     box.classList.add("no-anim");
     dd.classList.add("no-anim");
     renderAnnouncements();
-    const np = box.children[carIdx];
-    if (np) np.scrollTop = top;
     renderCalendar();
     if (openAnnId && !$("ann-modal").classList.contains("hidden")) {
         const a = annList.find(x => x.id === openAnnId);
@@ -2763,23 +2761,23 @@ setEdited(edited, a.edited ? "Edited by the author on " + a.edited : "");
         const c = mk("article", "ann-card" + (ref && ref < todayIso() ? " past" : ""));
         c.setAttribute("role", "button");
         c.setAttribute("tabindex", "0");
+        
         const top = mk("div", "ann-top");
         top.appendChild(mk("h3", "ann-title", a.title));
+        c.appendChild(top);
+
         const tags = mk("div", "ann-tags");
         const due = dueLabel(a);
         if (due) tags.appendChild(mk("span", "badge " + due.cls, due.text));
         tags.appendChild(mk("span", "badge", a.course));
-        top.appendChild(tags);
-        c.appendChild(top);
-        const meta = mk("div", "ann-meta");
-        fillAnnMeta(meta, a, true);
-        c.appendChild(meta);
-       
+        c.appendChild(tags);
+
         const body = mk("div", "ann-body");
         richText(body, a.message, a.mentions);
         c.appendChild(body);
-if (a.edited) { const ed = mk("div", "ann-edited"); setEdited(ed, "Edited by the author on " + a.edited); c.appendChild(ed); }
+
         c.appendChild(annFooter(a, false));
+        
         c.addEventListener("click", () => openAnnModal(a));
         c.addEventListener("keydown", (e) => {
             if (e.target === c && (e.key === "Enter" || e.key === " ")) {
