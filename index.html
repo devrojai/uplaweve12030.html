@@ -400,7 +400,37 @@
         .mention { color: var(--maroon); font-weight: 700; background: rgba(118,9,12,.08); border-radius: 4px; padding: 0 3px; }
 
         /* ---- Announcement cards ---- */
-        .ann-list { display: flex; flex-direction: column; gap: 12px; }
+        /* ---- Announcements: heading space, toolbar, carousel ---- */
+        #sec-announcements h2 { margin-bottom: 22px; }
+        .ann-tools { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 0 0 14px; }
+        .ann-tools .sdrop { flex: 1 1 240px; max-width: 360px; }
+        .car-nav { display: flex; align-items: center; gap: 10px; }
+        .car-count { min-width: 3.5em; text-align: center; font-size: var(--fs-n1); font-weight: 700; color: var(--maroon); }
+        .car-nav .dp-nav:disabled { opacity: .35; cursor: not-allowed; transform: none; background: rgba(118,9,12,.08); color: var(--maroon); }
+        .ann-list { position: relative; display: flex; flex-direction: row; gap: 16px; padding: 2px 0 8px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; outline: none; }
+        .ann-list::-webkit-scrollbar { display: none; }
+        .ann-list > * { flex: 0 0 100%; min-width: 0; scroll-snap-align: start; scroll-snap-stop: always; }
+        .car-dots { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .car-dot { width: 10px; height: 10px; padding: 0; border: none; border-radius: 999px; background: rgba(58,58,58,.25); cursor: pointer; transition: width .25s var(--ease), background .2s; }
+        .car-dot.on { width: 26px; background: var(--maroon); }
+
+        /* ---- Stylish dropdown (replaces native selects) ---- */
+        .sdrop { position: relative; }
+        .sdrop-native { display: none; }
+        .sdrop-btn { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 14px; color: var(--maroon); font-weight: 700; text-align: left; background: var(--white); border: 2px solid rgba(118,9,12,.35); border-radius: 12px; cursor: pointer; transition: border-color .2s, box-shadow .2s; }
+        .sdrop-btn:hover, .sdrop.open .sdrop-btn, .sdrop-btn:focus-visible { border-color: var(--maroon); box-shadow: 0 0 0 4px rgba(118,9,12,.12); outline: none; }
+        .sdrop-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .sdrop-chev { flex: none; width: 18px; height: 18px; transition: transform .25s var(--ease); }
+        .sdrop.open .sdrop-chev { transform: rotate(180deg); }
+        .sdrop-list { position: absolute; left: 0; top: calc(100% + 6px); z-index: 28; min-width: 100%; max-height: 260px; overflow-y: auto; padding: 6px; background: var(--white); border-top: 5px solid var(--maroon); border-radius: 14px; box-shadow: 0 18px 40px rgba(0,0,0,.3); animation: swap .25s var(--ease); }
+        .sdrop-item { display: block; width: 100%; padding: 9px 12px; margin: 1px 0; text-align: left; white-space: normal; word-break: break-word; color: var(--charcoal); font-weight: 600; background: transparent; border: none; border-left: 4px solid transparent; border-radius: 8px; cursor: pointer; transition: background .15s, padding-left .15s; }
+        .sdrop-item:hover, .sdrop-item:focus-visible { background: rgba(118,9,12,.1); padding-left: 16px; outline: none; }
+        .sdrop-item.sel { background: var(--maroon); color: var(--white); border-left-color: var(--white); }
+        .sdrop-item.sel::after { content: "✓"; float: right; }
+        .cal-sel .sdrop:first-child { flex: 2 1 0; min-width: 0; }
+        .cal-sel .sdrop:last-child { flex: 1.2 1 0; min-width: 0; }
+        .cal-sel .sdrop-btn { font-size: var(--fs-1); }
+
         .ann-card { padding: 16px 18px; background: var(--white); border: 2px solid rgba(58,58,58,.12); border-left: 6px solid var(--maroon); border-radius: 12px; animation: swap .4s var(--ease); }
         .ann-card.past { border-left-color: var(--charcoal); opacity: .8; }
         .ann-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
@@ -608,7 +638,16 @@
         </section>
         <section class="section hidden" id="sec-announcements">
             <h2>ANNOUNCEMENTS</h2>
-            <div class="ann-list" id="ann-list"></div>
+            <div class="ann-tools hidden" id="ann-tools">
+                <select id="ann-filter" aria-label="Filter by title"></select>
+                <div class="car-nav" id="car-nav">
+                    <button type="button" class="dp-nav" id="car-prev" aria-label="Previous announcement"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+                    <span class="car-count" id="car-count"></span>
+                    <button type="button" class="dp-nav" id="car-next" aria-label="Next announcement"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+                </div>
+            </div>
+            <div class="ann-list" id="ann-list" tabindex="0" aria-label="Announcements carousel"></div>
+            <div class="car-dots" id="car-dots"></div>
             <div class="msg" id="ann-msg"></div>
         </section>
         <section class="section" id="sec-calendar">
@@ -938,7 +977,7 @@
         pending = null;
         resetProfileState();
         resetRequestForm();
-        annList = []; dlSel = todayIso(); mentionUsers = []; mentionSel = []; repoPhotos = {}; resetBinForm();
+        annList = []; annFilter = ""; carIdx = 0; dlSel = todayIso(); mentionUsers = []; mentionSel = []; repoPhotos = {}; resetBinForm();
         isAdmin = false;
         adminPending = false;
         applyAdmin();
@@ -1668,15 +1707,52 @@
         }
         return c;
     }
+    let annFilter = "", carIdx = 0;
+    const CAR_GAP = 16;
+    const annVisible = () => annFilter ? annList.filter(a => a.title === annFilter) : annList;
+
+    function carUpdate() {
+        const n = annVisible().length;
+        $("car-count").textContent = n ? (carIdx + 1) + " / " + n : "";
+        $("car-prev").disabled = carIdx <= 0;
+        $("car-next").disabled = carIdx >= n - 1;
+        $("car-nav").classList.toggle("hidden", n < 2);
+        const d = $("car-dots"); d.textContent = "";
+        if (n > 1 && n <= 12) for (let i = 0; i < n; i++) {
+            const b = mk("button", "car-dot" + (i === carIdx ? " on" : "")); b.type = "button";
+            b.setAttribute("aria-label", "Go to announcement " + (i + 1));
+            b.onclick = () => carGo(i);
+            d.appendChild(b);
+        }
+    }
+    function carGo(i, instant) {
+        const box = $("ann-list"), n = box.children.length;
+        if (!n) return;
+        carIdx = Math.max(0, Math.min(n - 1, i));
+        box.scrollTo({ left: box.children[carIdx].offsetLeft, behavior: instant ? "auto" : "smooth" });
+        carUpdate();
+    }
     function renderAnnouncements() {
-        const box = $("ann-list"); box.textContent = "";
-        if (!annList.length) {
+        const box = $("ann-list"), fs = $("ann-filter");
+        box.textContent = "";
+        $("ann-tools").classList.toggle("hidden", !annList.length);
+        // filter options: every existing title, A to Z
+        const titles = Array.from(new Set(annList.map(a => a.title)))
+            .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base", numeric: true }));
+        if (annFilter && !titles.includes(annFilter)) annFilter = "";
+        fs.textContent = "";
+        [""].concat(titles).forEach(t => { const o = mk("option", "", t || "All titles"); o.value = t; fs.appendChild(o); });
+        fs.value = annFilter;
+        if (fs._sync) fs._sync();
+        const list = annVisible();
+        if (!list.length) {
             const e = mk("div", "empty");
             e.appendChild(mk("b", "", "No announcements yet"));
             e.appendChild(mk("p", "", "Announcements will be posted here."));
-            box.appendChild(e); return;
+            box.appendChild(e); carIdx = 0; carUpdate(); return;
         }
-        annList.forEach(a => box.appendChild(annCard(a)));
+        list.forEach(a => box.appendChild(annCard(a)));
+        carGo(carIdx, true);
     }
     // date -> [{a, kind}] : a deadline shows on its date, a period shows on every day it covers
     function calMap() {
@@ -1701,6 +1777,7 @@
             fillYears(ys, dlY, extra);
         }
         ys.value = String(dlY);
+        ["dl-month", "dl-year"].forEach(id => { const s = $(id); if (s._sync) s._sync(); });
     }
     function renderCalendar() {
         const g = $("dl-grid"); g.textContent = "";
@@ -1752,6 +1829,46 @@
     // calendar header controls
     MONTHS.forEach((n, i) => { const o = mk("option", "", n); o.value = String(i); $("dl-month").appendChild(o); });
     syncCalSel(true);
+
+    /* ---------- stylish dropdown: wraps a native <select> (kept hidden as the source of truth) ---------- */
+    const drops = [];
+    function enhanceSelect(sel) {
+        const wrap = mk("div", "sdrop");
+        sel.parentNode.insertBefore(wrap, sel);
+        sel.classList.add("sdrop-native");
+        wrap.appendChild(sel);
+        const btn = mk("button", "sdrop-btn"); btn.type = "button";
+        btn.setAttribute("aria-haspopup", "listbox"); btn.setAttribute("aria-expanded", "false");
+        btn.setAttribute("aria-label", sel.getAttribute("aria-label") || "");
+        const label = mk("span", "sdrop-label");
+        btn.appendChild(label);
+        btn.insertAdjacentHTML("beforeend", '<svg class="sdrop-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>');
+        const list = mk("div", "sdrop-list hidden"); list.setAttribute("role", "listbox");
+        wrap.append(btn, list);
+
+        const sync = () => { const o = sel.options[sel.selectedIndex]; label.textContent = o ? o.textContent : ""; };
+        const close = () => { list.classList.add("hidden"); wrap.classList.remove("open"); btn.setAttribute("aria-expanded", "false"); };
+        function open() {
+            drops.forEach(d => { if (d.wrap !== wrap) d.close(); });
+            list.textContent = "";
+            Array.from(sel.options).forEach(o => {
+                const it = mk("button", "sdrop-item" + (o.value === sel.value ? " sel" : ""), o.textContent);
+                it.type = "button"; it.setAttribute("role", "option");
+                it.onclick = () => { sel.value = o.value; sync(); close(); sel.dispatchEvent(new Event("change", { bubbles: true })); };
+                list.appendChild(it);
+            });
+            list.classList.remove("hidden"); wrap.classList.add("open"); btn.setAttribute("aria-expanded", "true");
+            const s = list.querySelector(".sel");
+            if (s) list.scrollTop = s.offsetTop - list.clientHeight / 2 + s.offsetHeight / 2;
+        }
+        btn.addEventListener("click", () => list.classList.contains("hidden") ? open() : close());
+        sel._sync = sync;
+        drops.push({ wrap, close });
+        sync();
+    }
+    document.addEventListener("click", e => drops.forEach(d => { if (!d.wrap.contains(e.target)) d.close(); }));
+    document.addEventListener("keydown", e => { if (e.key === "Escape") drops.forEach(d => d.close()); });
+    ["dl-month", "dl-year", "ann-filter"].forEach(id => enhanceSelect($(id)));
 
     /* ---------- events ---------- */
     $("auth-form").addEventListener("submit", handleSubmit);
@@ -1820,6 +1937,24 @@
     $("dl-month").addEventListener("change", () => { dlM = Number($("dl-month").value); renderCalendar(); });
     $("dl-year").addEventListener("change", () => { dlY = Number($("dl-year").value); renderCalendar(); });
     $("dl-today").addEventListener("click", () => { const t = new Date(); dlY = t.getFullYear(); dlM = t.getMonth(); dlSel = todayIso(); renderCalendar(); });
+    // Announcements carousel + filter
+    $("ann-filter").addEventListener("change", () => { annFilter = $("ann-filter").value; carIdx = 0; renderAnnouncements(); });
+    $("car-prev").addEventListener("click", () => carGo(carIdx - 1));
+    $("car-next").addEventListener("click", () => carGo(carIdx + 1));
+    $("ann-list").addEventListener("keydown", e => {
+        if (e.key === "ArrowRight") { e.preventDefault(); carGo(carIdx + 1); }
+        else if (e.key === "ArrowLeft") { e.preventDefault(); carGo(carIdx - 1); }
+    });
+    let carRaf = 0;
+    $("ann-list").addEventListener("scroll", () => {   // keeps the counter and dots in sync when swiping
+        cancelAnimationFrame(carRaf);
+        carRaf = requestAnimationFrame(() => {
+            const box = $("ann-list"), first = box.children[0];
+            if (!first) return;
+            const i = Math.round(box.scrollLeft / (first.offsetWidth + CAR_GAP));
+            if (i !== carIdx) { carIdx = i; carUpdate(); }
+        });
+    });
 
     // Restore session on reload
     const saved = sessionStorage.getItem("userEmail");
