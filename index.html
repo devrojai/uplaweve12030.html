@@ -739,6 +739,63 @@ button:focus-visible, [role="button"]:focus-visible { outline: 2px solid var(--a
 .auth-theme-switch { border-color: var(--line); }
 .auth-theme-switch button { color: var(--muted); }
 .auth-theme-switch button:hover { color: var(--ink); background: var(--hover); }
+
+/* ================= BACKGROUND DESIGN ================= */
+:root {
+    --pat: rgba(118,9,12,.09);
+    --glow1: rgba(118,9,12,.10);
+    --glow2: rgba(10,68,36,.08);
+    --blob1: rgba(118,9,12,.22);
+    --blob2: rgba(10,68,36,.16);
+}
+html[data-theme="classic"] {
+    --pat: rgba(43,46,49,.10);
+    --glow1: rgba(179,25,31,.11);
+    --glow2: rgba(31,122,63,.12);
+    --blob1: rgba(179,25,31,.30);
+    --blob2: rgba(31,122,63,.28);
+}
+html[data-theme="night"] {
+    --pat: rgba(255,255,255,.05);
+    --glow1: rgba(140,18,24,.30);
+    --glow2: rgba(76,176,122,.13);
+    --blob1: rgba(140,18,24,.45);
+    --blob2: rgba(76,176,122,.22);
+}
+
+/* ---------- Login background ---------- */
+.bg {
+    background:
+        radial-gradient(circle, var(--pat) 1.2px, transparent 1.6px) 0 0 / 24px 24px,
+        radial-gradient(ellipse at 15% 10%, var(--glow1), transparent 50%),
+        radial-gradient(ellipse at 85% 95%, var(--glow2), transparent 50%),
+        var(--bg-grad);
+}
+.blob { display: block; filter: blur(70px); opacity: 1; }
+.blob.b1 { background: var(--blob1); }
+.blob.b2 { background: var(--blob2); }
+.blob.b3 { background: var(--blob1); opacity: .35; }
+.bg::before, .bg::after {
+    content: ""; position: absolute; border: 1px solid var(--pat); transform: rotate(45deg); pointer-events: none;
+}
+.bg::before {
+    width: 420px; height: 420px; top: -210px; right: -120px;
+    box-shadow: 0 0 0 36px transparent, 0 0 0 37px var(--pat), 0 0 0 76px transparent, 0 0 0 77px var(--pat);
+}
+.bg::after {
+    width: 320px; height: 320px; bottom: -170px; left: -90px;
+    box-shadow: 0 0 0 36px transparent, 0 0 0 37px var(--pat), 0 0 0 76px transparent, 0 0 0 77px var(--pat);
+}
+
+/* ---------- Site background ---------- */
+.app {
+    background:
+        radial-gradient(circle, var(--pat) 1.1px, transparent 1.5px) 0 0 / 26px 26px,
+        radial-gradient(ellipse at 100% 0%, var(--glow1), transparent 45%),
+        radial-gradient(ellipse at 0% 100%, var(--glow2), transparent 45%),
+        var(--bg);
+    background-attachment: fixed;
+}
         
     </style>
     
@@ -862,6 +919,15 @@ button:focus-visible, [role="button"]:focus-visible { outline: 2px solid var(--a
             
         </nav>
         <div class="drawer-foot">
+
+            <div class="theme-label">Appearance</div>
+<div class="theme-switch" id="theme-switch" role="group" aria-label="Theme">
+    <button type="button" data-mode="light">Light</button>
+    <button type="button" data-mode="classic">Classic</button>
+    <button type="button" data-mode="night">Night</button>
+</div>
+<div style="height:12px"></div>
+            
             <button type="button" class="btn" id="logout-btn">Log Out</button>
             <button type="button" class="btn-danger" id="delete-open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="lid"><path d="M3 6h18"/><path d="M8 6V4h8v2"/></g><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg><span>Delete account</span></button>
         </div>
