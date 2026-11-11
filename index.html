@@ -170,7 +170,6 @@
         .btn:hover:not(:disabled)::after { left: 130%; transition: left .7s; }
         .btn:active:not(:disabled) { transform: translateY(0) scale(.98); }
         .btn:disabled { opacity: .7; cursor: not-allowed; }
-        /* while loading the label is hidden (!important so it also beats .ghost / .submitted colours) */
         .btn.loading, .btn.ghost.loading, .btn.submitted.loading, .btn.loading:disabled { color: transparent !important; }
         .btn.loading::before {
             content: ""; position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; margin: -10px 0 0 -10px;
@@ -280,10 +279,47 @@
         .field textarea:focus ~ label { color: var(--maroon); }
         .btn.submitted, .btn.submitted:disabled { background: #0a4424; border-color: #0a4424; color: var(--white); opacity: 1; cursor: default; box-shadow: 0 6px 16px rgba(10,68,36,.35); }
 
-        /* ---- Request file upload ---- */
-        .file-box { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 14px 0 6px; }
-        .file-name { flex: 1 1 140px; min-width: 0; font-size: var(--fs-n1); font-weight: 600; opacity: .8; word-break: break-all; }
-        .file-box + .hint { margin-top: 0; margin-bottom: 8px; }
+        /* ---- File Upload Component (Multiple Support) ---- */
+        .file-upload-area { margin: 14px 0 6px; }
+        .file-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+        .file-chip {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            padding: 8px 12px; background: rgba(118,9,12,.06); border: 1px solid rgba(118,9,12,.2);
+            border-radius: 8px; font-size: var(--fs-n1); word-break: break-all;
+        }
+        .file-chip .fname { flex: 1; font-weight: 600; color: var(--charcoal); }
+        .file-chip .fsize { opacity: .6; flex: none; }
+        .file-chip .fremove { color: var(--maroon); font-weight: 700; background: none; border: none; cursor: pointer; padding: 2px 6px; }
+        .file-chip .fremove:hover { text-decoration: underline; }
+
+        /* Attachments display in Announcement Modal */
+        .attach-section { margin-top: 14px; padding-top: 10px; border-top: 1px dashed rgba(58,58,58,.2); }
+        .attach-title { font-size: var(--fs-n1); font-weight: 800; color: var(--maroon); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+        .attach-list { display: flex; flex-wrap: wrap; gap: 8px; }
+        .attach-btn {
+            display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;
+            background: rgba(118,9,12,.08); border: 1px solid var(--maroon); border-radius: 6px;
+            font-size: var(--fs-n1); font-weight: 700; color: var(--maroon); cursor: pointer;
+            transition: background .2s, transform .2s;
+        }
+        .attach-btn:hover { background: var(--maroon); color: var(--white); transform: translateY(-1px); }
+        .attach-btn svg { width: 14px; height: 14px; flex: none; }
+
+        /* Preview Modal Window */
+        .preview-content { max-width: 100%; max-height: 65vh; overflow: auto; text-align: center; margin: 14px 0; }
+        .preview-content img { max-width: 100%; max-height: 60vh; border-radius: 8px; object-fit: contain; }
+        .preview-content iframe { width: 100%; height: 55vh; border: none; border-radius: 8px; }
+        .preview-fallback { padding: 30px 10px; font-size: var(--fs-0); opacity: .8; }
+
+        /* Search Bar in Announcements */
+        .search-box { position: relative; margin-bottom: 14px; width: 100%; }
+        .search-box input {
+            width: 100%; padding: 12px 16px 12px 42px; border: 2px solid rgba(58,58,58,.2);
+            border-radius: 12px; font-size: var(--fs-0); outline: none; background: var(--white);
+            transition: border-color .25s, box-shadow .25s;
+        }
+        .search-box input:focus { border-color: var(--maroon); box-shadow: 0 0 0 4px rgba(118,9,12,.12); }
+        .search-box svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: var(--maroon); opacity: .7; pointer-events: none; }
 
         /* ---- Repository (admin) ---- */
         .repo-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 14px 0; }
@@ -385,7 +421,7 @@
         .modal-ico { width: 60px; height: 60px; margin: -56px auto 12px; border-radius: 50%; background: var(--maroon); color: var(--white); display: grid; place-items: center; box-shadow: 0 8px 20px rgba(118,9,12,.5), 0 0 0 6px var(--white); animation: pulse 3s ease-in-out infinite; }
         .modal-ico svg { width: 28px; height: 28px; }
 
-        /* ============ DELETE MODAL ============ */
+        /* ============ DELETE / PROMPT MODALS ============ */
         .modal { position: fixed; inset: 0; z-index: 70; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(58,58,58,.7); backdrop-filter: blur(3px); animation: fade .25s; }
         @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
         .modal-card { width: 380px; max-width: 100%; background: var(--white); border-radius: 16px; border-top: 6px solid var(--maroon); padding: 26px 24px 22px; box-shadow: 0 25px 60px rgba(0,0,0,.5); animation: cardIn .4s var(--ease); }
@@ -428,7 +464,6 @@
         .mention { color: var(--maroon); font-weight: 700; background: transparent; border-radius: 4px; padding: 0 3px; }
 
         /* ---- Announcement cards ---- */
-        /* ---- Announcements: heading space, toolbar, carousel ---- */
         #sec-announcements h2 { margin-bottom: 22px; }
         .ann-tools { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 0 0 14px; }
         .ann-tools .sdrop { flex: 1 1 240px; max-width: 360px; }
@@ -468,7 +503,7 @@
         .car-dot { width: 10px; height: 10px; padding: 0; border: none; border-radius: 999px; background: rgba(58,58,58,.25); cursor: pointer; transition: width .25s var(--ease), background .2s; }
         .car-dot.on { width: 26px; background: var(--maroon); }
 
-        /* ---- Stylish dropdown (replaces native selects) ---- */
+        /* ---- Stylish dropdown ---- */
         .sdrop { position: relative; }
         .sdrop-native { display: none; }
         .sdrop-btn { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 14px; color: var(--maroon); font-weight: 700; text-align: left; background: var(--white); border: 2px solid rgba(118,9,12,.35); border-radius: 12px; cursor: pointer; transition: border-color .2s, box-shadow .2s; }
@@ -692,6 +727,13 @@
     <main class="content">
         <section class="section" id="sec-announcements">
             <h2>ANNOUNCEMENTS</h2>
+            
+            <!-- Search Bar Feature -->
+            <div class="search-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="ann-search" placeholder="Search announcements (matches titles, topics, text)..." autocomplete="off">
+            </div>
+
             <div class="ann-tools hidden" id="ann-tools">
                 <select id="ann-filter" aria-label="Filter by Topic"></select>
                 <div class="car-nav" id="car-nav">
@@ -728,13 +770,14 @@
                 <div class="field"><input type="text" id="r-topic" placeholder=" " autocomplete="off" maxlength="60"><label for="r-topic">Topic</label></div>
                 <div class="field"><input type="text" id="r-course" placeholder=" " autocomplete="off" maxlength="30"><label for="r-course">Course Code</label></div>
                 <div class="field"><textarea id="r-text" placeholder=" " maxlength="2000"></textarea><label for="r-text">Type your request here</label></div>
-                <div class="file-box">
-                    <button type="button" class="btn sm ghost" id="r-file-btn">Upload File</button>
-                    <span class="file-name" id="r-file-name">No file chosen</span>
-                    <button type="button" class="linkish hidden" id="r-file-remove">Remove</button>
-                    <input type="file" id="r-file" class="hidden">
+                
+                <!-- Multiple file attachments for requests -->
+                <div class="file-upload-area">
+                    <button type="button" class="btn sm ghost" id="r-file-btn">Upload Files</button>
+                    <input type="file" id="r-file" class="hidden" multiple>
+                    <div class="file-list" id="r-file-list"></div>
                 </div>
-                <p class="hint">Optional. Any file type, up to 10 MB. It will be attached to the email.</p>
+                <p class="hint">Optional. Up to 5 files allowed (max 10 MB total).</p>
                 <button type="submit" class="btn" id="r-send">Send</button>
                 <div class="msg" id="r-message"></div>
             </form>
@@ -769,6 +812,15 @@
                     <div class="mention-list hidden" id="mention-list"></div>
                 </div>
                 <p class="hint">Type @ to tag a user, or @everyone to notify all users. They'll be notified by email.</p>
+                
+                <!-- Multiple file attachments for announcements bin -->
+                <div class="file-upload-area">
+                    <button type="button" class="btn sm ghost" id="b-file-btn">Attach Files</button>
+                    <input type="file" id="b-file" class="hidden" multiple>
+                    <div class="file-list" id="b-file-list"></div>
+                </div>
+                <p class="hint">Optional. Up to 5 files allowed (max 10 MB total).</p>
+
                 <button type="submit" class="btn" id="b-send">Post announcement</button>
                 <button type="button" class="btn ghost hidden" id="b-cancel">Cancel editing</button>
                 <div class="msg" id="b-message"></div>
@@ -793,16 +845,32 @@
 
     <!-- Announcement Details Modal Prompt Window -->
     <div class="modal hidden" id="ann-modal" role="dialog" aria-modal="true" aria-labelledby="ann-modal-title">
-        <div class="modal-card" style="text-align: left; width: 500px;">
+        <div class="modal-card" style="text-align: left; width: 520px; max-width: 95vw;">
             <div class="ann-top" style="margin-bottom: 8px;">
                 <h3 id="ann-modal-title" class="ann-title"></h3>
                 <span id="ann-modal-badge" class="badge"></span>
             </div>
             <div id="ann-modal-meta" class="ann-meta" style="margin-bottom: 14px;"></div>
             <div id="ann-modal-body" class="ann-modal-body" style="margin-bottom: 14px;"></div>
+            <div id="ann-modal-attach" class="attach-section hidden">
+                <div class="attach-title">Attached Files</div>
+                <div id="ann-modal-files" class="attach-list"></div>
+            </div>
             <div id="ann-modal-edited" class="ann-edited" style="margin-bottom: 14px;"></div>
             <div id="ann-modal-actions" class="ann-actions" style="margin-top: 16px; justify-content: flex-end;">
                 <button type="button" class="btn ghost sm" id="ann-modal-close" style="width: auto;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attached File Preview Secondary Prompt Window -->
+    <div class="modal hidden" id="file-modal" role="dialog" aria-modal="true" aria-labelledby="file-modal-title" style="z-index: 80;">
+        <div class="modal-card" style="text-align: left; width: 640px; max-width: 95vw;">
+            <h3 id="file-modal-title" class="ann-title" style="word-break: break-all;"></h3>
+            <div id="file-modal-body" class="preview-content"></div>
+            <div class="modal-actions" style="justify-content: flex-end; gap: 10px; margin-top: 14px;">
+                <a id="file-modal-dl" class="btn sm" download style="width: auto; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Download File</a>
+                <button type="button" class="btn ghost sm" id="file-modal-close" style="width: auto;">Close</button>
             </div>
         </div>
     </div>
@@ -817,7 +885,7 @@
                 <div class="field has-peek">
                     <input type="password" id="del-password" placeholder=" " autocomplete="current-password">
                     <label for="del-password">Password</label>
-                    <button type="button" class="peek" id="del-peek" aria-label="Show password" aria-pressed="false"><svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C5 20 1 12 1 12a18.5 18.5 0 0 1 5.06-5.94"/><path d="M9.9 4.24A10.9 10.9 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
+                    <button type="button" class="peek" id="del-peek" aria-label="Show password" aria-pressed="false"><svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C5 20 1 12 1 12a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn ghost" id="del-cancel">Cancel</button>
@@ -1066,13 +1134,15 @@
         pending = null;
         resetProfileState();
         resetRequestForm();
-        annList = []; annFilter = ""; carIdx = 0; dlSel = todayIso(); mentionUsers = []; mentionSel = []; repoPhotos = {}; resetBinForm();
+        annList = []; annFilter = ""; annSearchTerm = ""; carIdx = 0; dlSel = todayIso(); mentionUsers = []; mentionSel = []; repoPhotos = {}; resetBinForm();
         isAdmin = false;
         adminPending = false;
         applyAdmin();
         closeProfile();
         closeMenu();
         closeDelete();
+        closeFileModal();
+        closeAnnModal();
         document.body.classList.remove("app-mode");
         $("app").classList.add("hidden");
         $("stage").classList.remove("hidden");
@@ -1168,7 +1238,6 @@
         renderAvatars();
         syncFields();
     }
-    // the green "Changes Saved" button goes back to a normal "Save Changes" button as soon as anything is edited
     function profileDirty() {
         const b = $("p-save");
         if (b.classList.contains("submitted")) {
@@ -1201,7 +1270,6 @@
         if (!$("drawer").classList.contains("open")) $("overlay").classList.remove("show");
     }
 
-    /* photo: crop to a square, shrink and re-encode so it fits in a single sheet cell */
     function processImage(file) {
         return new Promise((resolve, reject) => {
             if (!file.type.startsWith("image/")) return reject(new Error("Please choose an image file."));
@@ -1271,13 +1339,13 @@
         if (photoChanged) payload.photo = pendingPhoto;
 
         setLoading(btn, true);
-        setMessage(pm, "", "");   // no text under the button while saving
+        setMessage(pm, "", "");
         try {
             const r = await authCall("profile_save", payload);
             if (r.status === "success") {
                 fillProfile(r.profile);
                 setLoading(btn, false);
-                btn.textContent = "Changes Saved";   // the button itself turns green instead of showing a message
+                btn.textContent = "Changes Saved";
                 btn.classList.add("submitted");
                 btn.disabled = true;
                 return;
@@ -1295,7 +1363,7 @@
     function applyAdmin() {
         document.querySelectorAll(".nav [data-admin]").forEach(b => b.classList.toggle("hidden", !isAdmin));
         const b = $("admin-claim");
-        b.classList.toggle("submitted", !isAdmin && adminPending);   // green once the request is sent
+        b.classList.toggle("submitted", !isAdmin && adminPending);
         b.textContent = isAdmin ? "Admin Access Granted" : (adminPending ? "Request Sent" : "Request Admin Access");
         b.disabled = isAdmin || adminPending;
         if (!isAdmin) { repoUsers = []; repoPhotos = {}; mentionUsers = []; $("repo-list").textContent = ""; $("repo-detail").textContent = ""; }
@@ -1339,7 +1407,6 @@
         ["Contact No.", "contact"], ["UP Student Email", "upEmail"], ["Telegram Handle", "tg"], ["Facebook URL", "fb"],
         ["Account Created", "created"], ["Profile Updated", "updated"]
     ];
-    // user data is always inserted with textContent (never innerHTML)
     function mk(tag, cls, text) {
         const e = document.createElement(tag);
         if (cls) e.className = cls;
@@ -1430,7 +1497,7 @@
         setMessage($("repo-msg"), "", "");
         renderDetail(u, repoPhotos[email] || "");
         try {
-            const r = await authCall("admin_user", { target: email });   // fetches the photo too
+            const r = await authCall("admin_user", { target: email });
             if (r.status === "success" && detailFor === email) renderDetail(r.user, r.user.photo || "");
         } catch (err) { if (err.message !== "auth") console.error(err); }
     }
@@ -1474,7 +1541,6 @@
 
     function csvEscape(v) {
         let s = String(v == null ? "" : v);
-        // stop spreadsheet apps from running cells that start like formulas (phone numbers like +63... are left alone)
         if (/^[=@\t\r]/.test(s) || (/^[+\-]/.test(s) && !/^[+\-]?[0-9()][0-9\s\-()]*$/.test(s))) s = "'" + s;
         return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
     }
@@ -1496,28 +1562,95 @@
         setMessage(rm, "Downloaded " + repoUsers.length + " user" + (repoUsers.length === 1 ? "" : "s") + ".", OK);
     }
 
-    /* ---------- requests (emailed to the Beadle, with an optional file attachment) ---------- */
-    const MAX_REQ_FILE = 10 * 1024 * 1024;   // 10 MB (the server enforces the same limit)
-    let reqFile = null;                       // {name, type, data(base64)} or null
-    function renderReqFile() {
-        $("r-file-name").textContent = reqFile ? reqFile.name : "No file chosen";
-        $("r-file-remove").classList.toggle("hidden", !reqFile);
+    /* ---------- MULTIPLE FILE ATTACHMENTS HELPER ---------- */
+    const MAX_TOTAL_FILE_SIZE = 10 * 1024 * 1024; // 10 MB total
+    let reqFiles = []; // array of {name, type, size, data(base64)}
+    let binFiles = []; // array of {name, type, size, data(base64)}
+
+    function formatFileSize(bytes) {
+        if (!bytes) return "0 B";
+        const k = 1024, sizes = ["B", "KB", "MB", "GB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
     }
-    function readFileB64(file) {
+
+    function readFileAsBase64(file) {
         return new Promise((resolve, reject) => {
             const fr = new FileReader();
-            fr.onerror = () => reject(new Error("Couldn't read that file."));
-            fr.onload = () => { const s = String(fr.result); resolve(s.slice(s.indexOf(",") + 1)); };
+            fr.onerror = () => reject(new Error("Failed to read file: " + file.name));
+            fr.onload = () => {
+                const s = String(fr.result);
+                resolve({
+                    name: file.name,
+                    type: file.type || "application/octet-stream",
+                    size: file.size,
+                    data: s.slice(s.indexOf(",") + 1)
+                });
+            };
             fr.readAsDataURL(file);
         });
     }
+
+    function renderFileList(containerId, fileArray, onRemove) {
+        const box = $(containerId);
+        box.textContent = "";
+        fileArray.forEach((f, idx) => {
+            const chip = mk("div", "file-chip");
+            chip.appendChild(mk("span", "fname", f.name));
+            chip.appendChild(mk("span", "fsize", formatFileSize(f.size)));
+            const remBtn = mk("button", "fremove", "Remove");
+            remBtn.type = "button";
+            remBtn.onclick = () => onRemove(idx);
+            chip.appendChild(remBtn);
+            box.appendChild(chip);
+        });
+    }
+
+    async function handleFileSelect(event, fileArray, containerId, msgId, dirtyCallback) {
+        const files = Array.from(event.target.files);
+        event.target.value = ""; // reset input
+        if (!files.length) return;
+
+        if (fileArray.length + files.length > 5) {
+            setMessage($(msgId), "You can attach a maximum of 5 files.", ERR);
+            return;
+        }
+
+        let currentTotal = fileArray.reduce((sum, f) => sum + f.size, 0);
+        let newTotal = currentTotal + files.reduce((sum, f) => sum + f.size, 0);
+        if (newTotal > MAX_TOTAL_FILE_SIZE) {
+            setMessage($(msgId), "Total file attachment size exceeds 10 MB.", ERR);
+            return;
+        }
+
+        try {
+            const readPromises = files.map(f => readFileAsBase64(f));
+            const results = await Promise.all(readPromises);
+            fileArray.push(...results);
+            renderFileList(containerId, fileArray, (index) => {
+                fileArray.splice(index, 1);
+                renderFileList(containerId, fileArray, arguments.callee);
+                if (dirtyCallback) dirtyCallback();
+            });
+            setMessage($(msgId), "", "");
+            if (dirtyCallback) dirtyCallback();
+        } catch (err) {
+            setMessage($(msgId), err.message, ERR);
+        }
+    }
+
+    /* ---------- requests ---------- */
     function resetRequestForm() {
         ["r-beadle", "r-topic", "r-course", "r-text"].forEach(id => { $(id).value = ""; });
-        reqFile = null; renderReqFile();
+        reqFiles = [];
+        renderFileList("r-file-list", reqFiles, (idx) => { reqFiles.splice(idx, 1); resetRequestFormFileRender(); });
         const b = $("r-send");
         b.classList.remove("submitted"); b.disabled = false; b.textContent = "Send";
         setMessage($("r-message"), "", "");
         syncFields();
+    }
+    function resetRequestFormFileRender() {
+        renderFileList("r-file-list", reqFiles, (idx) => { reqFiles.splice(idx, 1); resetRequestFormFileRender(); markRequestDirty(); });
     }
     function markRequestDirty() {
         const b = $("r-send");
@@ -1538,7 +1671,7 @@
         setMessage(rm, "", "");
         try {
             const payload = { beadleEmail: beadle, topic: topic, courseCode: course, message: text };
-            if (reqFile) payload.file = reqFile;
+            if (reqFiles.length) payload.files = reqFiles;
             const r = await authCall("send_request", payload);
             if (r.status === "success") {
                 setLoading(btn, false);
@@ -1559,7 +1692,6 @@
     const pad = n => String(n).padStart(2, "0");
     const isoOf = (y, m, d) => y + "-" + pad(m + 1) + "-" + pad(d);
     const todayIso = () => { const t = new Date(); return isoOf(t.getFullYear(), t.getMonth(), t.getDate()); };
-    // turns whatever the sheet returns ("2026-12-05", "2026-12-04T16:00:00.000Z", "Sat Dec 05 2026…") into YYYY-MM-DD
     function normIso(v) {
         if (!v) return "";
         const s = String(v).trim();
@@ -1571,7 +1703,6 @@
         const [y, m, d] = String(iso).split("-").map(Number);
         return new Date(y, m - 1, d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
     }
-    // fills a <select> with every year from 2000 to 2100 (and beyond if an announcement needs it)
     function fillYears(sel, y, extra) {
         y = Number.isFinite(Number(y)) && Number(y) > 0 ? Number(y) : new Date().getFullYear();
         const vals = [y].concat(extra || []).map(Number).filter(Number.isFinite);
@@ -1587,7 +1718,6 @@
         l: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>',
         r: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>'
     };
-    // A popup calendar with month + year drop-downs and arrows. minFn (optional) disables earlier days.
     function makePicker(key, get, set, minFn) {
         const input = $(key), pop = $(key + "-pop"), btn = $(key + "-btn");
         let y = 0, m = 0, ms, ys, gridBox;
@@ -1643,7 +1773,6 @@
         const toggle = () => pop.classList.contains("hidden") ? open() : close();
         input.addEventListener("click", toggle);
         btn.addEventListener("click", toggle);
-        // Backspace / Delete clears the date; Escape closes the picker
         input.addEventListener("keydown", e => {
             if (e.key === "Backspace" || e.key === "Delete") { e.preventDefault(); set(""); show(); }
             else if (e.key === "Escape") close();
@@ -1660,7 +1789,7 @@
 
     /* ---------- @mentions (including @everyone) ---------- */
     const EVERYONE = { email: "All users", firstName: "everyone", everyone: true };
-    let mentionUsers = [], mentionSel = [], mMatches = [], mIdx = 0, mStart = 0;   // mentionSel items: {email, name}
+    let mentionUsers = [], mentionSel = [], mMatches = [], mIdx = 0, mStart = 0;
     async function loadMentionUsers() {
         if (mentionUsers.length) return;
         try {
@@ -1717,20 +1846,25 @@
         $("b-cancel").classList.toggle("hidden", !editing);
         $("b-edit-banner").classList.toggle("hidden", !editing);
     }
-    // once the green "Announcement Posted" button is showing, any new input turns it back to normal
     function binDirty() { if ($("b-send").classList.contains("submitted")) binMode(); }
     function resetBinForm() {
         ["b-title", "b-course", "b-text"].forEach(id => { $(id).value = ""; });
-        binDeadline = binStart = binEnd = ""; editingId = ""; mentionSel = [];
+        binDeadline = binStart = binEnd = ""; editingId = ""; mentionSel = []; binFiles = [];
+        renderFileList("b-file-list", binFiles, (idx) => { binFiles.splice(idx, 1); resetBinFormFileRender(); });
         pkDeadline.show(); pkStart.show(); pkEnd.show();
         pickers.forEach(p => p.close());
         hideMention(); binMode(); setMessage($("b-message"), "", ""); syncFields();
+    }
+    function resetBinFormFileRender() {
+        renderFileList("b-file-list", binFiles, (idx) => { binFiles.splice(idx, 1); resetBinFormFileRender(); binDirty(); });
     }
     function startEdit(a) {
         resetBinForm();
         editingId = a.id;
         $("b-title").value = a.title; $("b-course").value = a.course; $("b-text").value = a.message;
         binDeadline = a.deadline || ""; binStart = a.periodStart || ""; binEnd = a.periodEnd || "";
+        binFiles = (a.files || []).slice();
+        renderFileList("b-file-list", binFiles, (idx) => { binFiles.splice(idx, 1); resetBinFormFileRender(); binDirty(); });
         pkDeadline.show(); pkStart.show(); pkEnd.show();
         mentionSel = (a.mentions || []).filter(m => m.email).map(m => ({ email: m.email, name: m.name }));
         binMode(); syncFields();
@@ -1759,6 +1893,7 @@
                 mentions = Array.from(new Set(mentions.concat(mentionUsers.map(u => u.email))));
             }
             const payload = { title, course, deadline: binDeadline, periodStart: binStart, periodEnd: binEnd, message: text, mentions, everyone };
+            if (binFiles.length) payload.files = binFiles;
             if (wasEdit) payload.id = editingId;
             const r = await authCall(wasEdit ? "edit_announcement" : "post_announcement", payload);
             if (r.status === "success") {
@@ -1773,14 +1908,107 @@
         if (posted) { btn.textContent = "Announcement Posted"; btn.classList.add("submitted"); btn.disabled = true; }
     }
 
+    /* ---------- FUZZY SEARCH MATCHING ---------- */
+    // Damerau-Levenshtein distance for typo tolerance
+    function damerauLevenshteinDistance(a, b) {
+        if (!a || !b) return (a || b).length;
+        const al = a.length, bl = b.length;
+        const m = Array.from({ length: al + 1 }, () => new Array(bl + 1).fill(0));
+        for (let i = 0; i <= al; i++) m[i][0] = i;
+        for (let j = 0; j <= bl; j++) m[0][j] = j;
+        for (let i = 1; i <= al; i++) {
+            for (let j = 1; j <= bl; j++) {
+                const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+                m[i][j] = Math.min(m[i - 1][j] + 1, m[i][j - 1] + 1, m[i - 1][j - 1] + cost);
+                if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+                    m[i][j] = Math.min(m[i][j], m[i - 2][j - 2] + cost);
+                }
+            }
+        }
+        return m[al][bl];
+    }
+
+    function isFuzzyMatch(text, query) {
+        if (!query) return true;
+        const t = text.toLowerCase();
+        const q = query.toLowerCase().trim();
+        if (t.includes(q)) return true; // Direct substring match
+
+        // Check tokenized word matching with edit distance for misspellings
+        const qWords = q.split(/\s+/).filter(Boolean);
+        const tWords = t.split(/\s+/).filter(Boolean);
+
+        return qWords.every(qw => {
+            if (t.includes(qw)) return true;
+            const maxDistance = qw.length <= 3 ? 1 : qw.length <= 6 ? 2 : 3;
+            return tWords.some(tw => damerauLevenshteinDistance(tw, qw) <= maxDistance);
+        });
+    }
+
+    /* ---------- ATTACHED FILE PREVIEW PROMPT WINDOW ---------- */
+    function openFileModal(file) {
+        $("file-modal-title").textContent = file.name;
+        const body = $("file-modal-body");
+        body.textContent = "";
+
+        const mime = file.type || "";
+        const dataUrl = file.data ? (file.data.startsWith("data:") ? file.data : `data:${mime};base64,${file.data}`) : "";
+
+        if (dataUrl) {
+            $("file-modal-dl").href = dataUrl;
+            $("file-modal-dl").download = file.name;
+        } else {
+            $("file-modal-dl").removeAttribute("href");
+        }
+
+        if (mime.startsWith("image/") || (file.name && /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(file.name))) {
+            const img = document.createElement("img");
+            img.src = dataUrl;
+            img.alt = file.name;
+            body.appendChild(img);
+        } else if (mime === "application/pdf" || (file.name && /\.pdf$/i.test(file.name))) {
+            const iframe = document.createElement("iframe");
+            iframe.src = dataUrl;
+            body.appendChild(iframe);
+        } else if (mime.startsWith("text/") || (file.name && /\.(txt|json|csv|md|js|html|css)$/i.test(file.name))) {
+            const pre = document.createElement("pre");
+            pre.style.whiteSpace = "pre-wrap";
+            pre.style.textAlign = "left";
+            pre.style.fontSize = "var(--fs-n1)";
+            pre.style.background = "rgba(58,58,58,.05)";
+            pre.style.padding = "14px";
+            pre.style.borderRadius = "8px";
+            try {
+                pre.textContent = atob(file.data);
+            } catch (e) {
+                pre.textContent = file.data;
+            }
+            body.appendChild(pre);
+        } else {
+            const fb = mk("div", "preview-fallback", "Preview not available for this file type.");
+            body.appendChild(fb);
+        }
+
+        $("file-modal").classList.remove("hidden");
+    }
+
+    function closeFileModal() {
+        $("file-modal").classList.add("hidden");
+        $("file-modal-body").textContent = "";
+    }
+    $("file-modal-close").addEventListener("click", closeFileModal);
+
     /* ---------- announcements + calendar (all users) ---------- */
     const NOW = new Date();
     let annList = [], dlY = NOW.getFullYear(), dlM = NOW.getMonth(), dlSel = todayIso();
+    let annSearchTerm = "";
+
     function richText(el, text, mentions) {
         const names = (mentions || []).map(m => "@" + m.name).concat("@everyone").sort((a, b) => b.length - a.length);
         const re = new RegExp("(" + names.map(n => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")", "g");
         text.split(re).forEach((part, i) => el.appendChild(i % 2 ? mk("span", "mention", part) : document.createTextNode(part)));
     }
+
     async function deleteAnnouncement(a, btn) {
         if (!confirm('Delete "' + a.title + '"? This can\'t be undone.')) return;
         setLoading(btn, true);
@@ -1799,6 +2027,7 @@
         }
         setLoading(btn, false);
     }
+
     function openAnnModal(a) {
         $("ann-modal-title").textContent = a.title;
         $("ann-modal-badge").textContent = a.course;
@@ -1810,6 +2039,28 @@
         const body = $("ann-modal-body");
         body.textContent = "";
         richText(body, a.message, a.mentions);
+
+        // Render File Attachments
+        const attachSec = $("ann-modal-attach");
+        const filesBox = $("ann-modal-files");
+        filesBox.textContent = "";
+
+        if (a.files && a.files.length) {
+            attachSec.classList.remove("hidden");
+            a.files.forEach(f => {
+                const btn = mk("button", "attach-btn");
+                btn.type = "button";
+                btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> <span>${f.name}</span>`;
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    openFileModal(f);
+                };
+                filesBox.appendChild(btn);
+            });
+        } else {
+            attachSec.classList.add("hidden");
+        }
+
         const edited = $("ann-modal-edited");
         edited.textContent = a.edited ? "✎ Edited by the author on " + a.edited : "";
         
@@ -1850,6 +2101,7 @@
         if (a.deadline) bits.push("Deadline: " + prettyDate(a.deadline));
         if (a.periodStart && a.periodEnd) bits.push("Period: " + prettyDate(a.periodStart) + " – " + prettyDate(a.periodEnd));
         bits.push("Posted by " + a.author + " on " + a.created);
+        if (a.files && a.files.length) bits.push(`📎 ${a.files.length} file${a.files.length > 1 ? 's' : ''}`);
         c.appendChild(mk("div", "ann-meta", bits.join(" · ")));
         const body = mk("div", "ann-body");
         richText(body, a.message, a.mentions);
@@ -1868,9 +2120,20 @@
 
         return c;
     }
+
     let annFilter = "", carIdx = 0;
     const CAR_GAP = 16;
-    const annVisible = () => annFilter ? annList.filter(a => a.course === annFilter) : annList;
+    
+    // Filter by topic AND fuzzy search term
+    const annVisible = () => {
+        return annList.filter(a => {
+            const matchesTopic = annFilter ? a.course === annFilter : true;
+            if (!matchesTopic) return false;
+            if (!annSearchTerm) return true;
+            const searchText = [a.title, a.course, a.message, a.author].join(" ");
+            return isFuzzyMatch(searchText, annSearchTerm);
+        });
+    };
 
     function carUpdate() {
         const list = annVisible();
@@ -1912,8 +2175,8 @@
         const list = annVisible();
         if (!list.length) {
             const e = mk("div", "empty");
-            e.appendChild(mk("b", "", "No announcements yet"));
-            e.appendChild(mk("p", "", "Announcements will be posted here."));
+            e.appendChild(mk("b", "", annSearchTerm ? "No matching announcements" : "No announcements yet"));
+            e.appendChild(mk("p", "", annSearchTerm ? "Try adjusting your search query." : "Announcements will be posted here."));
             box.appendChild(e); carIdx = 0; carUpdate(); return;
         }
 
@@ -1927,12 +2190,11 @@
 
         carGo(carIdx, true);
     }
-    // date -> [{a, kind}] : a deadline shows on its date, a period shows on every day it covers
     function calMap() {
         const by = {};
         const put = (d, a, kind) => { const l = (by[d] = by[d] || []); if (!l.some(e => e.a.id === a.id)) l.push({ a, kind }); };
         annList.forEach(a => {
-            if (a.deadline) put(a.deadline, a, "deadline");       // deadline wins if it falls inside the period
+            if (a.deadline) put(a.deadline, a, "deadline");
             if (a.periodStart && a.periodEnd) {
                 const s = a.periodStart.split("-").map(Number), e = a.periodEnd.split("-").map(Number);
                 const cur = new Date(s[0], s[1] - 1, s[2]), end = new Date(e[0], e[1] - 1, e[2]);
@@ -1999,11 +2261,10 @@
             if (err.message !== "auth") { console.error(err); ["ann-msg", "dl-msg"].forEach(id => setMessage($(id), netError(err), ERR)); }
         }
     }
-    // calendar header controls
     MONTHS.forEach((n, i) => { const o = mk("option", "", n); o.value = String(i); $("dl-month").appendChild(o); });
     syncCalSel(true);
 
-    /* ---------- stylish dropdown: wraps a native <select> (kept hidden as the source of truth) ---------- */
+    /* ---------- stylish dropdown ---------- */
     const drops = [];
     function enhanceSelect(sel) {
         const wrap = mk("div", "sdrop");
@@ -2055,8 +2316,8 @@
     bindPeek("del-peek", "del-password");
 
     $("burger").addEventListener("click", () => $("drawer").classList.contains("open") ? closeMenu() : openMenu());
-    $("overlay").addEventListener("click", () => { closeMenu(); closeProfile(); closeAnnModal(); });
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeMenu(); closeProfile(); closeDelete(); closeAnnModal(); } });
+    $("overlay").addEventListener("click", () => { closeMenu(); closeProfile(); closeAnnModal(); closeFileModal(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeMenu(); closeProfile(); closeDelete(); closeAnnModal(); closeFileModal(); } });
     document.querySelectorAll(".nav button").forEach(b => b.addEventListener("click", () => { showSection(b.dataset.section); closeMenu(); }));
     $("logout-btn").addEventListener("click", leaveApp);
     $("delete-open").addEventListener("click", openDelete);
@@ -2069,24 +2330,12 @@
     $("repo-download").addEventListener("click", downloadCsv);
     document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshAdmin(); });
     ["r-beadle", "r-topic", "r-course", "r-text"].forEach(id => $(id).addEventListener("input", markRequestDirty));
-    // Requests: optional file upload
+    
+    // Requests: Multiple file uploads
     $("r-file-btn").addEventListener("click", () => $("r-file").click());
-    $("r-file-remove").addEventListener("click", () => { reqFile = null; renderReqFile(); markRequestDirty(); });
-    $("r-file").addEventListener("change", async (e) => {
-        const file = e.target.files[0], rm = $("r-message");
-        e.target.value = "";
-        if (!file) return;
-        if (file.size === 0) return setMessage(rm, "That file is empty.", ERR);
-        if (file.size > MAX_REQ_FILE) return setMessage(rm, "That file is too large (max 10 MB).", ERR);
-        try {
-            reqFile = { name: file.name, type: file.type || "", data: await readFileB64(file) };
-            renderReqFile();
-            markRequestDirty();
-            setMessage(rm, "", "");
-        } catch (err) {
-            setMessage(rm, err.message, ERR);
-        }
-    });
+    $("r-file").addEventListener("change", (e) => handleFileSelect(e, reqFiles, "r-file-list", "r-message", markRequestDirty));
+
+    // Profile photo upload
     $("avatar-btn").addEventListener("click", openProfile);
     $("pclose").addEventListener("click", closeProfile);
     $("p-form").addEventListener("submit", saveProfile);
@@ -2125,12 +2374,25 @@
     $("b-text").addEventListener("click", mentionCheck);
     $("b-text").addEventListener("keydown", mentionKey);
     $("b-text").addEventListener("blur", () => setTimeout(hideMention, 150));
+    
+    // Bin: Multiple file uploads
+    $("b-file-btn").addEventListener("click", () => $("b-file").click());
+    $("b-file").addEventListener("change", (e) => handleFileSelect(e, binFiles, "b-file-list", "b-message", binDirty));
+
+    // Search bar listener
+    $("ann-search").addEventListener("input", (e) => {
+        annSearchTerm = e.target.value;
+        carIdx = 0;
+        renderAnnouncements();
+    });
+
     // Calendar page
     $("dl-prev").addEventListener("click", () => shiftMonth(-1));
     $("dl-next").addEventListener("click", () => shiftMonth(1));
     $("dl-month").addEventListener("change", () => { dlM = Number($("dl-month").value); renderCalendar(); });
     $("dl-year").addEventListener("change", () => { dlY = Number($("dl-year").value); renderCalendar(); });
     $("dl-today").addEventListener("click", () => { const t = new Date(); dlY = t.getFullYear(); dlM = t.getMonth(); dlSel = todayIso(); renderCalendar(); });
+    
     // Announcements carousel + filter
     $("ann-filter").addEventListener("change", () => { annFilter = $("ann-filter").value; carIdx = 0; renderAnnouncements(); });
     $("car-prev").addEventListener("click", () => carGo(carIdx - 1));
@@ -2140,7 +2402,7 @@
         else if (e.key === "ArrowLeft") { e.preventDefault(); carGo(carIdx - 1); }
     });
     let carRaf = 0;
-    $("ann-list").addEventListener("scroll", () => {   // keeps the counter and dots in sync when swiping
+    $("ann-list").addEventListener("scroll", () => {
         cancelAnimationFrame(carRaf);
         carRaf = requestAnimationFrame(() => {
             const box = $("ann-list"), first = box.children[0];
