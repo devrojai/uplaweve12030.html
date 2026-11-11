@@ -170,7 +170,8 @@
         .btn:hover:not(:disabled)::after { left: 130%; transition: left .7s; }
         .btn:active:not(:disabled) { transform: translateY(0) scale(.98); }
         .btn:disabled { opacity: .7; cursor: not-allowed; }
-        .btn.loading { color: transparent; }
+        /* while loading the label is hidden (!important so it also beats .ghost / .submitted colours) */
+        .btn.loading, .btn.ghost.loading, .btn.submitted.loading, .btn.loading:disabled { color: transparent !important; }
         .btn.loading::before {
             content: ""; position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; margin: -10px 0 0 -10px;
             border: 3px solid rgba(255,255,255,.4); border-top-color: var(--white); border-radius: 50%; animation: spin .7s linear infinite;
@@ -278,6 +279,11 @@
         .field textarea:not(:placeholder-shown) ~ label { top: 5px; font-size: var(--fs-n1); font-weight: 600; }
         .field textarea:focus ~ label { color: var(--maroon); }
         .btn.submitted, .btn.submitted:disabled { background: #0a4424; border-color: #0a4424; color: var(--white); opacity: 1; cursor: default; box-shadow: 0 6px 16px rgba(10,68,36,.35); }
+
+        /* ---- Request file upload ---- */
+        .file-box { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 14px 0 6px; }
+        .file-name { flex: 1 1 140px; min-width: 0; font-size: var(--fs-n1); font-weight: 600; opacity: .8; word-break: break-all; }
+        .file-box + .hint { margin-top: 0; margin-bottom: 8px; }
 
         /* ---- Repository (admin) ---- */
         .repo-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 14px 0; }
@@ -676,7 +682,7 @@
                 <p class="hint">Example: https://facebook.com/yourname</p>
             </div>
             <div class="pfoot">
-                <button type="submit" class="btn" id="p-save">Save changes</button>
+                <button type="submit" class="btn" id="p-save">Save Changes</button>
                 <div class="msg" id="p-message"></div>
                 <button type="button" class="btn ghost" id="admin-claim">Request Admin Access</button>
             </div>
@@ -719,8 +725,16 @@
             <form class="req-form" id="req-form" novalidate>
                 <div class="field"><input type="email" id="r-beadle" placeholder=" " autocomplete="off" maxlength="100" autocapitalize="off" spellcheck="false"><label for="r-beadle">UP Email Address of the Officer</label></div>
                 <p class="hint">Must end with @up.edu.ph</p>
+                <div class="field"><input type="text" id="r-topic" placeholder=" " autocomplete="off" maxlength="60"><label for="r-topic">Topic</label></div>
                 <div class="field"><input type="text" id="r-course" placeholder=" " autocomplete="off" maxlength="30"><label for="r-course">Course Code</label></div>
                 <div class="field"><textarea id="r-text" placeholder=" " maxlength="2000"></textarea><label for="r-text">Type your request here</label></div>
+                <div class="file-box">
+                    <button type="button" class="btn sm ghost" id="r-file-btn">Upload File</button>
+                    <span class="file-name" id="r-file-name">No file chosen</span>
+                    <button type="button" class="linkish hidden" id="r-file-remove">Remove</button>
+                    <input type="file" id="r-file" class="hidden">
+                </div>
+                <p class="hint">Optional. Any file type, up to 10 MB. It will be attached to the email.</p>
                 <button type="submit" class="btn" id="r-send">Send</button>
                 <div class="msg" id="r-message"></div>
             </form>
@@ -1154,9 +1168,18 @@
         renderAvatars();
         syncFields();
     }
+    // the green "Changes Saved" button goes back to a normal "Save Changes" button as soon as anything is edited
+    function profileDirty() {
+        const b = $("p-save");
+        if (b.classList.contains("submitted")) {
+            b.classList.remove("submitted"); b.disabled = false; b.textContent = "Save Changes";
+        }
+    }
     function resetProfileState() {
         profileLoaded = false;
         fillProfile(null);
+        const b = $("p-save");
+        b.classList.remove("submitted", "loading"); b.disabled = false; b.textContent = "Save Changes";
         setMessage($("p-message"), "", "");
     }
     async function loadProfile() {
@@ -1235,6 +1258,7 @@
     async function saveProfile(e) {
         e.preventDefault();
         const pm = $("p-message"), btn = $("p-save");
+        if (btn.classList.contains("submitted")) return;
         if (!profileLoaded) {
             setMessage(pm, "Still loading your profile — try again in a moment.", ERR);
             loadProfile();
@@ -1247,20 +1271,22 @@
         if (photoChanged) payload.photo = pendingPhoto;
 
         setLoading(btn, true);
-        setMessage(pm, "", "");
+        setMessage(pm, "", "");   // no text under the button while saving
         try {
             const r = await authCall("profile_save", payload);
             if (r.status === "success") {
                 fillProfile(r.profile);
-                setMessage(pm, "Profile saved!", OK);
-            } else {
-                setMessage(pm, r.message, ERR);
+                setLoading(btn, false);
+                btn.textContent = "Changes Saved";   // the button itself turns green instead of showing a message
+                btn.classList.add("submitted");
+                btn.disabled = true;
+                return;
             }
+            setMessage(pm, r.message, ERR);
         } catch (err) {
             if (err.message !== "auth") { console.error(err); setMessage(pm, netError(err), ERR); }
-        } finally {
-            setLoading(btn, false);
         }
+        setLoading(btn, false);
     }
 
     /* ---------- admin access ---------- */
@@ -1470,12 +1496,28 @@
         setMessage(rm, "Downloaded " + repoUsers.length + " user" + (repoUsers.length === 1 ? "" : "s") + ".", OK);
     }
 
-    /* ---------- requests (emailed to the Beadle) ---------- */
+    /* ---------- requests (emailed to the Beadle, with an optional file attachment) ---------- */
+    const MAX_REQ_FILE = 10 * 1024 * 1024;   // 10 MB (the server enforces the same limit)
+    let reqFile = null;                       // {name, type, data(base64)} or null
+    function renderReqFile() {
+        $("r-file-name").textContent = reqFile ? reqFile.name : "No file chosen";
+        $("r-file-remove").classList.toggle("hidden", !reqFile);
+    }
+    function readFileB64(file) {
+        return new Promise((resolve, reject) => {
+            const fr = new FileReader();
+            fr.onerror = () => reject(new Error("Couldn't read that file."));
+            fr.onload = () => { const s = String(fr.result); resolve(s.slice(s.indexOf(",") + 1)); };
+            fr.readAsDataURL(file);
+        });
+    }
     function resetRequestForm() {
-        ["r-beadle", "r-course", "r-text"].forEach(id => { $(id).value = ""; });
+        ["r-beadle", "r-topic", "r-course", "r-text"].forEach(id => { $(id).value = ""; });
+        reqFile = null; renderReqFile();
         const b = $("r-send");
         b.classList.remove("submitted"); b.disabled = false; b.textContent = "Send";
         setMessage($("r-message"), "", "");
+        syncFields();
     }
     function markRequestDirty() {
         const b = $("r-send");
@@ -1486,15 +1528,18 @@
         const btn = $("r-send"), rm = $("r-message");
         if (btn.classList.contains("submitted")) return;
         const beadle = $("r-beadle").value.trim().toLowerCase();
+        const topic = $("r-topic").value.replace(/\s+/g, " ").trim();
         const course = $("r-course").value.replace(/\s+/g, " ").trim();
         const text = $("r-text").value.trim();
-        if (!beadle || !course || !text) return setMessage(rm, "Please fill in all fields.", ERR);
+        if (!beadle || !topic || !course || !text) return setMessage(rm, "Please fill in all fields.", ERR);
         if (!EMAIL_RE.test(beadle) || !/@([a-z0-9-]+\.)*up\.edu\.ph$/.test(beadle)) return setMessage(rm, "Enter a valid UP email that ends in @up.edu.ph.", ERR);
 
         setLoading(btn, true);
         setMessage(rm, "", "");
         try {
-            const r = await authCall("send_request", { beadleEmail: beadle, courseCode: course, message: text });
+            const payload = { beadleEmail: beadle, topic: topic, courseCode: course, message: text };
+            if (reqFile) payload.file = reqFile;
+            const r = await authCall("send_request", payload);
             if (r.status === "success") {
                 setLoading(btn, false);
                 btn.textContent = "SUBMITTED";
@@ -2023,10 +2068,29 @@
     $("repo-back").addEventListener("click", closeUser);
     $("repo-download").addEventListener("click", downloadCsv);
     document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshAdmin(); });
-    ["r-beadle", "r-course", "r-text"].forEach(id => $(id).addEventListener("input", markRequestDirty));
+    ["r-beadle", "r-topic", "r-course", "r-text"].forEach(id => $(id).addEventListener("input", markRequestDirty));
+    // Requests: optional file upload
+    $("r-file-btn").addEventListener("click", () => $("r-file").click());
+    $("r-file-remove").addEventListener("click", () => { reqFile = null; renderReqFile(); markRequestDirty(); });
+    $("r-file").addEventListener("change", async (e) => {
+        const file = e.target.files[0], rm = $("r-message");
+        e.target.value = "";
+        if (!file) return;
+        if (file.size === 0) return setMessage(rm, "That file is empty.", ERR);
+        if (file.size > MAX_REQ_FILE) return setMessage(rm, "That file is too large (max 10 MB).", ERR);
+        try {
+            reqFile = { name: file.name, type: file.type || "", data: await readFileB64(file) };
+            renderReqFile();
+            markRequestDirty();
+            setMessage(rm, "", "");
+        } catch (err) {
+            setMessage(rm, err.message, ERR);
+        }
+    });
     $("avatar-btn").addEventListener("click", openProfile);
     $("pclose").addEventListener("click", closeProfile);
     $("p-form").addEventListener("submit", saveProfile);
+    $("p-form").addEventListener("input", profileDirty);
     const pickPhoto = () => $("photo-file").click();
     $("photo-upload").addEventListener("click", pickPhoto);
     $("photo-preview").addEventListener("click", pickPhoto);
@@ -2039,7 +2103,8 @@
             pendingPhoto = await processImage(file);
             photoChanged = true;
             renderAvatar($("photo-inner"), pendingPhoto);
-            setMessage($("p-message"), "Photo ready — press Save changes.", OK);
+            profileDirty();
+            setMessage($("p-message"), "Photo ready — press Save Changes.", OK);
         } catch (err) {
             setMessage($("p-message"), err.message, ERR);
         }
@@ -2048,7 +2113,8 @@
         pendingPhoto = "";
         photoChanged = true;
         renderAvatar($("photo-inner"), "");
-        setMessage($("p-message"), "Photo removed — press Save changes.", OK);
+        profileDirty();
+        setMessage($("p-message"), "Photo removed — press Save Changes.", OK);
     });
 
     // Announcement Bin
