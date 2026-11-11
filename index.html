@@ -548,7 +548,7 @@ html[data-theme="classic"] {
 /* ---------- NIGHT: near-black, maroon ---------- */
 html[data-theme="night"] {
     color-scheme: dark;
-    --bg: #0a0a0b; --surface: #141416; --surface2: #101012; --hover: #1e1e21;
+    --bg: #000000; --surface: #141416; --surface2: #101012; --hover: #1e1e21;
     --line: #2a2a2e; --line-strong: #44444a; --ink: #f7f6f4; --muted: #b9b5ae;
     --accent: #a3171e; --accent-hover: #bd1f27; --accent-text: #ff9296; --accent-soft: rgba(255,146,150,.14); --on-accent: #ffffff;
     --accent2: #d65d63; --ok: #b83b43; --err: #ff9296; --okmsg: #d65d63;
@@ -559,7 +559,7 @@ html[data-theme="night"] {
     --dr-bg: #050505; --dr-ink: #f7f6f4; --dr-muted: #aeaaa3; --dr-line: #26262a; --dr-hover: rgba(255,255,255,.08);
     --dr-act-bg: rgba(163,23,30,.55); --dr-act-ink: #ffffff; --dr-act-line: #ff9296;
     --dr-title: #ff9296; --dr-btn: #ff9296; --dr-danger: #ff9296;
-    --bg-grad: linear-gradient(160deg, #101012 0%, #030303 100%);
+    --bg-grad: #000000;
     --shadow-md: 0 6px 18px rgba(0,0,0,.6);
 }
 
@@ -750,11 +750,14 @@ html[data-theme="classic"] .bg {
         var(--bg-grad);
 }
 html[data-theme="night"] {
-    --pat: rgba(255,255,255,.035);
+    --pat: transparent;
     --glow1: transparent;
     --glow2: transparent;
     --blob1: transparent;
     --blob2: transparent;
+}
+html[data-theme="night"] .bg {
+    background: #000000;
 }
 
 /* ---------- Login background ---------- */
