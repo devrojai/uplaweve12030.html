@@ -453,7 +453,7 @@
     <aside class="drawer" id="drawer" aria-label="Main menu">
         <div class="drawer-head"><b>EVE1 2030</b><small id="drawer-email"></small></div>
         <nav class="nav">
-            <button type="button" data-section="requests" data-user class="active">
+            <button type="button" data-section="requests" class="active">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                 Requests
             </button>
@@ -783,8 +783,7 @@
 
     /* ---------- app view ---------- */
     const titles = { requests: "Requests", announcements: "Announcement Bin", repository: "Repository" };
-    const ADMIN_SECTIONS = ["announcements", "repository"];   // admin interface (hidden from regular users)
-    const USER_SECTIONS = ["requests"];                       // regular-user interface (hidden from admins)
+    const ADMIN_SECTIONS = ["announcements", "repository"];   // admin access only (regular users only get Requests)
 
     function enterApp(email, tok, admin) {
         currentEmail = email;
@@ -797,7 +796,7 @@
         isAdmin = !!admin;
         adminPending = false;
         applyAdmin();
-        showSection(isAdmin ? "announcements" : "requests");
+        showSection("requests");
         renderAvatars();
         loadProfile();
         refreshAdmin();
@@ -834,8 +833,7 @@
         $("burger").classList.remove("open"); $("burger").setAttribute("aria-expanded", "false");
     }
     function showSection(name) {
-        if (ADMIN_SECTIONS.includes(name) && !isAdmin) name = "requests";          // admin-only sections
-        else if (USER_SECTIONS.includes(name) && isAdmin) name = "announcements";  // user-only sections
+        if (ADMIN_SECTIONS.includes(name) && !isAdmin) name = "requests";   // admin-only sections
         Object.keys(titles).forEach(k => $("sec-" + k).classList.toggle("hidden", k !== name));
         document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("active", b.dataset.section === name));
         $("page-title").textContent = titles[name];
@@ -1028,15 +1026,12 @@
     let adminPending = false;   // request sent, waiting for approval
     function applyAdmin() {
         document.querySelectorAll(".nav button[data-admin]").forEach(b => b.classList.toggle("hidden", !isAdmin));
-        document.querySelectorAll(".nav button[data-user]").forEach(b => b.classList.toggle("hidden", isAdmin));
         const b = $("admin-claim");
         b.classList.toggle("submitted", !isAdmin && adminPending);   // green once the request is sent
         b.textContent = isAdmin ? "Admin Access Granted" : (adminPending ? "Request Sent" : "Request Admin Access");
         b.disabled = isAdmin || adminPending;
         if (!isAdmin) { repoUsers = []; $("repo-list").textContent = ""; $("repo-detail").textContent = ""; }
-        const open = (list) => list.some(k => !$("sec-" + k).classList.contains("hidden"));
-        if (!isAdmin && open(ADMIN_SECTIONS)) showSection("requests");
-        else if (isAdmin && open(USER_SECTIONS)) showSection("announcements");
+        if (!isAdmin && ADMIN_SECTIONS.some(k => !$("sec-" + k).classList.contains("hidden"))) showSection("requests");
     }
     async function refreshAdmin() {
         if (!currentEmail || !token) return;
