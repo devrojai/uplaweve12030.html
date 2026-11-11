@@ -283,7 +283,7 @@
         .search-box input:focus { border-color: var(--maroon); box-shadow: 0 0 0 4px rgba(118,9,12,.12); }
         .search-box svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: var(--maroon); opacity: .7; pointer-events: none; }
 
-        /* Repository */
+        /* Directory */
         .repo-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 14px 0; }
         .repo-count { font-size: var(--fs-0); font-weight: 600; opacity: .7; }
         .user-list { display: flex; flex-direction: column; gap: 8px; }
@@ -578,9 +578,9 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
                 Announcement Bin
             </button>
-            <button type="button" data-section="repository" data-admin class="hidden">
+            <button type="button" data-section="directory" data-admin class="hidden">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 1 0 7.75"/></svg>
-                Repository
+                Directory
             </button>
         </nav>
         <div class="drawer-foot">
@@ -740,9 +740,9 @@
             </form>
         </section>
 
-        <!-- Repository Section -->
-        <section class="section hidden" id="sec-repository">
-            <h2>REPOSITORY</h2>
+        <!-- Directory Section -->
+        <section class="section hidden" id="sec-directory">
+            <h2>DIRECTORY</h2>
             <div id="repo-list-view">
                 <div class="repo-bar">
                     <span class="repo-count" id="repo-count"></span>
@@ -1001,8 +1001,8 @@
         }
     }
 
-    const titles = { announcements: "Announcements", calendar: "Calendar", requests: "Requests", bin: "Announcement Bin", repository: "Repository" };
-    const ADMIN_SECTIONS = ["bin", "repository"];
+    const titles = { announcements: "Announcements", calendar: "Calendar", requests: "Requests", bin: "Announcement Bin", directory: "Directory" };
+    const ADMIN_SECTIONS = ["bin", "directory"];
 
     function enterApp(email, tok, admin) {
         currentEmail = email;
@@ -1059,7 +1059,7 @@
         Object.keys(titles).forEach(k => $("sec-" + k).classList.toggle("hidden", k !== name));
         document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("active", b.dataset.section === name));
         $("page-title").textContent = titles[name];
-        if (name === "repository") { closeUser(); loadRepo(); }
+        if (name === "directory") { closeUser(); loadRepo(); }
         if (name === "announcements" || name === "calendar") loadAnnouncements();
         if (name === "bin") loadMentionUsers();
     }
