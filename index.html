@@ -914,6 +914,8 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
 .cal-sel .sdrop-item { white-space: nowrap; word-break: normal; }
 
 /* ---------- Read / archive ---------- */
+.ann-list.no-anim .ann-card { animation: none; }
+#dl-detail.no-anim .ann-card { animation: none; }        
 .ann-archive-bar { display: flex; justify-content: flex-end; margin: 0 0 10px; }
 .ann-status { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line-strong); cursor: default; }
 .ann-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
@@ -2636,17 +2638,24 @@ setEdited(edited, a.edited ? "Edited by the author on " + a.edited : "");
 
         function annSelfName() { return nameOf(Object.assign({ email: currentEmail }, profile)); }
 
-    function annRefresh() {
-        const box = $("ann-list"), pg = box.children[carIdx], top = pg ? pg.scrollTop : 0;
-        renderAnnouncements();
-        const np = box.children[carIdx];
-        if (np) np.scrollTop = top;
-        renderCalendar();
-        if (openAnnId && !$("ann-modal").classList.contains("hidden")) {
-            const a = annList.find(x => x.id === openAnnId);
-            if (a) renderAnnModalStatus(a);
-        }
+   function annRefresh() {
+    const box = $("ann-list"), dd = $("dl-detail");
+    const pg = box.children[carIdx], top = pg ? pg.scrollTop : 0;
+    box.classList.add("no-anim");
+    dd.classList.add("no-anim");
+    renderAnnouncements();
+    const np = box.children[carIdx];
+    if (np) np.scrollTop = top;
+    renderCalendar();
+    if (openAnnId && !$("ann-modal").classList.contains("hidden")) {
+        const a = annList.find(x => x.id === openAnnId);
+        if (a) renderAnnModalStatus(a);
     }
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+        box.classList.remove("no-anim");
+        dd.classList.remove("no-anim");
+    }));
+}
 
     async function setAnnStatus(a, changes) {
         const prev = { myRead: a.myRead, myArchived: a.myArchived, readBy: a.readBy };
@@ -2662,9 +2671,11 @@ setEdited(edited, a.edited ? "Edited by the author on " + a.edited : "");
         annRefresh();
         try {
             const r = await authCall("announcement_status", Object.assign({ id: a.id }, changes));
-            if (r.status === "success") {
+              if (r.status === "success") {
+                const changed = JSON.stringify(a.readBy) !== JSON.stringify(r.readBy)
+                    || a.myRead !== r.myRead || a.myArchived !== r.myArchived;
                 a.readBy = r.readBy; a.myRead = r.myRead; a.myArchived = r.myArchived;
-                annRefresh();
+                if (changed) annRefresh();
                 return;
             }
             throw new Error(r.message || "Couldn't update this announcement.");
