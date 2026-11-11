@@ -377,7 +377,8 @@
         .dp-sel { min-width: 0; padding: 6px 8px; color: var(--maroon); font-weight: 700; background: var(--white); border: 2px solid rgba(118,9,12,.35); border-radius: 8px; outline: none; cursor: pointer; transition: border-color .2s, box-shadow .2s; }
         .dp-sel:hover, .dp-sel:focus { border-color: var(--maroon); box-shadow: 0 0 0 3px rgba(118,9,12,.15); }
         .datepop .dp-sel { font-size: var(--fs-n1); padding: 5px 4px; }
-        .dp-nav { flex: none; width: 34px; height: 34px; border: none; border-radius: 50%; background: rgba(118,9,12,.08); color: var(--maroon); font-size: var(--fs-1); font-weight: 800; line-height: 1; cursor: pointer; transition: background .2s, color .2s, transform .2s var(--ease); }
+        .dp-nav { flex: none; width: 34px; height: 34px; padding: 0; display: grid; place-items: center; border: none; border-radius: 50%; background: rgba(118,9,12,.08); color: var(--maroon); line-height: 0; cursor: pointer; transition: background .2s, color .2s, transform .2s var(--ease); }
+        .dp-nav svg { width: 18px; height: 18px; display: block; }
         .dp-nav:hover { background: var(--maroon); color: var(--white); transform: scale(1.08); }
         .dp-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
         .dp-dow { padding: 4px 0; font-size: var(--fs-n1); font-weight: 800; color: var(--maroon); }
@@ -447,7 +448,7 @@
     </style>
 </head>
 
-<body>
+    <body>
 
 <div class="bg"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
 
@@ -616,15 +617,15 @@
         <section class="section" id="sec-calendar">
             <h2>CALENDAR</h2>
             <div class="cal-bar">
-                <button type="button" class="dp-nav" id="dl-prev" aria-label="Previous month">&lsaquo;</button>
+                <button type="button" class="dp-nav" id="dl-prev" aria-label="Previous month"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
                 <div class="cal-sel">
                     <select id="dl-month" class="dp-sel" aria-label="Month"></select>
                     <select id="dl-year" class="dp-sel" aria-label="Year"></select>
                 </div>
-                <button type="button" class="dp-nav" id="dl-next" aria-label="Next month">&rsaquo;</button>
+                <button type="button" class="dp-nav" id="dl-next" aria-label="Next month"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
                 <button type="button" class="btn sm ghost" id="dl-today">Today</button>
             </div>
-            <div class="cal-legend"><span><i class="k dl"></i>Deadline</span><span><i class="k pd"></i>Period (ongoing)</span></div>
+            <div class="cal-legend"><span><i class="k dl"></i>Deadline</span><span><i class="k pd"></i>Period</span></div>
             <div class="cal-grid" id="dl-grid"></div>
             <div id="dl-detail"></div>
             <div class="msg" id="dl-msg"></div>
@@ -703,7 +704,7 @@
     </div>
 </div>
 
-<script>
+        <script>
     // Your deployed Google Apps Script Web App URL (must end in /exec)
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyXGio_hof7wKZQcprT51cwFxrQ-_GQBEQvsz83hHNy_Qe1EW8EsCW1xydoLhxBjGOyoQ/exec";
 
@@ -1401,14 +1402,23 @@
     const pad = n => String(n).padStart(2, "0");
     const isoOf = (y, m, d) => y + "-" + pad(m + 1) + "-" + pad(d);
     const todayIso = () => { const t = new Date(); return isoOf(t.getFullYear(), t.getMonth(), t.getDate()); };
+    // turns whatever the sheet returns ("2026-12-05", "2026-12-04T16:00:00.000Z", "Sat Dec 05 2026…") into YYYY-MM-DD
+    function normIso(v) {
+        if (!v) return "";
+        const s = String(v).trim();
+        if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+        const d = new Date(s);
+        return isNaN(d) ? "" : isoOf(d.getFullYear(), d.getMonth(), d.getDate());
+    }
     function prettyDate(iso) {
         const [y, m, d] = String(iso).split("-").map(Number);
         return new Date(y, m - 1, d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
     }
-    // fills a <select> with a range of years that always includes y
+    // fills a <select> with every year from 2000 to 2100 (and beyond if an announcement needs it)
     function fillYears(sel, y, extra) {
-        const cy = new Date().getFullYear(), all = [y, cy - 1, cy + 8].concat(extra || []);
-        const lo = Math.min.apply(null, all), hi = Math.max.apply(null, all);
+        y = Number.isFinite(Number(y)) && Number(y) > 0 ? Number(y) : new Date().getFullYear();
+        const vals = [y].concat(extra || []).map(Number).filter(Number.isFinite);
+        const lo = Math.min.apply(null, [2000].concat(vals)), hi = Math.max.apply(null, [2100].concat(vals));
         sel.textContent = "";
         for (let i = lo; i <= hi; i++) { const o = mk("option", "", String(i)); o.value = String(i); sel.appendChild(o); }
         sel.value = String(y);
@@ -1416,11 +1426,15 @@
 
     let binDeadline = "", binStart = "", binEnd = "", editingId = "";
     const pickers = [];
+    const CHEV = {
+        l: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>',
+        r: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>'
+    };
     // A popup calendar with month + year drop-downs and arrows. minFn (optional) disables earlier days.
     function makePicker(key, get, set, minFn) {
         const input = $(key), pop = $(key + "-pop"), btn = $(key + "-btn");
         let y = 0, m = 0, ms, ys, gridBox;
-        const show = () => { input.value = get() ? prettyDate(get()) : ""; syncFields(); };
+        const show = () => { input.value = get() ? prettyDate(get()) : ""; syncFields(); binDirty(); };
         const close = () => pop.classList.add("hidden");
         function days() {
             gridBox.textContent = "";
@@ -1440,7 +1454,8 @@
         function sync() { ms.value = String(m); fillYears(ys, y); days(); }
         function build() {
             pop.textContent = "";
-            const prev = mk("button", "dp-nav", "‹"), next = mk("button", "dp-nav", "›");
+            const prev = mk("button", "dp-nav"), next = mk("button", "dp-nav");
+            prev.innerHTML = CHEV.l; next.innerHTML = CHEV.r;
             prev.type = next.type = "button";
             prev.setAttribute("aria-label", "Previous month"); next.setAttribute("aria-label", "Next month");
             prev.onclick = () => { m--; if (m < 0) { m = 11; y--; } sync(); };
@@ -1471,6 +1486,11 @@
         const toggle = () => pop.classList.contains("hidden") ? open() : close();
         input.addEventListener("click", toggle);
         btn.addEventListener("click", toggle);
+        // Backspace / Delete clears the date; Escape closes the picker
+        input.addEventListener("keydown", e => {
+            if (e.key === "Backspace" || e.key === "Delete") { e.preventDefault(); set(""); show(); }
+            else if (e.key === "Escape") close();
+        });
         pop.addEventListener("click", e => e.stopPropagation());
         const api = { close, show, field: pop.parentNode };
         pickers.push(api);
@@ -1534,11 +1554,14 @@
 
     /* ---------- post / edit an announcement ---------- */
     function binMode() {
-        const editing = !!editingId;
-        $("b-send").textContent = editing ? "Save changes" : "Post announcement";
+        const editing = !!editingId, b = $("b-send");
+        if (b.classList.contains("submitted")) { b.classList.remove("submitted"); b.disabled = false; }
+        b.textContent = editing ? "Save changes" : "Post announcement";
         $("b-cancel").classList.toggle("hidden", !editing);
         $("b-edit-banner").classList.toggle("hidden", !editing);
     }
+    // once the green "Announcement Posted" button is showing, any new input turns it back to normal
+    function binDirty() { if ($("b-send").classList.contains("submitted")) binMode(); }
     function resetBinForm() {
         ["b-title", "b-course", "b-text"].forEach(id => { $(id).value = ""; });
         binDeadline = binStart = binEnd = ""; editingId = ""; mentionSel = [];
@@ -1560,6 +1583,7 @@
     async function postAnnouncement(e) {
         e.preventDefault();
         const btn = $("b-send"), bm = $("b-message");
+        if (btn.classList.contains("submitted")) return;
         const title = $("b-title").value.replace(/\s+/g, " ").trim();
         const course = $("b-course").value.replace(/\s+/g, " ").trim();
         const text = $("b-text").value.trim();
@@ -1567,6 +1591,7 @@
         if (!!binStart !== !!binEnd) return setMessage(bm, "A period needs both a beginning date and an end date.", ERR);
         if (binStart && binEnd < binStart) return setMessage(bm, "The end date can't be before the beginning date.", ERR);
         const wasEdit = !!editingId;
+        let posted = false;
         setLoading(btn, true);
         setMessage(bm, "", "");
         try {
@@ -1582,12 +1607,13 @@
             if (r.status === "success") {
                 resetBinForm();
                 if (wasEdit) showSection("announcements");
-                else setMessage(bm, r.message, OK);
+                else posted = true;
             } else setMessage(bm, r.message, ERR);
         } catch (err) {
             if (err.message !== "auth") { console.error(err); setMessage(bm, netError(err), ERR); }
         }
         setLoading(btn, false);
+        if (posted) { btn.textContent = "Announcement Posted"; btn.classList.add("submitted"); btn.disabled = true; }
     }
 
     /* ---------- announcements + calendar (all users) ---------- */
@@ -1673,7 +1699,7 @@
         const ys = $("dl-year");
         $("dl-month").value = String(dlM);
         if (force || !Array.from(ys.options).some(o => o.value === String(dlY))) {
-            const extra = [NOW.getFullYear() - 3];
+            const extra = [];
             annList.forEach(a => [a.deadline, a.periodStart, a.periodEnd].forEach(d => { if (d) extra.push(Number(d.slice(0, 4))); }));
             fillYears(ys, dlY, extra);
         }
@@ -1706,7 +1732,7 @@
         const l = by[dlSel] || [];
         if (!l.length) dd.appendChild(mk("p", "repo-count", "Nothing is scheduled on this day."));
         l.forEach(e => {
-            dd.appendChild(mk("div", "cal-kind", e.kind === "deadline" ? "Deadline" : "Ongoing period"));
+            dd.appendChild(mk("div", "cal-kind", e.kind === "deadline" ? "Deadline" : "Period"));
             dd.appendChild(annCard(e.a));
         });
     }
@@ -1715,7 +1741,12 @@
         ["ann-msg", "dl-msg"].forEach(id => setMessage($(id), "", ""));
         try {
             const r = await authCall("announcements_list");
-            if (r.status === "success") { annList = r.announcements || []; renderAnnouncements(); syncCalSel(true); renderCalendar(); }
+            if (r.status === "success") {
+                annList = (r.announcements || []).map(a => Object.assign({}, a, {
+                    deadline: normIso(a.deadline), periodStart: normIso(a.periodStart), periodEnd: normIso(a.periodEnd)
+                }));
+                renderAnnouncements(); syncCalSel(true); renderCalendar();
+            }
             else ["ann-msg", "dl-msg"].forEach(id => setMessage($(id), r.message, ERR));
         } catch (err) {
             if (err.message !== "auth") { console.error(err); ["ann-msg", "dl-msg"].forEach(id => setMessage($(id), netError(err), ERR)); }
@@ -1780,6 +1811,7 @@
 
     // Announcement Bin
     $("bin-form").addEventListener("submit", postAnnouncement);
+    $("bin-form").addEventListener("input", binDirty);
     $("b-cancel").addEventListener("click", () => { resetBinForm(); showSection("announcements"); });
     $("b-text").addEventListener("input", mentionCheck);
     $("b-text").addEventListener("click", mentionCheck);
