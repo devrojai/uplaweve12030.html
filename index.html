@@ -38,6 +38,7 @@
             overflow-x: hidden;
         }
         button, input { font-family: inherit; font-size: var(--fs-0); }
+        input::-ms-reveal, input::-ms-clear { display: none; } /* hide Edge's built-in eye so only our icon shows */
         h1, h2, h3, p { margin: 0; }
         .hidden { display: none !important; }
 
@@ -103,11 +104,17 @@
         .field input:focus ~ label { color: var(--maroon); }
         .peek {
             position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
-            padding: 4px 8px; font-size: var(--fs-n1); font-weight: 700;
-            color: var(--maroon); background: transparent; border: none; border-radius: 6px; cursor: pointer;
+            width: 36px; height: 36px; padding: 0; display: grid; place-items: center;
+            color: var(--maroon); background: transparent; border: none; border-radius: 50%; cursor: pointer;
+            transition: background .2s, transform .2s var(--ease);
         }
         .peek:hover { background: rgba(118,9,12,.1); }
-        .field.has-peek input { padding-right: 62px; }
+        .peek:active { transform: translateY(-50%) scale(.9); }
+        .peek svg { width: 20px; height: 20px; grid-area: 1 / 1; transition: opacity .2s, transform .25s var(--ease); }
+        .peek .eye-off { opacity: 0; transform: scale(.6) rotate(-20deg); }
+        .peek.on .eye-on { opacity: 0; transform: scale(.6) rotate(20deg); }
+        .peek.on .eye-off { opacity: 1; transform: none; }
+        .field.has-peek input { padding-right: 52px; }
 
         .linkish { background: none; border: none; padding: 0; color: var(--maroon); font-weight: 700; font-size: var(--fs-n1); cursor: pointer; position: relative; }
         .linkish::after { content: ""; position: absolute; left: 0; bottom: -2px; width: 0; height: 2px; background: currentColor; transition: width .25s; }
@@ -261,7 +268,7 @@
                     <div class="field has-peek">
                         <input type="password" id="password" placeholder=" " autocomplete="current-password" required>
                         <label for="password">Password</label>
-                        <button type="button" class="peek" id="peek">Show</button>
+                        <button type="button" class="peek" id="peek" aria-label="Show password" aria-pressed="false"><svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C5 20 1 12 1 12a18.5 18.5 0 0 1 5.06-5.94"/><path d="M9.9 4.24A10.9 10.9 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
                     </div>
                     <div class="forgot-row" id="forgot-row"><button type="button" class="linkish" id="forgot-link">Forgot password?</button></div>
                     <button type="submit" class="btn" id="submit-btn">Log In</button>
@@ -359,7 +366,7 @@
                 <div class="field has-peek">
                     <input type="password" id="del-password" placeholder=" " autocomplete="current-password">
                     <label for="del-password">Password</label>
-                    <button type="button" class="peek" id="del-peek">Show</button>
+                    <button type="button" class="peek" id="del-peek" aria-label="Show password" aria-pressed="false"><svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C5 20 1 12 1 12a18.5 18.5 0 0 1 5.06-5.94"/><path d="M9.9 4.24A10.9 10.9 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn ghost" id="del-cancel">Cancel</button>
@@ -410,10 +417,14 @@
         return String(err.message).includes("HTTPS") ? err.message : "An error occurred. Check your connection and the script URL.";
     }
     function bindPeek(btnId, inputId) {
-        $(btnId).addEventListener("click", () => {
-            const p = $(inputId), show = p.type === "password";
-            p.type = show ? "text" : "password";
-            $(btnId).textContent = show ? "Hide" : "Show";
+        const btn = $(btnId);
+        btn.addEventListener("click", () => {
+            const input = $(inputId), show = input.type === "password";
+            input.type = show ? "text" : "password";
+            btn.classList.toggle("on", show);
+            btn.setAttribute("aria-pressed", String(show));
+            btn.setAttribute("aria-label", show ? "Hide password" : "Show password");
+            input.focus();
         });
     }
 
