@@ -485,20 +485,33 @@
             .cal-dow { letter-spacing: 0; font-size: 10px; }
         }
 
-        /* Courses */
-.nav .grp-toggle .chev { margin-left: auto; width: 16px; height: 16px; transition: transform .25s var(--ease); }
-.nav .grp-toggle.open .chev { transform: rotate(180deg); }
-.course-nav { margin: 0 0 0 18px; padding-left: 8px; border-left: 2px solid rgba(255,255,255,.2); }
-.course-nav button { font-size: var(--fs-n1); padding: 10px 12px; }
-.course-nav .none { padding: 8px 12px; font-size: var(--fs-n1); opacity: .6; }
-details.course { margin: 0 0 10px; background: var(--white); border: 2px solid rgba(58,58,58,.15); border-left: 6px solid var(--maroon); border-radius: 12px; }
-details.course summary { display: flex; align-items: center; gap: 10px; padding: 14px 18px; cursor: pointer; list-style: none; font-size: var(--fs-1); font-weight: 800; color: var(--maroon); }
-details.course summary::-webkit-details-marker { display: none; }
-details.course summary .ct { flex: 1; min-width: 0; word-break: break-word; }
-details.course summary::after { content: "\25BE"; transition: transform .25s var(--ease); }
-details.course[open] summary::after { transform: rotate(180deg); }
-.course-body { margin: 0 18px 16px; border: 2px solid rgba(58,58,58,.12); border-radius: 12px; overflow: hidden; }
-.req-form .sdrop { margin: 8px 0 14px; }
+                /* Courses */
+        #sec-courses h2 { margin-bottom: 18px; }
+        .course-bar { display: flex; align-items: center; justify-content: space-between; margin: 0 0 12px; }
+        .course-grid { display: flex; flex-direction: column; gap: 10px; }
+        .course-row {
+            display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px 16px; text-align: left;
+            color: var(--charcoal); background: var(--white);
+            border: 2px solid rgba(58,58,58,.12); border-left: 6px solid var(--maroon); border-radius: 14px; cursor: pointer;
+            animation: swap .4s var(--ease);
+            transition: transform .2s var(--ease), box-shadow .2s, border-color .2s;
+        }
+        .course-row:hover { transform: translateY(-2px); border-color: var(--maroon); box-shadow: 0 10px 24px rgba(118,9,12,.16); }
+        .course-ico {
+            width: 46px; height: 46px; flex: none; display: grid; place-items: center; border-radius: 12px; color: var(--white);
+            background: linear-gradient(135deg, var(--maroon), #a3151a); box-shadow: 0 6px 14px rgba(118,9,12,.3);
+        }
+        .course-ico svg { width: 22px; height: 22px; }
+        .course-main { flex: 1; min-width: 0; }
+        .course-title { font-size: var(--fs-1); font-weight: 800; line-height: 1.2; color: var(--maroon); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .course-sub { margin-top: 2px; font-size: var(--fs-n1); opacity: .7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .course-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+        .chip-soft { font-size: var(--fs-n1); font-weight: 700; color: var(--maroon); background: rgba(118,9,12,.08); padding: 2px 10px; border-radius: 999px; }
+        .course-go { flex: none; width: 20px; height: 20px; color: var(--maroon); opacity: .45; transition: transform .2s var(--ease), opacity .2s; }
+        .course-row:hover .course-go { transform: translateX(4px); opacity: 1; }
+        .course-card { text-align: left; width: 560px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }
+        @media (max-width: 520px) { .course-ico { display: none; } .course-title { white-space: normal; } }
+        .req-form .sdrop { margin: 8px 0 14px; }
 
     </style>
 </head>
@@ -578,7 +591,8 @@ details.course[open] summary::after { transform: rotate(180deg); }
     <aside class="drawer" id="drawer">
         <div class="drawer-head"><b>EVE1 2030</b><small id="drawer-email"></small></div>
         <nav class="nav">
-            <button type="button" data-section="announcements" class="active">
+            <button type="button" data-section="courses">
+                            <button type="button" data-section="announcements" class="active">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h3l5 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M16 8a5 5 0 0 1 0 8"/></svg>
                 Announcements
             </button>
@@ -589,15 +603,10 @@ details.course[open] summary::after { transform: rotate(180deg); }
             <button type="button" data-section="requests">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                 Requests
-                
             </button>
-
-            <button type="button" class="grp-toggle" id="courses-toggle">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
     Courses
-    <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
 </button>
-<div class="course-nav hidden" id="course-nav"></div>
             
             <div class="nav-label hidden" data-admin>Admin tools</div>
             <button type="button" data-section="bin" data-admin class="hidden">
@@ -792,7 +801,12 @@ details.course[open] summary::after { transform: rotate(180deg); }
 <!-- Courses Section -->
 <section class="section hidden" id="sec-courses">
     <h2>COURSES</h2>
-    <div id="course-list" style="margin-top:18px"></div>
+    <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="course-search" placeholder="Search courses (title, code, professor, semester, year)..." autocomplete="off">
+    </div>
+    <div class="course-bar"><span class="repo-count" id="course-count"></span></div>
+    <div class="course-grid" id="course-list"></div>
     <div class="msg" id="course-msg"></div>
 </section>
 
@@ -851,6 +865,19 @@ details.course[open] summary::after { transform: rotate(180deg); }
         </div>
     </div>
 
+    <!-- Course Details Modal -->
+    <div class="modal hidden" id="course-modal" role="dialog" aria-modal="true">
+        <div class="modal-card course-card">
+            <div class="ann-top" style="margin-bottom: 8px;">
+                <h3 id="course-modal-title" class="ann-title"></h3>
+                <span id="course-modal-badge" class="badge"></span>
+            </div>
+            <div class="detail-grid" id="course-modal-grid" style="margin-top: 12px;"></div>
+            <div id="course-modal-edited" class="ann-edited"></div>
+            <div id="course-modal-actions" class="ann-actions" style="margin-top: 16px; justify-content: flex-end;"></div>
+        </div>
+    </div>
+    
     <!-- File Preview Modal Prompt -->
     <div class="modal hidden" id="file-modal" role="dialog" aria-modal="true" style="z-index: 80;">
         <div class="modal-card" style="text-align: left; width: 640px; max-width: 95vw;">
@@ -1105,7 +1132,7 @@ const ADMIN_SECTIONS = ["bin", "directory", "addcourse"];
         resetProfileState();
         resetRequestForm();
         annList = []; annFilter = ""; annSearchTerm = ""; carIdx = 0; dlSel = todayIso(); mentionUsers = []; mentionSel = []; repoPhotos = {}; resetBinForm();
-        courseList = []; courseOpen = ""; renderCourseNav(); resetCourseForm();
+        courseList = []; courseOpen = ""; courseSearchTerm = ""; $("course-search").value = ""; closeCourseModal(); resetCourseForm();
         isAdmin = false;
         adminPending = false;
         applyAdmin();
@@ -2257,72 +2284,92 @@ function fillOpts(id, ph, vals) {
 fillOpts("c-sem", "Select semester", SEMS);
 fillOpts("c-ay", "Select academic year", AYS);
 
-function renderCourseNav() {
-    const box = $("course-nav"); box.textContent = "";
-    if (!courseList.length) { box.appendChild(mk("div", "none", "No courses yet")); return; }
-    courseList.forEach(c => {
-        const b = mk("button", "", c.title); b.type = "button";
-        b.onclick = () => { courseOpen = c.id; showSection("courses"); closeMenu(); };
-        box.appendChild(b);
-    });
-}
+const BOOK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>';
+const ARROW_SVG = '<svg class="course-go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+let courseSearchTerm = "";
+
 function courseFileBtn(f) {
     const b = mk("button", "attach-btn", f.name); b.type = "button";
     b.onclick = () => openFileModal(Object.assign({}, f, { action: "course_file" }));
     return b;
 }
+
+// Lenient search: typos allowed, and "eve1" also finds "EVE 1"
+function courseVisible() {
+    return courseList.filter(c => {
+        if (!courseSearchTerm) return true;
+        const hay = [c.title, c.code, (c.code || "").replace(/[\s\-]/g, ""), c.professor,
+            c.semester ? c.semester + " semester" : "", c.ay || "", (c.ay || "").replace("AY ", "")].join(" ");
+        return isFuzzyMatch(hay, courseSearchTerm);
+    });
+}
+
 function renderCourses() {
     const box = $("course-list"); box.textContent = "";
-    if (!courseList.length) {
+    const list = courseVisible(), total = courseList.length;
+    $("course-count").textContent = !total ? "" :
+        (list.length === total ? total + (total === 1 ? " course" : " courses") : list.length + " of " + total + " courses");
+    if (!list.length) {
         const e = mk("div", "empty");
-        e.appendChild(mk("b", "", "No courses yet"));
-        e.appendChild(mk("p", "", "Courses will be listed here once an admin adds them."));
+        e.appendChild(mk("b", "", courseSearchTerm ? "No matching courses" : "No courses yet"));
+        e.appendChild(mk("p", "", courseSearchTerm ? "Try a different spelling, code or professor." : "Courses will be listed here once an admin adds them."));
         box.appendChild(e); return;
     }
-    let target = null;
-    courseList.forEach(c => {
-        const d = mk("details", "course"); d.open = c.id === courseOpen;
-        if (d.open) target = d;
-        const s = mk("summary");
-        s.appendChild(mk("span", "ct", c.title));
-        s.appendChild(mk("span", "badge", c.code));
-        d.appendChild(s);
-        const body = mk("div", "course-body");
-        const addRow = (k, node) => {
-            const row = mk("div", "drow"); row.appendChild(mk("div", "dk", k));
-            const v = mk("div", "dv");
-            if (typeof node === "string") v.textContent = node || "—"; else v.appendChild(node);
-            row.appendChild(v); body.appendChild(row);
-        };
-        addRow("Course code", c.code);
-        addRow("Semester", c.semester ? c.semester + " Semester" : "");
-        addRow("Academic year", c.ay);
-        addRow("Professor", c.professor);
-        [["Syllabus", c.syllabus], ["Other documents", c.documents]].forEach(([label, files]) => {
-            if (!files || !files.length) return;
-            const list = mk("div", "attach-list");
-            files.forEach(f => list.appendChild(courseFileBtn(f)));
-            addRow(label, list);
-        });
-
-        if (c.edited) addRow("Last edited", c.edited);
-        if (isAdmin) {
-            const act = mk("div", "ann-actions");
-            act.style.cssText = "padding:12px 16px;border-top:1px solid rgba(58,58,58,.1);justify-content:flex-end";
-            const eb = mk("button", "btn sm ghost", "Edit"); eb.type = "button"; eb.style.width = "auto";
-            eb.onclick = () => startCourseEdit(c);
-            const db = mk("button", "btn sm", "Delete"); db.type = "button"; db.style.width = "auto";
-            db.onclick = () => deleteCourse(c, db);
-            act.append(eb, db);
-            body.appendChild(act);
-        }
-        
-        d.appendChild(body);
-        box.appendChild(d);
+    list.forEach(c => {
+        const row = mk("button", "course-row"); row.type = "button";
+        const ico = mk("div", "course-ico"); ico.innerHTML = BOOK_SVG;
+        const main = mk("div", "course-main");
+        main.appendChild(mk("div", "course-title", c.title));
+        main.appendChild(mk("div", "course-sub", c.professor ? "Prof. " + c.professor : ""));
+        const tags = mk("div", "course-tags");
+        [c.semester ? c.semester + " Sem" : "", c.ay].filter(Boolean).forEach(t => tags.appendChild(mk("span", "chip-soft", t)));
+        const nf = (c.syllabus || []).length + (c.documents || []).length;
+        if (nf) tags.appendChild(mk("span", "chip-soft", "\uD83D\uDCCE " + nf + (nf === 1 ? " file" : " files")));
+        main.appendChild(tags);
+        row.append(ico, main, mk("span", "badge", c.code));
+        row.insertAdjacentHTML("beforeend", ARROW_SVG);
+        row.onclick = () => openCourseModal(c);
+        box.appendChild(row);
     });
-    if (target) target.scrollIntoView({ block: "start" });
-    courseOpen = "";
 }
+
+function openCourseModal(c) {
+    $("course-modal-title").textContent = c.title;
+    $("course-modal-badge").textContent = c.code;
+    const grid = $("course-modal-grid"); grid.textContent = "";
+    const addRow = (k, node) => {
+        const row = mk("div", "drow"); row.appendChild(mk("div", "dk", k));
+        const v = mk("div", "dv");
+        if (typeof node === "string") v.textContent = node || "—"; else v.appendChild(node);
+        row.appendChild(v); grid.appendChild(row);
+    };
+    addRow("Course code", c.code);
+    addRow("Semester", c.semester ? c.semester + " Semester" : "");
+    addRow("Academic year", c.ay);
+    addRow("Professor", c.professor);
+    [["Syllabus", c.syllabus], ["Other documents", c.documents]].forEach(([label, files]) => {
+        if (!files || !files.length) return;
+        const list = mk("div", "attach-list");
+        files.forEach(f => list.appendChild(courseFileBtn(f)));
+        addRow(label, list);
+    });
+    $("course-modal-edited").textContent = c.edited ? "\u270E Last edited on " + c.edited : "";
+
+    const actions = $("course-modal-actions"); actions.textContent = "";
+    if (isAdmin) {
+        const eb = mk("button", "btn sm ghost", "Edit"); eb.type = "button"; eb.style.width = "auto";
+        eb.onclick = () => { closeCourseModal(); startCourseEdit(c); };
+        const db = mk("button", "btn sm", "Delete"); db.type = "button"; db.style.width = "auto";
+        db.onclick = () => deleteCourse(c, db);
+        actions.append(eb, db);
+    }
+    const cb = mk("button", "btn ghost sm", "Close"); cb.type = "button"; cb.style.width = "auto";
+    cb.onclick = closeCourseModal;
+    actions.appendChild(cb);
+    $("course-modal").classList.remove("hidden");
+}
+function closeCourseModal() { $("course-modal").classList.add("hidden"); }
+
 async function loadCourses() {
     const m = $("course-msg");
     setMessage(m, "", "");
@@ -2330,15 +2377,13 @@ async function loadCourses() {
         const r = await authCall("courses_list");
         if (r.status === "success") {
             courseList = (r.courses || []).slice().sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: "base" }));
-            renderCourseNav(); renderCourses();
+            renderCourses();
         } else setMessage(m, r.message, ERR);
     } catch (err) { if (err.message !== "auth") setMessage(m, netError(err), ERR); }
 }
-$("courses-toggle").addEventListener("click", () => {
-    const open = $("course-nav").classList.toggle("hidden") === false;
-    $("courses-toggle").classList.toggle("open", open);
-    if (open) { showSection("courses"); }
-});
+
+$("course-search").addEventListener("input", e => { courseSearchTerm = e.target.value; renderCourses(); });
+$("course-modal").addEventListener("click", e => { if (e.target === e.currentTarget) closeCourseModal(); });
 
 const renderCSyl = () => renderFileList("c-syl-list", cSyl, i => { cSyl.splice(i, 1); renderCSyl(); courseDirty(); });
 const renderCDocs = () => renderFileList("c-doc-list", cDocs, i => { cDocs.splice(i, 1); renderCDocs(); courseDirty(); });
@@ -2382,7 +2427,7 @@ async function deleteCourse(c, btn) {
         const r = await authCall("delete_course", { id: c.id });
         if (r.status === "success") {
             courseList = courseList.filter(x => x.id !== c.id);
-            renderCourseNav(); renderCourses();
+            renderCourses(); closeCourseModal();
             return;
         }
         alert(r.message || "Couldn't delete the course.");
@@ -2472,8 +2517,8 @@ $("c-doc").addEventListener("change", e => handleFileSelect(e, cDocs, "c-doc-lis
 
     $("burger").addEventListener("click", () => $("drawer").classList.contains("open") ? closeMenu() : openMenu());
     $("overlay").addEventListener("click", () => { closeMenu(); closeProfile(); closeAnnModal(); closeFileModal(); });
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeMenu(); closeProfile(); closeDelete(); closeAnnModal(); closeFileModal(); } });
-document.querySelectorAll(".nav button[data-section]").forEach(b => b.addEventListener("click", () => {
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeMenu(); closeProfile(); closeDelete(); closeAnnModal(); closeCourseModal(); closeFileModal(); } });
+    document.querySelectorAll(".nav button[data-section]").forEach(b => b.addEventListener("click", () => {
     if (b.dataset.section === "addcourse" && editingCourseId) resetCourseForm();
     showSection(b.dataset.section); closeMenu();
 }));
