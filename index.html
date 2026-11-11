@@ -36,7 +36,7 @@
             background: var(--charcoal);
             overflow-x: hidden;
         }
-        button, input { font-family: inherit; font-size: var(--fs-0); }
+        button, input, select { font-family: inherit; font-size: var(--fs-0); }
         input::-ms-reveal, input::-ms-clear { display: none; }
         h1, h2, h3, p { margin: 0; }
         .hidden { display: none !important; }
@@ -368,19 +368,28 @@
         .modal-actions .btn { margin-top: 8px; }
 
         /* ---- Date picker ---- */
-        #b-deadline { cursor: pointer; }
-        .datepop { position: absolute; left: 0; top: calc(100% + 6px); z-index: 25; width: 310px; max-width: 100%; padding: 12px; background: var(--white); border-radius: 14px; border-top: 5px solid var(--maroon); box-shadow: 0 18px 40px rgba(0,0,0,.3); animation: swap .25s var(--ease); }
-        .dp-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-        .dp-head b { color: var(--maroon); font-size: var(--fs-1); }
-        .dp-nav { width: 34px; height: 34px; border: none; border-radius: 50%; background: rgba(118,9,12,.08); color: var(--maroon); font-size: var(--fs-1); font-weight: 800; line-height: 1; cursor: pointer; transition: background .2s, color .2s, transform .2s var(--ease); }
+        .field input[readonly] { cursor: pointer; }
+        .datepop { position: absolute; left: 0; top: calc(100% + 6px); z-index: 25; width: 300px; max-width: 92vw; padding: 12px; background: var(--white); border-radius: 14px; border-top: 5px solid var(--maroon); box-shadow: 0 18px 40px rgba(0,0,0,.3); animation: swap .25s var(--ease); }
+        .dp-head { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+        .dp-mid { flex: 1; display: flex; gap: 6px; justify-content: center; min-width: 0; }
+        .dp-sel { min-width: 0; padding: 6px 8px; color: var(--maroon); font-weight: 700; background: var(--white); border: 2px solid rgba(118,9,12,.35); border-radius: 8px; outline: none; cursor: pointer; transition: border-color .2s, box-shadow .2s; }
+        .dp-sel:hover, .dp-sel:focus { border-color: var(--maroon); box-shadow: 0 0 0 3px rgba(118,9,12,.15); }
+        .datepop .dp-sel { font-size: var(--fs-n1); padding: 5px 4px; }
+        .dp-nav { flex: none; width: 34px; height: 34px; border: none; border-radius: 50%; background: rgba(118,9,12,.08); color: var(--maroon); font-size: var(--fs-1); font-weight: 800; line-height: 1; cursor: pointer; transition: background .2s, color .2s, transform .2s var(--ease); }
         .dp-nav:hover { background: var(--maroon); color: var(--white); transform: scale(1.08); }
         .dp-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
         .dp-dow { padding: 4px 0; font-size: var(--fs-n1); font-weight: 800; color: var(--maroon); }
         .dp-day { aspect-ratio: 1; border: none; border-radius: 50%; background: transparent; color: var(--charcoal); font-size: var(--fs-n1); font-weight: 600; cursor: pointer; transition: background .2s, transform .2s var(--ease); }
-        .dp-day:hover { background: rgba(118,9,12,.14); transform: scale(1.1); }
+        .dp-day:hover:not(:disabled) { background: rgba(118,9,12,.14); transform: scale(1.1); }
+        .dp-day:disabled { opacity: .3; cursor: not-allowed; }
         .dp-day.today { box-shadow: inset 0 0 0 2px var(--maroon); }
         .dp-day.sel { background: var(--maroon); color: var(--white); box-shadow: 0 4px 10px rgba(118,9,12,.4); }
         .dp-foot { display: flex; justify-content: space-between; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(58,58,58,.12); }
+        .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .row2 .field:last-child .datepop { left: auto; right: 0; }
+        @media (max-width: 520px) { .row2 { grid-template-columns: 1fr; gap: 0; } .row2 .field:last-child .datepop { left: 0; right: auto; } }
+        .edit-banner { margin: 6px 0 0; padding: 10px 14px; font-weight: 600; background: rgba(118,9,12,.08); border-left: 4px solid var(--maroon); border-radius: 6px; }
+        #b-cancel { margin-top: 8px; }
 
         /* ---- @mention list ---- */
         .mention-list { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 25; max-height: 220px; overflow-y: auto; background: var(--white); border: 2px solid var(--maroon); border-radius: 10px; box-shadow: 0 14px 30px rgba(0,0,0,.25); }
@@ -398,10 +407,13 @@
         .ann-title { font-size: var(--fs-1); font-weight: 800; line-height: 1.2; color: var(--maroon); word-break: break-word; }
         .ann-meta { margin: 4px 0 10px; font-size: var(--fs-n1); opacity: .7; }
         .ann-body { white-space: pre-wrap; word-break: break-word; }
+        .ann-edited { margin-top: 10px; font-size: var(--fs-n1); font-weight: 700; color: var(--maroon); }
+        .ann-card .ann-edit { margin-top: 12px; }
 
-        /* ---- Deadlines calendar ---- */
-        .cal-bar { display: flex; align-items: center; gap: 10px; margin: 14px 0; }
-        .cal-bar b { flex: 1; text-align: center; font-size: var(--fs-2); color: var(--maroon); }
+        /* ---- Calendar page ---- */
+        .cal-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+        .cal-sel { flex: 1 1 200px; display: flex; gap: 8px; justify-content: center; }
+        .cal-sel .dp-sel { font-size: var(--fs-1); }
         .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
         .cal-dow { padding: 6px 0; text-align: center; font-size: var(--fs-n1); font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--white); background: var(--maroon); border-radius: 6px; }
         .cal-cell { display: flex; flex-direction: column; align-items: stretch; gap: 3px; min-height: 92px; padding: 6px; text-align: left; color: var(--charcoal); background: var(--white); border: 2px solid rgba(58,58,58,.15); border-radius: 10px; cursor: pointer; transition: border-color .2s, box-shadow .2s, transform .2s var(--ease); }
@@ -410,11 +422,13 @@
         .cal-cell.today .cal-num { color: var(--maroon); }
         .cal-cell.sel { background: rgba(118,9,12,.09); border-color: var(--maroon); box-shadow: 0 0 0 3px rgba(118,9,12,.18); }
         .cal-num { font-weight: 800; }
-        .cal-chip { display: block; padding: 1px 6px; font-size: var(--fs-n1); line-height: 1.3; color: var(--white); background: var(--maroon); border-radius: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cal-chip { display: block; padding: 2px 6px; font-size: var(--fs-n1); font-weight: 700; line-height: 1.25; color: var(--white); background: var(--maroon); border-radius: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cal-course { display: block; font-weight: 400; opacity: .85; overflow: hidden; text-overflow: ellipsis; }
         .cal-more { font-size: var(--fs-n1); font-weight: 700; color: var(--maroon); }
         @media (max-width: 520px) {
             .cal-cell { min-height: 56px; padding: 4px; align-items: center; }
             .cal-chip { width: 7px; height: 7px; padding: 0; font-size: 0; border-radius: 50%; }
+            .cal-course { display: none; }
             .cal-more { display: none; }
             .cal-dow { letter-spacing: 0; font-size: 10px; }
         }
@@ -511,9 +525,9 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h3l5 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M16 8a5 5 0 0 1 0 8"/></svg>
                 Announcements
             </button>
-            <button type="button" data-section="deadlines">
+            <button type="button" data-section="calendar">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                Deadlines
+                Calendar
             </button>
             <button type="button" data-section="bin" data-admin class="hidden">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
@@ -586,16 +600,19 @@
         </section>
         <section class="section hidden" id="sec-announcements">
             <h2>ANNOUNCEMENTS</h2>
-            <p>Everything posted through the Announcement Bin.</p>
             <div class="ann-list" id="ann-list"></div>
             <div class="msg" id="ann-msg"></div>
         </section>
-        <section class="section hidden" id="sec-deadlines">
-            <h2>DEADLINES</h2>
+        <section class="section hidden" id="sec-calendar">
+            <h2>CALENDAR</h2>
             <div class="cal-bar">
                 <button type="button" class="dp-nav" id="dl-prev" aria-label="Previous month">&lsaquo;</button>
-                <b id="dl-title"></b>
+                <div class="cal-sel">
+                    <select id="dl-month" class="dp-sel" aria-label="Month"></select>
+                    <select id="dl-year" class="dp-sel" aria-label="Year"></select>
+                </div>
                 <button type="button" class="dp-nav" id="dl-next" aria-label="Next month">&rsaquo;</button>
+                <button type="button" class="btn sm ghost" id="dl-today">Today</button>
             </div>
             <div class="cal-grid" id="dl-grid"></div>
             <div id="dl-detail"></div>
@@ -604,19 +621,35 @@
         <section class="section hidden" id="sec-bin">
             <h2>ANNOUNCEMENT BIN</h2>
             <form class="req-form" id="bin-form" novalidate>
+                <div class="edit-banner hidden" id="b-edit-banner">You're editing an announcement. Saving will mark it as edited by you.</div>
                 <div class="field"><input type="text" id="b-title" placeholder=" " autocomplete="off" maxlength="120"><label for="b-title">Title</label></div>
                 <div class="field"><input type="text" id="b-course" placeholder=" " autocomplete="off" maxlength="30"><label for="b-course">Course</label></div>
                 <div class="field has-peek">
-                    <input type="text" id="b-deadline" placeholder=" " readonly autocomplete="off"><label for="b-deadline">Deadline</label>
-                    <button type="button" class="peek" id="dp-toggle" aria-label="Open calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></button>
-                    <div class="datepop hidden" id="dp"></div>
+                    <input type="text" id="b-deadline" placeholder=" " readonly autocomplete="off"><label for="b-deadline">Deadline (optional)</label>
+                    <button type="button" class="peek" id="b-deadline-btn" aria-label="Open calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></button>
+                    <div class="datepop hidden" id="b-deadline-pop"></div>
                 </div>
+                <div class="group-title">Period (optional)</div>
+                <div class="row2">
+                    <div class="field has-peek">
+                        <input type="text" id="b-pstart" placeholder=" " readonly autocomplete="off"><label for="b-pstart">Beginning date</label>
+                        <button type="button" class="peek" id="b-pstart-btn" aria-label="Open calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></button>
+                        <div class="datepop hidden" id="b-pstart-pop"></div>
+                    </div>
+                    <div class="field has-peek">
+                        <input type="text" id="b-pend" placeholder=" " readonly autocomplete="off"><label for="b-pend">End date</label>
+                        <button type="button" class="peek" id="b-pend-btn" aria-label="Open calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></button>
+                        <div class="datepop hidden" id="b-pend-pop"></div>
+                    </div>
+                </div>
+                <p class="hint">If you set a period, both the beginning and end dates are needed.</p>
                 <div class="field">
                     <textarea id="b-text" placeholder=" " maxlength="2000"></textarea><label for="b-text">Announcement</label>
                     <div class="mention-list hidden" id="mention-list"></div>
                 </div>
                 <p class="hint">Type @ to tag a user. They'll be notified by email.</p>
                 <button type="submit" class="btn" id="b-send">Post announcement</button>
+                <button type="button" class="btn ghost hidden" id="b-cancel">Cancel editing</button>
                 <div class="msg" id="b-message"></div>
             </form>
         </section>
@@ -867,7 +900,7 @@
     }
 
     /* ---------- app view ---------- */
-    const titles = { requests: "Requests", announcements: "Announcements", deadlines: "Deadlines", bin: "Announcement Bin", repository: "Repository" };
+    const titles = { requests: "Requests", announcements: "Announcements", calendar: "Calendar", bin: "Announcement Bin", repository: "Repository" };
     const ADMIN_SECTIONS = ["bin", "repository"];   // admin access only
 
     function enterApp(email, tok, admin) {
@@ -924,7 +957,7 @@
         document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("active", b.dataset.section === name));
         $("page-title").textContent = titles[name];
         if (name === "repository") { closeUser(); loadRepo(); }
-        if (name === "announcements" || name === "deadlines") loadAnnouncements();
+        if (name === "announcements" || name === "calendar") loadAnnouncements();
         if (name === "bin") loadMentionUsers();
     }
 
@@ -1351,7 +1384,7 @@
         setLoading(btn, false);
     }
 
-    /* ---------- date helpers + custom calendar (Announcement Bin) ---------- */
+    /* ---------- date helpers + date pickers (Announcement Bin) ---------- */
     const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
     const pad = n => String(n).padStart(2, "0");
     const isoOf = (y, m, d) => y + "-" + pad(m + 1) + "-" + pad(d);
@@ -1360,43 +1393,84 @@
         const [y, m, d] = String(iso).split("-").map(Number);
         return new Date(y, m - 1, d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
     }
-    let binDeadline = "", dpY = 0, dpM = 0;
-    function pickDate(iso) { binDeadline = iso; $("b-deadline").value = iso ? prettyDate(iso) : ""; syncFields(); dpClose(); }
-    function dpRender() {
-        const dp = $("dp"); dp.textContent = "";
-        const head = mk("div", "dp-head");
-        const prev = mk("button", "dp-nav", "‹"), next = mk("button", "dp-nav", "›");
-        prev.type = next.type = "button";
-        prev.onclick = () => { dpM--; if (dpM < 0) { dpM = 11; dpY--; } dpRender(); };
-        next.onclick = () => { dpM++; if (dpM > 11) { dpM = 0; dpY++; } dpRender(); };
-        head.append(prev, mk("b", "", MONTHS[dpM] + " " + dpY), next);
-        const grid = mk("div", "dp-grid");
-        ["S","M","T","W","T","F","S"].forEach(d => grid.appendChild(mk("div", "dp-dow", d)));
-        const first = new Date(dpY, dpM, 1).getDay(), days = new Date(dpY, dpM + 1, 0).getDate(), t = todayIso();
-        for (let i = 0; i < first; i++) grid.appendChild(mk("div"));
-        for (let d = 1; d <= days; d++) {
-            const iso = isoOf(dpY, dpM, d);
-            const b = mk("button", "dp-day" + (iso === binDeadline ? " sel" : "") + (iso === t ? " today" : ""), String(d));
-            b.type = "button"; b.onclick = () => pickDate(iso);
-            grid.appendChild(b);
-        }
-        const foot = mk("div", "dp-foot");
-        const bt = mk("button", "linkish", "Today"), bc = mk("button", "linkish", "Clear");
-        bt.type = bc.type = "button";
-        bt.onclick = () => pickDate(todayIso()); bc.onclick = () => pickDate("");
-        foot.append(bt, bc);
-        dp.append(head, grid, foot);
-    }
-    function dpClose() { $("dp").classList.add("hidden"); }
-    function dpToggle() {
-        if (!$("dp").classList.contains("hidden")) return dpClose();
-        const [y, m] = (binDeadline || todayIso()).split("-").map(Number);
-        dpY = y; dpM = m - 1; dpRender();
-        $("dp").classList.remove("hidden");
+    // fills a <select> with a range of years that always includes y
+    function fillYears(sel, y, extra) {
+        const cy = new Date().getFullYear(), all = [y, cy - 1, cy + 8].concat(extra || []);
+        const lo = Math.min.apply(null, all), hi = Math.max.apply(null, all);
+        sel.textContent = "";
+        for (let i = lo; i <= hi; i++) { const o = mk("option", "", String(i)); o.value = String(i); sel.appendChild(o); }
+        sel.value = String(y);
     }
 
+    let binDeadline = "", binStart = "", binEnd = "", editingId = "";
+    const pickers = [];
+    // A popup calendar with month + year drop-downs and arrows. minFn (optional) disables earlier days.
+    function makePicker(key, get, set, minFn) {
+        const input = $(key), pop = $(key + "-pop"), btn = $(key + "-btn");
+        let y = 0, m = 0, ms, ys, gridBox;
+        const show = () => { input.value = get() ? prettyDate(get()) : ""; syncFields(); };
+        const close = () => pop.classList.add("hidden");
+        function days() {
+            gridBox.textContent = "";
+            const sel = get(), min = minFn ? minFn() : "", t = todayIso();
+            ["S","M","T","W","T","F","S"].forEach(d => gridBox.appendChild(mk("div", "dp-dow", d)));
+            const first = new Date(y, m, 1).getDay(), n = new Date(y, m + 1, 0).getDate();
+            for (let i = 0; i < first; i++) gridBox.appendChild(mk("div"));
+            for (let d = 1; d <= n; d++) {
+                const iso = isoOf(y, m, d);
+                const b = mk("button", "dp-day" + (iso === sel ? " sel" : "") + (iso === t ? " today" : ""), String(d));
+                b.type = "button";
+                if (min && iso < min) b.disabled = true;
+                else b.onclick = () => { set(iso); show(); close(); };
+                gridBox.appendChild(b);
+            }
+        }
+        function sync() { ms.value = String(m); fillYears(ys, y); days(); }
+        function build() {
+            pop.textContent = "";
+            const prev = mk("button", "dp-nav", "‹"), next = mk("button", "dp-nav", "›");
+            prev.type = next.type = "button";
+            prev.setAttribute("aria-label", "Previous month"); next.setAttribute("aria-label", "Next month");
+            prev.onclick = () => { m--; if (m < 0) { m = 11; y--; } sync(); };
+            next.onclick = () => { m++; if (m > 11) { m = 0; y++; } sync(); };
+            ms = mk("select", "dp-sel"); ms.setAttribute("aria-label", "Month");
+            MONTHS.forEach((n, i) => { const o = mk("option", "", n); o.value = String(i); ms.appendChild(o); });
+            ys = mk("select", "dp-sel"); ys.setAttribute("aria-label", "Year");
+            ms.onchange = () => { m = Number(ms.value); days(); };
+            ys.onchange = () => { y = Number(ys.value); days(); };
+            const mid = mk("div", "dp-mid"); mid.append(ms, ys);
+            const head = mk("div", "dp-head"); head.append(prev, mid, next);
+            gridBox = mk("div", "dp-grid");
+            const bt = mk("button", "linkish", "Today"), bc = mk("button", "linkish", "Clear");
+            bt.type = bc.type = "button";
+            bt.onclick = () => { const t = todayIso(); if (minFn && minFn() && t < minFn()) return; set(t); show(); close(); };
+            bc.onclick = () => { set(""); show(); close(); };
+            const foot = mk("div", "dp-foot"); foot.append(bt, bc);
+            pop.append(head, gridBox, foot);
+        }
+        function open() {
+            pickers.forEach(p => p.close());
+            const base = get() || (minFn && minFn()) || todayIso();
+            const parts = base.split("-").map(Number);
+            y = parts[0]; m = parts[1] - 1;
+            build(); sync();
+            pop.classList.remove("hidden");
+        }
+        const toggle = () => pop.classList.contains("hidden") ? open() : close();
+        input.addEventListener("click", toggle);
+        btn.addEventListener("click", toggle);
+        pop.addEventListener("click", e => e.stopPropagation());
+        const api = { close, show, field: pop.parentNode };
+        pickers.push(api);
+        return api;
+    }
+    const pkDeadline = makePicker("b-deadline", () => binDeadline, v => { binDeadline = v; });
+    const pkStart = makePicker("b-pstart", () => binStart, v => { binStart = v; if (v && binEnd && binEnd < v) { binEnd = ""; pkEnd.show(); } });
+    const pkEnd = makePicker("b-pend", () => binEnd, v => { binEnd = v; }, () => binStart);
+    document.addEventListener("click", (e) => { pickers.forEach(p => { if (!p.field.contains(e.target)) p.close(); }); });
+
     /* ---------- @mentions ---------- */
-    let mentionUsers = [], mentionSel = [], mMatches = [], mIdx = 0, mStart = 0;
+    let mentionUsers = [], mentionSel = [], mMatches = [], mIdx = 0, mStart = 0;   // mentionSel items: {email, name}
     async function loadMentionUsers() {
         if (mentionUsers.length) return;
         try {
@@ -1431,7 +1505,8 @@
         const ta = $("b-text"), pos = ta.selectionStart, ins = "@" + nameOf(u) + " ";
         ta.value = ta.value.slice(0, mStart) + ins + ta.value.slice(pos);
         ta.selectionStart = ta.selectionEnd = mStart + ins.length;
-        if (!mentionSel.some(x => x.email === u.email)) mentionSel.push(u);
+        mentionSel = mentionSel.filter(x => x.email !== u.email);
+        mentionSel.push({ email: u.email, name: nameOf(u) });
         hideMention(); ta.focus(); syncFields();
     }
     function mentionKey(e) {
@@ -1442,11 +1517,30 @@
         else if (e.key === "Escape") { e.stopPropagation(); hideMention(); }
     }
 
-    /* ---------- post an announcement ---------- */
+    /* ---------- post / edit an announcement ---------- */
+    function binMode() {
+        const editing = !!editingId;
+        $("b-send").textContent = editing ? "Save changes" : "Post announcement";
+        $("b-cancel").classList.toggle("hidden", !editing);
+        $("b-edit-banner").classList.toggle("hidden", !editing);
+    }
     function resetBinForm() {
         ["b-title", "b-course", "b-text"].forEach(id => { $(id).value = ""; });
-        binDeadline = ""; $("b-deadline").value = ""; mentionSel = [];
-        dpClose(); hideMention(); setMessage($("b-message"), "", ""); syncFields();
+        binDeadline = binStart = binEnd = ""; editingId = ""; mentionSel = [];
+        pkDeadline.show(); pkStart.show(); pkEnd.show();
+        pickers.forEach(p => p.close());
+        hideMention(); binMode(); setMessage($("b-message"), "", ""); syncFields();
+    }
+    function startEdit(a) {
+        resetBinForm();
+        editingId = a.id;
+        $("b-title").value = a.title; $("b-course").value = a.course; $("b-text").value = a.message;
+        binDeadline = a.deadline || ""; binStart = a.periodStart || ""; binEnd = a.periodEnd || "";
+        pkDeadline.show(); pkStart.show(); pkEnd.show();
+        mentionSel = (a.mentions || []).filter(m => m.email).map(m => ({ email: m.email, name: m.name }));
+        binMode(); syncFields();
+        showSection("bin");
+        window.scrollTo(0, 0);
     }
     async function postAnnouncement(e) {
         e.preventDefault();
@@ -1454,22 +1548,31 @@
         const title = $("b-title").value.replace(/\s+/g, " ").trim();
         const course = $("b-course").value.replace(/\s+/g, " ").trim();
         const text = $("b-text").value.trim();
-        if (!title || !course || !binDeadline || !text) return setMessage(bm, "Please fill in all fields.", ERR);
-        const mentions = mentionSel.filter(u => text.includes("@" + nameOf(u))).map(u => u.email);
+        if (!title || !course || !text) return setMessage(bm, "Please fill in the title, course and announcement.", ERR);
+        if (!!binStart !== !!binEnd) return setMessage(bm, "A period needs both a beginning date and an end date.", ERR);
+        if (binStart && binEnd < binStart) return setMessage(bm, "The end date can't be before the beginning date.", ERR);
+        const mentions = mentionSel.filter(u => text.includes("@" + u.name)).map(u => u.email);
+        const payload = { title, course, deadline: binDeadline, periodStart: binStart, periodEnd: binEnd, message: text, mentions };
+        const wasEdit = !!editingId;
+        if (wasEdit) payload.id = editingId;
         setLoading(btn, true);
         setMessage(bm, "", "");
         try {
-            const r = await authCall("post_announcement", { title, course, deadline: binDeadline, message: text, mentions });
-            if (r.status === "success") { resetBinForm(); setMessage(bm, r.message, OK); }
-            else setMessage(bm, r.message, ERR);
+            const r = await authCall(wasEdit ? "edit_announcement" : "post_announcement", payload);
+            if (r.status === "success") {
+                resetBinForm();
+                if (wasEdit) showSection("announcements");
+                else setMessage(bm, r.message, OK);
+            } else setMessage(bm, r.message, ERR);
         } catch (err) {
             if (err.message !== "auth") { console.error(err); setMessage(bm, netError(err), ERR); }
         }
         setLoading(btn, false);
     }
 
-    /* ---------- announcements + deadlines (all users) ---------- */
-    let annList = [], dlY = new Date().getFullYear(), dlM = new Date().getMonth(), dlSel = "";
+    /* ---------- announcements + calendar (all users) ---------- */
+    const NOW = new Date();
+    let annList = [], dlY = NOW.getFullYear(), dlM = NOW.getMonth(), dlSel = "";
     function richText(el, text, mentions) {
         const names = (mentions || []).map(m => "@" + m.name).sort((a, b) => b.length - a.length);
         if (!names.length) { el.textContent = text; return; }
@@ -1477,15 +1580,27 @@
         text.split(re).forEach((part, i) => el.appendChild(i % 2 ? mk("span", "mention", part) : document.createTextNode(part)));
     }
     function annCard(a) {
-        const c = mk("article", "ann-card" + (a.deadline < todayIso() ? " past" : ""));
+        const ref = a.deadline || a.periodEnd || "";
+        const c = mk("article", "ann-card" + (ref && ref < todayIso() ? " past" : ""));
         const top = mk("div", "ann-top");
         top.appendChild(mk("h3", "ann-title", a.title));
         top.appendChild(mk("span", "badge", a.course));
         c.appendChild(top);
-        c.appendChild(mk("div", "ann-meta", "Deadline: " + prettyDate(a.deadline) + " · Posted by " + a.author + " · " + a.created));
+        const bits = [];
+        if (a.deadline) bits.push("Deadline: " + prettyDate(a.deadline));
+        if (a.periodStart && a.periodEnd) bits.push("Period: " + prettyDate(a.periodStart) + " – " + prettyDate(a.periodEnd));
+        bits.push("Posted by " + a.author + " on " + a.created);
+        c.appendChild(mk("div", "ann-meta", bits.join(" · ")));
         const body = mk("div", "ann-body");
         richText(body, a.message, a.mentions);
         c.appendChild(body);
+        if (a.edited) c.appendChild(mk("div", "ann-edited", "✎ Edited by the author on " + a.edited));
+        if (a.mine && isAdmin) {
+            const eb = mk("button", "btn sm ghost ann-edit", "Edit");
+            eb.type = "button";
+            eb.addEventListener("click", () => startEdit(a));
+            c.appendChild(eb);
+        }
         return c;
     }
     function renderAnnouncements() {
@@ -1498,12 +1613,31 @@
         }
         annList.forEach(a => box.appendChild(annCard(a)));
     }
+    // calendar date -> announcements: a deadline shows on its date, a period shows on its END date only
+    function calMap() {
+        const by = {};
+        const put = (d, a) => { (by[d] = by[d] || []).push(a); };
+        annList.forEach(a => {
+            if (a.deadline) put(a.deadline, a);
+            if (a.periodEnd && a.periodEnd !== a.deadline) put(a.periodEnd, a);
+        });
+        return by;
+    }
+    function syncCalSel(force) {
+        const ys = $("dl-year");
+        $("dl-month").value = String(dlM);
+        if (force || !Array.from(ys.options).some(o => o.value === String(dlY))) {
+            const extra = [NOW.getFullYear() - 3];
+            annList.forEach(a => [a.deadline, a.periodEnd].forEach(d => { if (d) extra.push(Number(d.slice(0, 4))); }));
+            fillYears(ys, dlY, extra);
+        }
+        ys.value = String(dlY);
+    }
     function renderCalendar() {
         const g = $("dl-grid"); g.textContent = "";
-        $("dl-title").textContent = MONTHS[dlM] + " " + dlY;
+        syncCalSel(false);
         ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].forEach(d => g.appendChild(mk("div", "cal-dow", d)));
-        const by = {};
-        annList.forEach(a => (by[a.deadline] = by[a.deadline] || []).push(a));
+        const by = calMap();
         const first = new Date(dlY, dlM, 1).getDay(), days = new Date(dlY, dlM + 1, 0).getDate(), t = todayIso();
         for (let i = 0; i < first; i++) g.appendChild(mk("div"));
         for (let d = 1; d <= days; d++) {
@@ -1511,16 +1645,20 @@
             const cell = mk("button", "cal-cell" + (iso === t ? " today" : "") + (iso === dlSel ? " sel" : ""));
             cell.type = "button";
             cell.appendChild(mk("span", "cal-num", String(d)));
-            list.slice(0, 2).forEach(a => cell.appendChild(mk("span", "cal-chip", a.title)));
+            list.slice(0, 2).forEach(a => {
+                const chip = mk("span", "cal-chip", a.title);          // title + course only
+                chip.appendChild(mk("small", "cal-course", a.course));
+                cell.appendChild(chip);
+            });
             if (list.length > 2) cell.appendChild(mk("span", "cal-more", "+" + (list.length - 2) + " more"));
             cell.onclick = () => { dlSel = iso; renderCalendar(); };
             g.appendChild(cell);
         }
         const dd = $("dl-detail"); dd.textContent = "";
-        if (!dlSel) { dd.appendChild(mk("p", "repo-count", "Select a day to see its deadlines.")); return; }
+        if (!dlSel) { dd.appendChild(mk("p", "repo-count", "Select a day to see its announcements.")); return; }
         dd.appendChild(mk("div", "group-title", prettyDate(dlSel)));
         const l = by[dlSel] || [];
-        if (!l.length) dd.appendChild(mk("p", "repo-count", "No deadlines on this day."));
+        if (!l.length) dd.appendChild(mk("p", "repo-count", "Nothing is due on this day."));
         else l.forEach(a => dd.appendChild(annCard(a)));
     }
     function shiftMonth(n) { dlM += n; if (dlM < 0) { dlM = 11; dlY--; } if (dlM > 11) { dlM = 0; dlY++; } renderCalendar(); }
@@ -1528,12 +1666,15 @@
         ["ann-msg", "dl-msg"].forEach(id => setMessage($(id), "", ""));
         try {
             const r = await authCall("announcements_list");
-            if (r.status === "success") { annList = r.announcements || []; renderAnnouncements(); renderCalendar(); }
+            if (r.status === "success") { annList = r.announcements || []; renderAnnouncements(); syncCalSel(true); renderCalendar(); }
             else ["ann-msg", "dl-msg"].forEach(id => setMessage($(id), r.message, ERR));
         } catch (err) {
             if (err.message !== "auth") { console.error(err); ["ann-msg", "dl-msg"].forEach(id => setMessage($(id), netError(err), ERR)); }
         }
     }
+    // calendar header controls
+    MONTHS.forEach((n, i) => { const o = mk("option", "", n); o.value = String(i); $("dl-month").appendChild(o); });
+    syncCalSel(true);
 
     /* ---------- events ---------- */
     $("auth-form").addEventListener("submit", handleSubmit);
@@ -1590,16 +1731,17 @@
 
     // Announcement Bin
     $("bin-form").addEventListener("submit", postAnnouncement);
-    $("b-deadline").addEventListener("click", dpToggle);
-    $("dp-toggle").addEventListener("click", dpToggle);
-    document.addEventListener("click", (e) => { if (!e.composedPath().includes($("dp").parentNode)) dpClose(); });
+    $("b-cancel").addEventListener("click", () => { resetBinForm(); showSection("announcements"); });
     $("b-text").addEventListener("input", mentionCheck);
     $("b-text").addEventListener("click", mentionCheck);
     $("b-text").addEventListener("keydown", mentionKey);
     $("b-text").addEventListener("blur", () => setTimeout(hideMention, 150));
-    // Deadlines calendar
+    // Calendar page
     $("dl-prev").addEventListener("click", () => shiftMonth(-1));
     $("dl-next").addEventListener("click", () => shiftMonth(1));
+    $("dl-month").addEventListener("change", () => { dlM = Number($("dl-month").value); renderCalendar(); });
+    $("dl-year").addEventListener("change", () => { dlY = Number($("dl-year").value); renderCalendar(); });
+    $("dl-today").addEventListener("click", () => { const t = new Date(); dlY = t.getFullYear(); dlM = t.getMonth(); dlSel = todayIso(); renderCalendar(); });
 
     // Restore session on reload
     const saved = sessionStorage.getItem("userEmail");
