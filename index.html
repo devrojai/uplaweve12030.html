@@ -105,6 +105,17 @@
         .field input:not(:placeholder-shown) ~ label,
         .field.filled label { top: 5px; font-size: var(--fs-n1); font-weight: 600; }
         .field input:focus { border-color: var(--maroon); box-shadow: 0 0 0 4px rgba(118,9,12,.15); }
+        /* Browser autofill: float the label up (so it doesn't overlap the filled text) and keep our own look */
+        .field input:-webkit-autofill ~ label { top: 5px; font-size: var(--fs-n1); font-weight: 600; }
+        .field input:autofill ~ label { top: 5px; font-size: var(--fs-n1); font-weight: 600; }
+        .field input:-webkit-autofill,
+        .field input:-webkit-autofill:hover,
+        .field input:-webkit-autofill:focus {
+            -webkit-text-fill-color: var(--charcoal);
+            -webkit-box-shadow: 0 0 0 1000px var(--white) inset;
+            caret-color: var(--charcoal);
+            transition: background-color 9999s ease-in-out 0s;
+        }
         .field input:focus ~ label { color: var(--maroon); }
         .peek {
             position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
@@ -489,7 +500,7 @@
         <div id="auth-view">
             <div id="form-wrap">
                 <h2 id="form-title">Welcome Back</h2>
-                <p class="sub" id="form-sub">Log in to continue</p>
+                <p class="sub" id="form-sub">Log In to Continue</p>
                 <form id="auth-form" novalidate>
                     <div class="field">
                         <input type="email" id="email" placeholder=" " autocomplete="username" required>
@@ -602,6 +613,8 @@
                 <div class="field"><input type="text" id="p-first" placeholder=" " maxlength="60"><label for="p-first">First name</label></div>
                 <div class="field"><input type="text" id="p-middle" placeholder=" " maxlength="60"><label for="p-middle">Middle name</label></div>
                 <div class="field"><input type="text" id="p-last" placeholder=" " maxlength="60"><label for="p-last">Last name</label></div>
+                <div class="field"><input type="text" id="p-nick" placeholder=" " maxlength="60"><label for="p-nick">Nickname</label></div>
+                <p class="hint">Admins can tag you by nickname, first name or surname.</p>
 
                 <div class="group-title">Contact</div>
                 <div class="field"><input type="tel" id="p-contact" placeholder=" " maxlength="20"><label for="p-contact">Contact no.</label></div>
@@ -854,7 +867,7 @@
     function toggleMode() {
         isSignup = !isSignup;
         $("form-title").textContent = isSignup ? "Create Account" : "Welcome Back";
-        $("form-sub").textContent = isSignup ? "Sign up to get started" : "Log in to continue";
+        $("form-sub").textContent = isSignup ? "Sign up to get started" : "Log In to Continue";
         $("submit-btn").textContent = isSignup ? "Sign Up" : "Log In";
         $("toggle-link").textContent = isSignup ? "Already have an account? Login" : "Need an account? Sign up";
         $("forgot-row").classList.toggle("hidden", isSignup);
@@ -1057,6 +1070,8 @@
         });
     }
     document.addEventListener("input", syncFields);
+    document.addEventListener("change", syncFields);
+    window.addEventListener("load", () => [50, 300, 800, 1500].forEach(ms => setTimeout(syncFields, ms)));
 
     async function authCall(action, extra) {
         const r = await callScript(Object.assign({ action, email: currentEmail, token }, extra || {}));
@@ -1069,7 +1084,7 @@
         return r;
     }
 
-    const emptyProfile = () => ({ firstName: "", middleName: "", lastName: "", contact: "", upEmail: "", tg: "", fb: "", photo: "" });
+    const emptyProfile = () => ({ firstName: "", middleName: "", lastName: "", nickname: "", contact: "", upEmail: "", tg: "", fb: "", photo: "" });
     let profile = emptyProfile();
     let profileLoaded = false;
     let pendingPhoto = "";
@@ -1100,6 +1115,7 @@
         $("p-first").value = profile.firstName;
         $("p-middle").value = profile.middleName;
         $("p-last").value = profile.lastName;
+        $("p-nick").value = profile.nickname;
         $("p-contact").value = profile.contact;
         $("p-upemail").value = profile.upEmail;
         $("p-tg").value = profile.tg;
@@ -1174,11 +1190,11 @@
     function readProfileForm() {
         const clean = (v) => v.replace(/\s+/g, " ").trim();
         const p = {
-            firstName: clean($("p-first").value), middleName: clean($("p-middle").value), lastName: clean($("p-last").value),
+            firstName: clean($("p-first").value), middleName: clean($("p-middle").value), lastName: clean($("p-last").value), nickname: clean($("p-nick").value),
             contact: clean($("p-contact").value), upEmail: clean($("p-upemail").value).toLowerCase(),
             tg: clean($("p-tg").value), fb: clean($("p-fb").value)
         };
-        if ([p.firstName, p.middleName, p.lastName].some(n => n.length > 60)) return { error: "Names must be 60 characters or fewer." };
+        if ([p.firstName, p.middleName, p.lastName, p.nickname].some(n => n.length > 60)) return { error: "Names must be 60 characters or fewer." };
         if (p.contact && !/^[0-9+\-\s()]{7,20}$/.test(p.contact)) return { error: "Enter a valid contact number (digits, +, -, spaces)." };
         if (p.upEmail && (!EMAIL_RE.test(p.upEmail) || !/@([a-z0-9-]+\.)*up\.edu\.ph$/.test(p.upEmail))) return { error: "Enter a valid UP email that ends in @up.edu.ph." };
         return { values: p };
@@ -1261,7 +1277,7 @@
     let detailFor = "";
     const CSV_COLS = [
         ["Account Email", "email"], ["Verified", "verified"], ["Role", "role"],
-        ["First Name", "firstName"], ["Middle Name", "middleName"], ["Last Name", "lastName"],
+        ["First Name", "firstName"], ["Middle Name", "middleName"], ["Last Name", "lastName"], ["Nickname", "nickname"],
         ["Contact No.", "contact"], ["UP Student Email", "upEmail"], ["Telegram Handle", "tg"], ["Facebook URL", "fb"],
         ["Account Created", "created"], ["Profile Updated", "updated"]
     ];
@@ -1323,7 +1339,7 @@
         box.appendChild(head);
 
         const rows = [
-            ["First name", u.firstName], ["Middle name", u.middleName], ["Last name", u.lastName],
+            ["First name", u.firstName], ["Middle name", u.middleName], ["Last name", u.lastName], ["Nickname", u.nickname],
             ["Contact no.", u.contact], ["UP student email", u.upEmail], ["Telegram handle", u.tg],
             ["Facebook URL", u.fb, "link"],
             ["Account email", u.email], ["Role", roleOf(u)], ["Email verified", u.verified ? "Yes" : "No"],
@@ -1649,13 +1665,36 @@
         } catch (err) { if (err.message !== "auth") console.error(err); }
     }
     function hideMention() { $("mention-list").classList.add("hidden"); mMatches = []; }
+    // Words a person can be found by when tagging
+    const mentionAliases = u => [u.firstName, u.middleName, u.lastName, u.nickname].map(s => (s || "").toLowerCase().trim()).filter(Boolean);
+    // 0 = no match; higher = better match (exact > starts-with > word-start > anywhere)
+    function mentionScore(u, q) {
+        const toks = q.split(/\s+/).filter(Boolean);
+        if (!toks.length) return 1;
+        const aliases = u.everyone ? ["everyone"] : mentionAliases(u);
+        const hay = (nameOf(u) + " " + (u.nickname || "") + " " + u.email).toLowerCase();
+        let score = 0;
+        for (const t of toks) {
+            if (aliases.some(a => a === t)) score += 4;
+            else if (aliases.some(a => a.startsWith(t))) score += 3;
+            else if (aliases.some(a => a.split(/\s+/).some(w => w.startsWith(t)))) score += 2;
+            else if (hay.includes(t)) score += 1;
+            else return 0;
+        }
+        return score;
+    }
     function mentionCheck() {
         const ta = $("b-text"), pos = ta.selectionStart;
         const m = /(^|\s)@([^\n@]{0,30})$/.exec(ta.value.slice(0, pos));
         if (!m) return hideMention();
         const q = m[2].toLowerCase();
         mStart = pos - m[2].length - 1;
-        mMatches = [EVERYONE].concat(mentionUsers).filter(u => (nameOf(u) + " " + u.email).toLowerCase().includes(q)).slice(0, 6);
+        mMatches = [EVERYONE].concat(mentionUsers)
+            .map(u => ({ u, s: mentionScore(u, q) }))
+            .filter(x => x.s > 0)
+            .sort((a, b) => b.s - a.s)
+            .map(x => x.u)
+            .slice(0, 6);
         if (!mMatches.length) return hideMention();
         mIdx = 0; renderMention();
     }
@@ -1665,7 +1704,7 @@
             const b = mk("button", "m-item" + (i === mIdx ? " active" : ""));
             b.type = "button";
             b.appendChild(mk("b", "", u.everyone ? "@everyone" : nameOf(u)));
-            b.appendChild(mk("small", "", u.everyone ? "Notify all users by email" : u.email));
+            b.appendChild(mk("small", "", u.everyone ? "Notify all users by email" : (u.nickname ? "\u201c" + u.nickname + "\u201d \u00b7 " : "") + u.email));
             b.addEventListener("mousedown", ev => { ev.preventDefault(); mentionPick(u); });
             box.appendChild(b);
         });
