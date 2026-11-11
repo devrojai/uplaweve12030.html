@@ -3,23 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login / Signup</title>
+    <title>Eve1 2030</title>
     <style>
         :root {
             --maroon: #76090c;
             --white: #ffffff;
             --charcoal: #3a3a3a;
             --ease: cubic-bezier(.22, .8, .24, 1);
+
+            /* ---- Proportional type scale (ratio 1.25 "major third") ----
+               Every font size on the site comes from these steps, so they
+               always stay in proportion to each other (and scale together). */
+            --ratio: 1.25;
+            --fs-0: 1rem;                       /* base        16px   */
+            --fs-n1: .8rem;                     /* small       12.8px (base / 1.25)   */
+            --fs-1: 1.25rem;                    /* subheading  20px   (base × 1.25)   */
+            --fs-2: 1.5625rem;                  /* heading     25px   (base × 1.25²)  */
+            --fs-3: 1.953rem;                   /* title       31px   (base × 1.25³)  */
+            --lh: 1.5;
+            --font: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
         }
+        html { font-size: 100%; }
+        @media (max-width: 380px) { html { font-size: 93.75%; } } /* whole scale shrinks together */
+
         * { box-sizing: border-box; }
         html, body { height: 100%; }
         body {
             margin: 0;
-            font-family: "Segoe UI", Arial, sans-serif;
+            font-family: var(--font);
+            font-size: var(--fs-0);
+            line-height: var(--lh);
             color: var(--charcoal);
             background: var(--charcoal);
             overflow-x: hidden;
         }
+        button, input { font-family: inherit; font-size: var(--fs-0); }
+        h1, h2, h3, p { margin: 0; }
         .hidden { display: none !important; }
 
         /* ============ ANIMATED BACKGROUND ============ */
@@ -28,8 +47,7 @@
                 radial-gradient(circle at 20% 15%, rgba(118,9,12,.35), transparent 45%),
                 radial-gradient(circle at 85% 90%, rgba(118,9,12,.30), transparent 50%),
                 var(--charcoal); }
-        .blob { position: absolute; border-radius: 50%; filter: blur(60px); opacity: .55;
-                background: var(--maroon); animation: float 14s ease-in-out infinite; }
+        .blob { position: absolute; border-radius: 50%; filter: blur(60px); opacity: .55; background: var(--maroon); animation: float 14s ease-in-out infinite; }
         .blob.b1 { width: 380px; height: 380px; top: -100px; left: -80px; }
         .blob.b2 { width: 300px; height: 300px; bottom: -80px; right: -60px; animation-delay: -5s; }
         .blob.b3 { width: 200px; height: 200px; top: 55%; left: 60%; opacity: .3; background: var(--white); animation-delay: -9s; }
@@ -43,77 +61,70 @@
         /* ============ AUTH STAGE ============ */
         .stage { position: relative; z-index: 1; min-height: 100%; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .card {
-            position: relative;
-            width: 360px; max-width: 100%;
-            background: var(--white);
-            padding: 34px 30px 28px;
-            border-radius: 18px;
+            position: relative; width: 360px; max-width: 100%;
+            background: var(--white); padding: 34px 30px 28px; border-radius: 18px;
             border-top: 6px solid var(--maroon);
             box-shadow: 0 25px 60px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.06);
             animation: cardIn .7s var(--ease) both;
         }
         @keyframes cardIn { from { opacity: 0; transform: translateY(30px) scale(.96); } to { opacity: 1; transform: none; } }
         .card.shake { animation: shake .45s; }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-9px); }
-            40%, 80% { transform: translateX(9px); }
-        }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-9px); } 40%, 80% { transform: translateX(9px); } }
 
         .logo {
-            width: 62px; height: 62px; margin: -66px auto 14px;
-            border-radius: 50%; background: var(--maroon); color: var(--white);
-            display: grid; place-items: center;
+            width: 62px; height: 62px; margin: -66px auto 12px; border-radius: 50%;
+            background: var(--maroon); color: var(--white); display: grid; place-items: center;
             box-shadow: 0 8px 20px rgba(118,9,12,.5), 0 0 0 6px var(--white);
             animation: pulse 3s ease-in-out infinite;
         }
         .logo svg { width: 28px; height: 28px; }
         @keyframes pulse { 0%, 100% { box-shadow: 0 8px 20px rgba(118,9,12,.5), 0 0 0 6px #fff; } 50% { box-shadow: 0 8px 28px rgba(118,9,12,.8), 0 0 0 9px #fff; } }
 
-        h2 { margin: 0 0 4px; text-align: center; font-size: 24px; letter-spacing: .3px; }
-        .sub { margin: 0 0 18px; text-align: center; font-size: 13px; opacity: .65; }
+        .brand { text-align: center; font-size: var(--fs-3); font-weight: 800; line-height: 1.15; letter-spacing: .5px; color: var(--maroon); margin-bottom: 14px; }
+        h2 { text-align: center; font-size: var(--fs-1); font-weight: 700; }
+        .sub { margin: 2px 0 16px; text-align: center; font-size: var(--fs-n1); opacity: .7; }
         .swap { animation: swap .4s var(--ease); }
         @keyframes swap { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
 
         /* ============ FLOATING-LABEL INPUTS ============ */
-        .field { position: relative; margin: 16px 0; }
+        .field { position: relative; margin: 14px 0; }
         .field input {
-            width: 100%; padding: 15px 14px 7px; font-size: 15px;
-            color: var(--charcoal); background: var(--white);
+            width: 100%; padding: 22px 14px 8px; color: var(--charcoal); background: var(--white);
             border: 2px solid rgba(58,58,58,.25); border-radius: 10px; outline: none;
             transition: border-color .25s, box-shadow .25s;
         }
         .field label {
-            position: absolute; left: 14px; top: 14px; font-size: 15px;
-            color: rgba(58,58,58,.6); pointer-events: none;
-            transition: all .2s var(--ease); transform-origin: left top;
+            position: absolute; left: 16px; top: 15px; font-size: var(--fs-0);
+            color: rgba(58,58,58,.6); pointer-events: none; transition: all .2s var(--ease);
         }
         .field input:focus ~ label,
-        .field input:not(:placeholder-shown) ~ label { top: 5px; font-size: 11px; font-weight: 600; }
+        .field input:not(:placeholder-shown) ~ label { top: 5px; font-size: var(--fs-n1); font-weight: 600; }
         .field input:focus { border-color: var(--maroon); box-shadow: 0 0 0 4px rgba(118,9,12,.15); }
         .field input:focus ~ label { color: var(--maroon); }
         .peek {
             position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
-            width: auto; padding: 4px 8px; margin: 0; font-size: 12px; font-weight: 600;
+            padding: 4px 8px; font-size: var(--fs-n1); font-weight: 700;
             color: var(--maroon); background: transparent; border: none; border-radius: 6px; cursor: pointer;
         }
         .peek:hover { background: rgba(118,9,12,.1); }
-        .field.has-peek input { padding-right: 60px; }
+        .field.has-peek input { padding-right: 62px; }
+
+        .linkish { background: none; border: none; padding: 0; color: var(--maroon); font-weight: 700; font-size: var(--fs-n1); cursor: pointer; position: relative; }
+        .linkish::after { content: ""; position: absolute; left: 0; bottom: -2px; width: 0; height: 2px; background: currentColor; transition: width .25s; }
+        .linkish:hover::after { width: 100%; }
+        .forgot-row { text-align: right; margin: -4px 0 4px; }
 
         /* ============ BUTTONS ============ */
         .btn {
-            position: relative; overflow: hidden; width: 100%;
-            padding: 13px; margin-top: 6px;
-            font-size: 15px; font-weight: 700; letter-spacing: .5px;
-            color: var(--white); background: var(--maroon);
-            border: none; border-radius: 10px; cursor: pointer;
+            position: relative; overflow: hidden; width: 100%; padding: 13px; margin-top: 8px;
+            font-weight: 700; letter-spacing: .5px; color: var(--white); background: var(--maroon);
+            border: 2px solid var(--maroon); border-radius: 10px; cursor: pointer;
             box-shadow: 0 6px 16px rgba(118,9,12,.35);
-            transition: transform .2s var(--ease), box-shadow .2s, filter .2s;
+            transition: transform .2s var(--ease), box-shadow .2s, filter .2s, background .2s, color .2s;
         }
         .btn::after {
             content: ""; position: absolute; top: 0; left: -75%; width: 50%; height: 100%;
-            background: linear-gradient(120deg, transparent, rgba(255,255,255,.35), transparent);
-            transform: skewX(-20deg);
+            background: linear-gradient(120deg, transparent, rgba(255,255,255,.35), transparent); transform: skewX(-20deg);
         }
         .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(118,9,12,.45); filter: brightness(1.1); }
         .btn:hover:not(:disabled)::after { left: 130%; transition: left .7s; }
@@ -122,45 +133,45 @@
         .btn.loading { color: transparent; }
         .btn.loading::before {
             content: ""; position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; margin: -10px 0 0 -10px;
-            border: 3px solid rgba(255,255,255,.4); border-top-color: var(--white); border-radius: 50%;
-            animation: spin .7s linear infinite;
+            border: 3px solid rgba(255,255,255,.4); border-top-color: var(--white); border-radius: 50%; animation: spin .7s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .btn.ghost { background: transparent; color: var(--maroon); border: 2px solid var(--maroon); box-shadow: none; }
+        .btn.ghost { background: transparent; color: var(--maroon); box-shadow: none; }
         .btn.ghost:hover:not(:disabled) { background: var(--maroon); color: var(--white); }
+        .btn.ghost.loading::before { border-color: rgba(118,9,12,.3); border-top-color: var(--maroon); }
 
-        .toggle { text-align: center; margin-top: 18px; font-size: 14px; color: var(--charcoal); }
+        .toggle { text-align: center; margin-top: 18px; font-size: var(--fs-0); }
         .toggle span { color: var(--maroon); font-weight: 700; cursor: pointer; position: relative; }
         .toggle span::after { content: ""; position: absolute; left: 0; bottom: -2px; width: 0; height: 2px; background: var(--maroon); transition: width .25s; }
         .toggle span:hover::after { width: 100%; }
 
-        #message { text-align: center; margin-top: 14px; font-size: 14px; font-weight: 600; min-height: 20px; transition: opacity .3s; }
-        #message.show { animation: swap .35s var(--ease); }
+        .msg { text-align: center; margin-top: 14px; font-size: var(--fs-n1); font-weight: 600; min-height: 1.5em; }
+        .msg.show { animation: swap .35s var(--ease); }
 
-        /* ============ VERIFY PANEL ============ */
-        .verify { text-align: center; animation: swap .45s var(--ease); }
-        .envelope { width: 76px; height: 76px; margin: 4px auto 14px; border-radius: 50%; background: rgba(118,9,12,.1); color: var(--maroon); display: grid; place-items: center; animation: bob 2.4s ease-in-out infinite; }
+        /* ============ PANELS (verify / forgot) ============ */
+        .panel { text-align: center; animation: swap .45s var(--ease); }
+        .envelope { width: 76px; height: 76px; margin: 4px auto 12px; border-radius: 50%; background: rgba(118,9,12,.1); color: var(--maroon); display: grid; place-items: center; animation: bob 2.4s ease-in-out infinite; }
         .envelope svg { width: 38px; height: 38px; }
         @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-        .verify p { font-size: 14px; line-height: 1.5; margin: 6px 0; opacity: .85; }
-        .verify strong { color: var(--maroon); word-break: break-all; }
+        .panel p { font-size: var(--fs-0); margin: 6px 0; opacity: .85; }
+        .panel .field { text-align: left; }
+        .panel strong { color: var(--maroon); word-break: break-all; }
 
         /* ============ APP (AFTER LOGIN) ============ */
         .app { position: relative; z-index: 1; min-height: 100%; background: var(--white); animation: swap .5s var(--ease); }
         .topbar {
             position: fixed; top: 0; left: 0; right: 0; height: 60px; z-index: 30;
             display: flex; align-items: center; gap: 14px; padding: 0 16px;
-            background: var(--maroon); color: var(--white);
-            box-shadow: 0 4px 14px rgba(0,0,0,.25);
+            background: var(--maroon); color: var(--white); box-shadow: 0 4px 14px rgba(0,0,0,.25);
         }
-        .topbar h1 { margin: 0; font-size: 18px; letter-spacing: .5px; flex: 1; }
-        .user-chip { font-size: 13px; opacity: .85; max-width: 40vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .topbar .site { font-size: var(--fs-1); font-weight: 800; letter-spacing: .5px; line-height: 1.2; }
+        .topbar .page { font-size: var(--fs-0); opacity: .85; padding-left: 14px; border-left: 2px solid rgba(255,255,255,.4); flex: 1; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-chip { font-size: var(--fs-n1); opacity: .85; max-width: 32vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        @media (max-width: 520px) { .user-chip { display: none; } }
 
         .burger {
-            width: 42px; height: 42px; padding: 0; margin: 0; flex: none;
-            background: transparent; border: none; border-radius: 10px; cursor: pointer;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
-            transition: background .2s;
+            width: 42px; height: 42px; padding: 0; flex: none; background: transparent; border: none; border-radius: 10px; cursor: pointer;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; transition: background .2s;
         }
         .burger:hover { background: rgba(255,255,255,.15); }
         .burger span { display: block; width: 24px; height: 3px; border-radius: 3px; background: var(--white); transition: transform .35s var(--ease), opacity .2s; }
@@ -175,17 +186,16 @@
             position: fixed; top: 0; left: 0; bottom: 0; width: 280px; max-width: 85vw; z-index: 50;
             background: var(--charcoal); color: var(--white);
             transform: translateX(-100%); transition: transform .4s var(--ease);
-            display: flex; flex-direction: column;
-            box-shadow: 10px 0 40px rgba(0,0,0,.4);
+            display: flex; flex-direction: column; box-shadow: 10px 0 40px rgba(0,0,0,.4);
         }
         .drawer.open { transform: translateX(0); }
-        .drawer-head { padding: 22px 20px; border-bottom: 3px solid var(--maroon); }
-        .drawer-head b { display: block; font-size: 18px; }
-        .drawer-head small { opacity: .65; word-break: break-all; }
+        .drawer-head { padding: 20px; border-bottom: 3px solid var(--maroon); }
+        .drawer-head b { display: block; font-size: var(--fs-1); line-height: 1.2; }
+        .drawer-head small { display: block; margin-top: 4px; font-size: var(--fs-n1); opacity: .65; word-break: break-all; }
         .nav { flex: 1; padding: 14px 10px; }
         .nav button {
             display: flex; align-items: center; gap: 12px; width: 100%; margin: 4px 0; padding: 14px 16px;
-            font-size: 15px; font-weight: 600; text-align: left; color: var(--white);
+            font-weight: 600; text-align: left; color: var(--white);
             background: transparent; border: none; border-left: 4px solid transparent; border-radius: 8px; cursor: pointer;
             opacity: 0; transform: translateX(-20px);
             transition: background .2s, border-color .2s, padding-left .2s;
@@ -197,19 +207,29 @@
         .nav button.active { background: var(--maroon); border-left-color: var(--white); }
         .nav svg { width: 20px; height: 20px; flex: none; }
         .drawer-foot { padding: 14px 16px 20px; border-top: 1px solid rgba(255,255,255,.15); }
-        .drawer-foot .btn { background: transparent; border: 2px solid var(--white); box-shadow: none; margin: 0; }
+        .drawer-foot .btn { background: transparent; border-color: var(--white); box-shadow: none; margin: 0; }
         .drawer-foot .btn:hover:not(:disabled) { background: var(--white); color: var(--maroon); filter: none; }
+        .danger-link { display: block; margin: 14px auto 0; background: none; border: none; color: var(--white); opacity: .65; font-size: var(--fs-n1); cursor: pointer; text-decoration: underline; }
+        .danger-link:hover { opacity: 1; }
 
         .content { padding: 84px 22px 30px; max-width: 900px; margin: 0 auto; }
         .section { animation: swap .45s var(--ease); }
-        .section h2 { text-align: left; font-size: 26px; color: var(--maroon); margin-bottom: 6px; }
-        .section > p { margin: 0 0 20px; opacity: .7; }
-        .empty {
-            border: 2px dashed rgba(58,58,58,.3); border-radius: 14px; padding: 46px 20px; text-align: center;
-            background: linear-gradient(135deg, rgba(118,9,12,.04), transparent);
-        }
+        .section h2 { text-align: left; font-size: var(--fs-3); font-weight: 800; line-height: 1.2; color: var(--maroon); margin-bottom: 6px; }
+        .section > p { margin: 0 0 20px; font-size: var(--fs-0); opacity: .7; }
+        .empty { border: 2px dashed rgba(58,58,58,.3); border-radius: 14px; padding: 46px 20px; text-align: center; background: linear-gradient(135deg, rgba(118,9,12,.04), transparent); }
         .empty .ico { width: 54px; height: 54px; margin: 0 auto 12px; border-radius: 50%; background: var(--maroon); color: var(--white); display: grid; place-items: center; }
         .empty .ico svg { width: 26px; height: 26px; }
+        .empty b { font-size: var(--fs-1); }
+        .empty p { margin-top: 6px; font-size: var(--fs-0); opacity: .7; }
+
+        /* ============ DELETE MODAL ============ */
+        .modal { position: fixed; inset: 0; z-index: 70; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(58,58,58,.7); backdrop-filter: blur(3px); animation: fade .25s; }
+        @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+        .modal-card { width: 380px; max-width: 100%; background: var(--white); border-radius: 16px; border-top: 6px solid var(--maroon); padding: 26px 24px 22px; box-shadow: 0 25px 60px rgba(0,0,0,.5); animation: cardIn .4s var(--ease); }
+        .modal-card h3 { font-size: var(--fs-2); font-weight: 800; line-height: 1.2; color: var(--maroon); margin-bottom: 8px; }
+        .modal-card p { font-size: var(--fs-0); opacity: .85; margin-bottom: 6px; }
+        .modal-actions { display: flex; gap: 10px; }
+        .modal-actions .btn { margin-top: 8px; }
 
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: .001s !important; animation-iteration-count: 1 !important; transition-duration: .001s !important; }
@@ -226,8 +246,9 @@
         <div class="logo">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
         </div>
+        <div class="brand">Eve1 2030</div>
 
-        <!-- Login / Signup form -->
+        <!-- Login / Signup -->
         <div id="auth-view">
             <div id="form-wrap">
                 <h2 id="form-title">Welcome Back</h2>
@@ -242,25 +263,39 @@
                         <label for="password">Password</label>
                         <button type="button" class="peek" id="peek">Show</button>
                     </div>
+                    <div class="forgot-row" id="forgot-row"><button type="button" class="linkish" id="forgot-link">Forgot password?</button></div>
                     <button type="submit" class="btn" id="submit-btn">Log In</button>
                 </form>
                 <div class="toggle"><span id="toggle-link">Need an account? Sign up</span></div>
             </div>
-            <div id="message"></div>
+            <div class="msg" id="message"></div>
         </div>
 
-        <!-- Verify email panel -->
-        <div id="verify-view" class="verify hidden">
-            <div class="envelope">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
-            </div>
+        <!-- Verify email -->
+        <div id="verify-view" class="panel hidden">
+            <div class="envelope"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></div>
             <h2>Check your inbox</h2>
             <p id="verify-text">We sent a verification link to</p>
             <p><strong id="verify-email"></strong></p>
             <p>Click the link in the email, then come back and log in.</p>
             <button type="button" class="btn" id="resend-btn">Resend email</button>
             <button type="button" class="btn ghost" id="back-btn">Back to login</button>
-            <div id="verify-message" style="text-align:center;margin-top:12px;font-size:14px;font-weight:600;min-height:20px"></div>
+            <div class="msg" id="verify-message"></div>
+        </div>
+
+        <!-- Forgot password -->
+        <div id="forgot-view" class="panel hidden">
+            <h2>Forgot password?</h2>
+            <p class="sub">Enter your email and we'll send you a link to reset it.</p>
+            <form id="forgot-form" novalidate>
+                <div class="field">
+                    <input type="email" id="forgot-email" placeholder=" " autocomplete="username" required>
+                    <label for="forgot-email">Email address</label>
+                </div>
+                <button type="submit" class="btn" id="forgot-btn">Send reset link</button>
+            </form>
+            <button type="button" class="btn ghost" id="forgot-back">Back to login</button>
+            <div class="msg" id="forgot-message"></div>
         </div>
     </div>
 </div>
@@ -268,17 +303,16 @@
 <!-- ================= APP (after login) ================= -->
 <div class="app hidden" id="app">
     <header class="topbar">
-        <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false" aria-controls="drawer">
-            <span></span><span></span><span></span>
-        </button>
-        <h1 id="page-title">Requests</h1>
+        <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false" aria-controls="drawer"><span></span><span></span><span></span></button>
+        <div class="site">Eve1 2030</div>
+        <div class="page" id="page-title">Requests</div>
         <div class="user-chip" id="chip"></div>
     </header>
 
     <div class="overlay" id="overlay"></div>
 
     <aside class="drawer" id="drawer" aria-label="Main menu">
-        <div class="drawer-head"><b>Menu</b><small id="drawer-email"></small></div>
+        <div class="drawer-head"><b>Eve1 2030</b><small id="drawer-email"></small></div>
         <nav class="nav">
             <button type="button" data-section="requests" class="active">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
@@ -289,7 +323,10 @@
                 Announcement Bin
             </button>
         </nav>
-        <div class="drawer-foot"><button type="button" class="btn" id="logout-btn">Log Out</button></div>
+        <div class="drawer-foot">
+            <button type="button" class="btn" id="logout-btn">Log Out</button>
+            <button type="button" class="danger-link" id="delete-open">Delete account</button>
+        </div>
     </aside>
 
     <main class="content">
@@ -299,7 +336,7 @@
             <div class="empty">
                 <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
                 <b>No requests yet</b>
-                <p style="margin:6px 0 0;opacity:.7">New requests will show up here.</p>
+                <p>New requests will show up here.</p>
             </div>
         </section>
         <section class="section hidden" id="sec-announcements">
@@ -308,10 +345,30 @@
             <div class="empty">
                 <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h3l5 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M16 8a5 5 0 0 1 0 8"/></svg></div>
                 <b>No announcements yet</b>
-                <p style="margin:6px 0 0;opacity:.7">Announcements will be posted here.</p>
+                <p>Announcements will be posted here.</p>
             </div>
         </section>
     </main>
+
+    <!-- Delete account modal -->
+    <div class="modal hidden" id="del-modal" role="dialog" aria-modal="true" aria-labelledby="del-title">
+        <div class="modal-card">
+            <h3 id="del-title">Delete account?</h3>
+            <p>This permanently deletes your account and can't be undone. Enter your password to confirm.</p>
+            <form id="del-form" novalidate>
+                <div class="field has-peek">
+                    <input type="password" id="del-password" placeholder=" " autocomplete="current-password">
+                    <label for="del-password">Password</label>
+                    <button type="button" class="peek" id="del-peek">Show</button>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn ghost" id="del-cancel">Cancel</button>
+                    <button type="submit" class="btn" id="del-confirm">Delete</button>
+                </div>
+            </form>
+            <div class="msg" id="del-message"></div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -319,30 +376,27 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyXGio_hof7wKZQcprT51cwFxrQ-_GQBEQvsz83hHNy_Qe1EW8EsCW1xydoLhxBjGOyoQ/exec";
 
     const $ = (id) => document.getElementById(id);
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const ERR = "#76090c", OK = "#3a3a3a";
     let isSignup = false;
-    let pending = null;      // {email, hash} kept in memory only, used for "resend"
+    let pending = null;          // {email, hash} in memory only (for "resend")
+    let currentEmail = null;     // logged-in email
     let cooldownTimer = null;
 
     /* ---------- helpers ---------- */
     function setMessage(el, text, color) {
-        el.style.color = color;
+        el.style.color = color || "";
         el.textContent = text;
         el.classList.remove("show"); void el.offsetWidth; el.classList.add("show");
     }
-    const authMsg = (t, c) => setMessage($("message"), t, c);
-    function shakeCard() {
-        const card = $("card");
-        card.classList.remove("shake"); void card.offsetWidth; card.classList.add("shake");
-    }
+    function shakeCard() { const c = $("card"); c.classList.remove("shake"); void c.offsetWidth; c.classList.add("shake"); }
     function setLoading(btn, on) { btn.disabled = on; btn.classList.toggle("loading", on); }
 
     async function hashPassword(password) {
         if (!window.crypto || !window.crypto.subtle) throw new Error("Secure hashing requires HTTPS or localhost.");
-        const data = new TextEncoder().encode(password);
-        const buf = await crypto.subtle.digest("SHA-256", data);
+        const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(password));
         return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
     }
-
     async function callScript(payload) {
         const res = await fetch(SCRIPT_URL, {
             method: "POST",
@@ -351,6 +405,21 @@
         });
         if (!res.ok) throw new Error("HTTP " + res.status);
         return res.json();
+    }
+    function netError(err) {
+        return String(err.message).includes("HTTPS") ? err.message : "An error occurred. Check your connection and the script URL.";
+    }
+    function bindPeek(btnId, inputId) {
+        $(btnId).addEventListener("click", () => {
+            const p = $(inputId), show = p.type === "password";
+            p.type = show ? "text" : "password";
+            $(btnId).textContent = show ? "Hide" : "Show";
+        });
+    }
+
+    /* ---------- panels ---------- */
+    function showPanel(name) {
+        ["auth", "verify", "forgot"].forEach(n => $(n + "-view").classList.toggle("hidden", n !== name));
     }
 
     /* ---------- login / signup mode ---------- */
@@ -361,26 +430,25 @@
         $("submit-btn").textContent = isSignup ? "Sign Up" : "Log In";
         $("toggle-link").textContent = isSignup ? "Already have an account? Login" : "Need an account? Sign up";
         $("password").autocomplete = isSignup ? "new-password" : "current-password";
-        authMsg("", "");
-        const wrap = $("form-wrap");
-        wrap.classList.remove("swap"); void wrap.offsetWidth; wrap.classList.add("swap");
+        $("forgot-row").classList.toggle("hidden", isSignup);
+        setMessage($("message"), "", "");
+        const w = $("form-wrap"); w.classList.remove("swap"); void w.offsetWidth; w.classList.add("swap");
+    }
+
+    function showAuthForm() {
+        showPanel("auth");
+        if (isSignup) toggleMode();
+        $("password").value = "";
+        setMessage($("message"), "", "");
     }
 
     /* ---------- verify panel ---------- */
     function showVerify(email, text) {
-        $("auth-view").classList.add("hidden");
-        $("verify-view").classList.remove("hidden");
+        showPanel("verify");
         $("verify-email").textContent = email;
         $("verify-text").textContent = text;
         setMessage($("verify-message"), "", "");
         startCooldown(60);
-    }
-    function showAuthForm() {
-        $("verify-view").classList.add("hidden");
-        $("auth-view").classList.remove("hidden");
-        if (isSignup) toggleMode();
-        $("password").value = "";
-        authMsg("", "");
     }
     function startCooldown(seconds) {
         const btn = $("resend-btn");
@@ -390,44 +458,37 @@
         btn.textContent = "Resend email (" + left + "s)";
         cooldownTimer = setInterval(() => {
             left--;
-            if (left <= 0) { clearInterval(cooldownTimer); btn.disabled = false; btn.textContent = "Resend email"; }
+            if (left <= 0) { clearInterval(cooldownTimer); cooldownTimer = null; btn.disabled = false; btn.textContent = "Resend email"; }
             else btn.textContent = "Resend email (" + left + "s)";
         }, 1000);
     }
 
-    /* ---------- submit ---------- */
+    /* ---------- login / signup submit ---------- */
     async function handleSubmit(e) {
         e.preventDefault();
         const email = $("email").value.trim().toLowerCase();
         const raw = $("password").value;
         const btn = $("submit-btn");
+        const m = $("message");
 
-        if (!email || !raw) { authMsg("Please fill in all fields.", "#76090c"); return shakeCard(); }
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { authMsg("Please enter a valid email address.", "#76090c"); return shakeCard(); }
-        if (isSignup && raw.length < 8) { authMsg("Password must be at least 8 characters.", "#76090c"); return shakeCard(); }
+        if (!email || !raw) { setMessage(m, "Please fill in all fields.", ERR); return shakeCard(); }
+        if (!EMAIL_RE.test(email)) { setMessage(m, "Please enter a valid email address.", ERR); return shakeCard(); }
+        if (isSignup && raw.length < 8) { setMessage(m, "Password must be at least 8 characters.", ERR); return shakeCard(); }
 
         setLoading(btn, true);
-        authMsg("", "");
-
+        setMessage(m, "", "");
         try {
             const hash = await hashPassword(raw);
             pending = { email, hash };
             const result = await callScript({ action: isSignup ? "signup" : "login", email, password: hash });
 
-            if (result.status === "success") {
-                sessionStorage.setItem("userEmail", email);
-                enterApp(email);
-            } else if (result.status === "verify_sent") {
-                showVerify(email, "We sent a verification link to");
-            } else if (result.status === "unverified") {
-                showVerify(email, "Your email isn't verified yet. Check the link we sent to");
-            } else {
-                authMsg(result.message, "#76090c");
-                shakeCard();
-            }
+            if (result.status === "success") { sessionStorage.setItem("userEmail", email); enterApp(email); }
+            else if (result.status === "verify_sent") showVerify(email, "We sent a verification link to");
+            else if (result.status === "unverified") showVerify(email, "Your email isn't verified yet. Check the link we sent to");
+            else { setMessage(m, result.message, ERR); shakeCard(); }
         } catch (err) {
             console.error(err);
-            authMsg(String(err.message).includes("HTTPS") ? err.message : "An error occurred. Check your connection and the script URL.", "#76090c");
+            setMessage(m, netError(err), ERR);
             shakeCard();
         } finally {
             setLoading(btn, false);
@@ -436,26 +497,83 @@
 
     async function handleResend() {
         if (!pending) return showAuthForm();
-        const btn = $("resend-btn");
-        const vm = $("verify-message");
+        const btn = $("resend-btn"), vm = $("verify-message");
         setLoading(btn, true);
         try {
             const r = await callScript({ action: "resend", email: pending.email, password: pending.hash });
-            if (r.status === "verify_sent") { setMessage(vm, r.message, "#3a3a3a"); setLoading(btn, false); startCooldown(60); return; }
-            if (r.status === "success") { setMessage(vm, r.message, "#3a3a3a"); }
-            else { setMessage(vm, r.message, "#76090c"); }
+            if (r.status === "verify_sent") { setMessage(vm, r.message, OK); setLoading(btn, false); startCooldown(60); return; }
+            setMessage(vm, r.message, r.status === "success" ? OK : ERR);
         } catch (err) {
             console.error(err);
-            setMessage(vm, "Couldn't reach the server. Try again.", "#76090c");
+            setMessage(vm, "Couldn't reach the server. Try again.", ERR);
         }
         setLoading(btn, false);
-        if (!cooldownTimer || btn.textContent === "Resend email") btn.disabled = false;
+        if (!cooldownTimer) btn.disabled = false;
+    }
+
+    /* ---------- forgot password ---------- */
+    function showForgot() {
+        showPanel("forgot");
+        $("forgot-email").value = $("email").value.trim();
+        setMessage($("forgot-message"), "", "");
+    }
+    async function handleForgot(e) {
+        e.preventDefault();
+        const email = $("forgot-email").value.trim().toLowerCase();
+        const btn = $("forgot-btn"), fm = $("forgot-message");
+        if (!EMAIL_RE.test(email)) { setMessage(fm, "Please enter a valid email address.", ERR); return shakeCard(); }
+        setLoading(btn, true);
+        try {
+            const r = await callScript({ action: "forgot", email });
+            setMessage(fm, r.message, r.status === "success" ? OK : ERR);
+            if (r.status !== "success") shakeCard();
+        } catch (err) {
+            console.error(err);
+            setMessage(fm, netError(err), ERR);
+            shakeCard();
+        } finally {
+            setLoading(btn, false);
+        }
+    }
+
+    /* ---------- delete account ---------- */
+    function openDelete() {
+        closeMenu();
+        $("del-password").value = "";
+        setMessage($("del-message"), "", "");
+        $("del-modal").classList.remove("hidden");
+        setTimeout(() => $("del-password").focus(), 50);
+    }
+    function closeDelete() { $("del-modal").classList.add("hidden"); }
+    async function handleDelete(e) {
+        e.preventDefault();
+        const raw = $("del-password").value;
+        const btn = $("del-confirm"), dm = $("del-message");
+        if (!raw) return setMessage(dm, "Enter your password to confirm.", ERR);
+        setLoading(btn, true);
+        try {
+            const hash = await hashPassword(raw);
+            const r = await callScript({ action: "delete", email: currentEmail, password: hash });
+            if (r.status === "success") {
+                closeDelete();
+                leaveApp();
+                setMessage($("message"), "Your account has been deleted.", OK);
+            } else {
+                setMessage(dm, r.message, ERR);
+            }
+        } catch (err) {
+            console.error(err);
+            setMessage(dm, netError(err), ERR);
+        } finally {
+            setLoading(btn, false);
+        }
     }
 
     /* ---------- app view ---------- */
     const titles = { requests: "Requests", announcements: "Announcement Bin" };
 
     function enterApp(email) {
+        currentEmail = email;
         document.body.classList.add("app-mode");
         $("stage").classList.add("hidden");
         $("app").classList.remove("hidden");
@@ -465,26 +583,23 @@
     }
     function leaveApp() {
         sessionStorage.removeItem("userEmail");
-        closeMenu();
+        currentEmail = null;
         pending = null;
+        closeMenu();
+        closeDelete();
         document.body.classList.remove("app-mode");
         $("app").classList.add("hidden");
         $("stage").classList.remove("hidden");
-        $("password").value = "";
+        $("email").value = "";
         showAuthForm();
     }
-
     function openMenu() {
-        $("drawer").classList.add("open");
-        $("overlay").classList.add("show");
-        $("burger").classList.add("open");
-        $("burger").setAttribute("aria-expanded", "true");
+        $("drawer").classList.add("open"); $("overlay").classList.add("show");
+        $("burger").classList.add("open"); $("burger").setAttribute("aria-expanded", "true");
     }
     function closeMenu() {
-        $("drawer").classList.remove("open");
-        $("overlay").classList.remove("show");
-        $("burger").classList.remove("open");
-        $("burger").setAttribute("aria-expanded", "false");
+        $("drawer").classList.remove("open"); $("overlay").classList.remove("show");
+        $("burger").classList.remove("open"); $("burger").setAttribute("aria-expanded", "false");
     }
     function showSection(name) {
         Object.keys(titles).forEach(k => $("sec-" + k).classList.toggle("hidden", k !== name));
@@ -495,19 +610,22 @@
     /* ---------- events ---------- */
     $("auth-form").addEventListener("submit", handleSubmit);
     $("toggle-link").addEventListener("click", toggleMode);
-    $("peek").addEventListener("click", () => {
-        const p = $("password"); const show = p.type === "password";
-        p.type = show ? "text" : "password";
-        $("peek").textContent = show ? "Hide" : "Show";
-    });
+    $("forgot-link").addEventListener("click", showForgot);
+    $("forgot-form").addEventListener("submit", handleForgot);
+    $("forgot-back").addEventListener("click", showAuthForm);
     $("resend-btn").addEventListener("click", handleResend);
     $("back-btn").addEventListener("click", showAuthForm);
+    bindPeek("peek", "password");
+    bindPeek("del-peek", "del-password");
 
     $("burger").addEventListener("click", () => $("drawer").classList.contains("open") ? closeMenu() : openMenu());
     $("overlay").addEventListener("click", closeMenu);
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeMenu(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeMenu(); closeDelete(); } });
     document.querySelectorAll(".nav button").forEach(b => b.addEventListener("click", () => { showSection(b.dataset.section); closeMenu(); }));
     $("logout-btn").addEventListener("click", leaveApp);
+    $("delete-open").addEventListener("click", openDelete);
+    $("del-cancel").addEventListener("click", closeDelete);
+    $("del-form").addEventListener("submit", handleDelete);
 
     // Restore session on reload
     const saved = sessionStorage.getItem("userEmail");
