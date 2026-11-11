@@ -55,15 +55,6 @@
               background: radial-gradient(circle at 20% 15%, rgba(118,9,12,.35), transparent 45%),
                           radial-gradient(circle at 85% 90%, rgba(118,9,12,.30), transparent 50%),
                           var(--charcoal); }
-        .blob { position: absolute; border-radius: 50%; filter: blur(60px); opacity: .55; background: var(--maroon); animation: float 14s ease-in-out infinite; }
-        .blob.b1 { width: 380px; height: 380px; top: -100px; left: -80px; }
-        .blob.b2 { width: 300px; height: 300px; bottom: -80px; right: -60px; animation-delay: -5s; }
-        .blob.b3 { width: 200px; height: 200px; top: 55%; left: 60%; opacity: .3; background: var(--white); animation-delay: -9s; }
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(40px, 30px) scale(1.1); }
-            66% { transform: translate(-30px, 50px) scale(.95); }
-        }
         body.app-mode .bg { display: none; }
 
         /* Auth Stage */
@@ -578,7 +569,6 @@ button:focus-visible, [role="button"]:focus-visible { outline: 2px solid var(--a
 
 /* ---------- Login screen ---------- */
 .bg { background: var(--bg-grad); }
-.blob { display: none; }
 .card { background: var(--surface); border-radius: 10px; border-top: 4px solid var(--accent); box-shadow: 0 12px 32px rgba(0,0,0,.18), 0 0 0 1px var(--line); }
 .logo { background: var(--accent); border-radius: 10px; animation: none; box-shadow: 0 0 0 5px var(--surface), 0 4px 12px rgba(0,0,0,.25); }
 .brand { color: var(--accent-text); font-weight: 700; letter-spacing: 1px; }
@@ -774,10 +764,7 @@ html[data-theme="night"] {
         radial-gradient(ellipse at 85% 95%, var(--glow2), transparent 50%),
         var(--bg-grad);
 }
-.blob { display: block; filter: blur(70px); opacity: 1; }
-.blob.b1 { background: var(--blob1); }
-.blob.b2 { background: var(--blob2); }
-.blob.b3 { background: var(--blob1); opacity: .35; }
+
         
 /* Flowing waves + soft moving gradient */
 .bg { --sheen: rgba(118,9,12,.12); --wave-a: rgba(118,9,12,.16); --wave-b: rgba(118,9,12,.03); }
@@ -821,19 +808,6 @@ html[data-theme="night"] .bg { --sheen: rgba(163,23,30,.16); --wave-a: rgba(163,
 @media (prefers-reduced-motion: reduce) {
     .bg::before, .bg::after { animation: none; }
 }
-        
-/* Courthouse columns */
-.bg::before {
-    width: 440px; height: 367px; top: -30px; right: -70px;
-    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 200' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 22H232V36H8ZM30 46V158M48 46V158M39 50V154M25 40H53V46H25ZM25 158H53V164H25ZM84 46V158M102 46V158M93 50V154M79 40H107V46H79ZM79 158H107V164H79ZM138 46V158M156 46V158M147 50V154M133 40H161V46H133ZM133 158H161V164H133ZM192 46V158M210 46V158M201 50V154M187 40H215V46H187ZM187 158H215V164H187ZM0 172H240V180H0ZM12 180H228V188H12Z'/%3E%3C/svg%3E");
-    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 200' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 22H232V36H8ZM30 46V158M48 46V158M39 50V154M25 40H53V46H25ZM25 158H53V164H25ZM84 46V158M102 46V158M93 50V154M79 40H107V46H79ZM79 158H107V164H79ZM138 46V158M156 46V158M147 50V154M133 40H161V46H133ZM133 158H161V164H133ZM192 46V158M210 46V158M201 50V154M187 40H215V46H187ZM187 158H215V164H187ZM0 172H240V180H0ZM12 180H228V188H12Z'/%3E%3C/svg%3E");
-}
-/* Scales of justice */
-.bg::after {
-    width: 340px; height: 340px; bottom: -50px; left: -50px;
-    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='100' cy='24' r='6'/%3E%3Cpath d='M100 30V168M30 52Q100 40 170 52M30 52L12 112M30 52L48 112M170 52L152 112M170 52L188 112M6 112Q30 138 54 112ZM146 112Q170 138 194 112ZM76 176H124M64 188H136'/%3E%3C/svg%3E");
-    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='100' cy='24' r='6'/%3E%3Cpath d='M100 30V168M30 52Q100 40 170 52M30 52L12 112M30 52L48 112M170 52L152 112M170 52L188 112M6 112Q30 138 54 112ZM146 112Q170 138 194 112ZM76 176H124M64 188H136'/%3E%3C/svg%3E");
-}
 
 /* ---------- Site background ---------- */
 .app {
@@ -850,8 +824,8 @@ html[data-theme="night"] .bg { --sheen: rgba(163,23,30,.16); --wave-a: rgba(163,
 </head>
 <body>
 
-<div class="bg"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
-
+<div class="bg"></div>
+    
 <!-- AUTHENTICATION VIEW -->
 <div class="stage" id="stage">
     <div class="card" id="card">
