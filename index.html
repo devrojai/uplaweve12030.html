@@ -875,7 +875,8 @@ html[data-theme="night"] .drawer-foot .btn-danger:hover {
 .modal-actions-end { justify-content: flex-end; gap: 10px; margin-top: 16px; }
 .file-title { word-break: break-all; }
 .btn-link { text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
-.drawer-gap { height: 12px; }
+.drawer-gap { height: 0; }
+.drawer-foot #logout-btn { margin-top: 8px; }
 .file-text { white-space: pre-wrap; text-align: left; font-size: var(--fs-n1); background: var(--surface2); padding: 14px; border-radius: var(--r-lg); }
 #course-modal-grid { margin-top: 12px; }
 #confirm-modal { z-index: 90; }
@@ -908,6 +909,10 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
     .cal-chip, .badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 
+/* Calendar month/year dropdowns: never wrap names like "September" */
+.cal-sel .sdrop-list { width: max-content; min-width: 100%; }
+.cal-sel .sdrop-item { white-space: nowrap; word-break: normal; }
+        
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
