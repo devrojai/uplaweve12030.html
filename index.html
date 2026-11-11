@@ -2014,6 +2014,7 @@ function mentionHandle(u) {
         $("file-modal-body").textContent = "";
     }
     $("file-modal-close").addEventListener("click", closeFileModal);
+    $("file-modal").addEventListener("click", e => { if (e.target === e.currentTarget) closeFileModal(); });
 
     const NOW = new Date();
     let annList = [], dlY = NOW.getFullYear(), dlM = NOW.getMonth(), dlSel = todayIso();
@@ -2102,6 +2103,7 @@ function mentionHandle(u) {
     }
     function closeAnnModal() { $("ann-modal").classList.add("hidden"); }
     $("ann-modal-close").addEventListener("click", closeAnnModal);
+    $("ann-modal").addEventListener("click", e => { if (e.target === e.currentTarget) closeAnnModal(); });
 
     function annCard(a) {
         const ref = a.deadline || a.periodEnd || "";
