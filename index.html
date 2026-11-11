@@ -227,6 +227,7 @@
         .drawer.open .nav button { opacity: 1; transform: none; transition: opacity .4s var(--ease), transform .4s var(--ease), background .2s, border-color .2s, padding-left .2s; }
         .drawer.open .nav button:nth-child(1) { transition-delay: .12s, .12s, 0s, 0s, 0s; }
         .drawer.open .nav button:nth-child(2) { transition-delay: .2s, .2s, 0s, 0s, 0s; }
+        .drawer.open .nav button:nth-child(3) { transition-delay: .28s, .28s, 0s, 0s, 0s; }
         .nav button:hover { background: rgba(255,255,255,.1); padding-left: 22px; }
         .nav button.active { background: var(--maroon); border-left-color: var(--white); }
         .nav svg { width: 20px; height: 20px; flex: none; }
@@ -258,6 +259,34 @@
         .field textarea:not(:placeholder-shown) ~ label { top: 5px; font-size: var(--fs-n1); font-weight: 600; }
         .field textarea:focus ~ label { color: var(--maroon); }
         .btn.submitted, .btn.submitted:disabled { background: #0a4424; border-color: #0a4424; color: var(--white); opacity: 1; cursor: default; box-shadow: 0 6px 16px rgba(10,68,36,.35); }
+
+        /* ---- Repository (admin) ---- */
+        .repo-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 14px 0; }
+        .repo-count { font-size: var(--fs-0); font-weight: 600; opacity: .7; }
+        .user-list { display: flex; flex-direction: column; gap: 8px; }
+        .user-row {
+            display: flex; align-items: center; gap: 14px; width: 100%; padding: 12px 14px; text-align: left;
+            color: var(--charcoal); background: var(--white); border: 2px solid rgba(58,58,58,.15); border-radius: 12px; cursor: pointer;
+            transition: border-color .2s, box-shadow .2s, transform .2s var(--ease);
+        }
+        .user-row:hover { border-color: var(--maroon); box-shadow: 0 6px 16px rgba(118,9,12,.15); transform: translateY(-1px); }
+        .u-ava { width: 44px; height: 44px; flex: none; overflow: hidden; border-radius: 50%; background: var(--charcoal); color: var(--white); font-weight: 700; display: grid; place-items: center; }
+        .u-ava img, .detail-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .u-main { flex: 1; min-width: 0; }
+        .u-name { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .u-sub { font-size: var(--fs-n1); opacity: .65; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .badge { flex: none; font-size: var(--fs-n1); font-weight: 700; color: var(--white); background: var(--maroon); padding: 2px 10px; border-radius: 999px; }
+        .back-link { display: inline-block; margin: 14px 0 12px; font-size: var(--fs-0); }
+        .detail-head { display: flex; align-items: center; gap: 16px; margin: 4px 0 18px; }
+        .detail-photo { width: 84px; height: 84px; flex: none; overflow: hidden; border-radius: 50%; background: var(--charcoal); color: var(--white); font-size: var(--fs-2); font-weight: 800; border: 3px solid var(--white); box-shadow: 0 0 0 3px var(--maroon); display: grid; place-items: center; }
+        .detail-name { font-size: var(--fs-2); font-weight: 800; line-height: 1.2; color: var(--maroon); word-break: break-word; }
+        .detail-grid { border: 2px solid rgba(58,58,58,.12); border-radius: 12px; overflow: hidden; }
+        .drow { display: flex; gap: 12px; padding: 12px 16px; border-top: 1px solid rgba(58,58,58,.1); }
+        .drow:first-child { border-top: none; }
+        .dk { flex: 0 0 160px; font-size: var(--fs-n1); font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--maroon); padding-top: 2px; }
+        .dv { flex: 1; min-width: 0; word-break: break-word; }
+        .dv a { color: var(--maroon); font-weight: 600; }
+        @media (max-width: 520px) { .drow { flex-direction: column; gap: 2px; } .dk { flex: none; } }
 
         /* ---- Delete account button ---- */
         .btn-danger {
@@ -427,9 +456,13 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                 Requests
             </button>
-            <button type="button" data-section="announcements" class="hidden">
+            <button type="button" data-section="announcements" data-admin class="hidden">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h3l5 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M16 8a5 5 0 0 1 0 8"/></svg>
                 Announcement Bin
+            </button>
+            <button type="button" data-section="repository" data-admin class="hidden">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Repository
             </button>
         </nav>
         <div class="drawer-foot">
@@ -500,6 +533,21 @@
                 <b>No announcements yet</b>
                 <p>Announcements will be posted here.</p>
             </div>
+        </section>
+        <section class="section hidden" id="sec-repository">
+            <h2>Repository</h2>
+            <div id="repo-list-view">
+                <div class="repo-bar">
+                    <span class="repo-count" id="repo-count"></span>
+                    <button type="button" class="btn sm" id="repo-download">Download CSV</button>
+                </div>
+                <div class="user-list" id="repo-list"></div>
+            </div>
+            <div id="repo-detail-view" class="hidden">
+                <button type="button" class="linkish back-link" id="repo-back">&larr; All users</button>
+                <div id="repo-detail"></div>
+            </div>
+            <div class="msg" id="repo-msg"></div>
         </section>
     </main>
 
@@ -733,7 +781,8 @@
     }
 
     /* ---------- app view ---------- */
-    const titles = { requests: "Requests", announcements: "Announcement Bin" };
+    const titles = { requests: "Requests", announcements: "Announcement Bin", repository: "Repository" };
+    const ADMIN_SECTIONS = ["announcements", "repository"];   // hidden from regular users
 
     function enterApp(email, tok) {
         currentEmail = email;
@@ -778,10 +827,11 @@
         $("burger").classList.remove("open"); $("burger").setAttribute("aria-expanded", "false");
     }
     function showSection(name) {
-        if (name === "announcements" && !isAdmin) name = "requests";   // Announcement Bin is admin-only
+        if (ADMIN_SECTIONS.includes(name) && !isAdmin) name = "requests";   // admin-only sections
         Object.keys(titles).forEach(k => $("sec-" + k).classList.toggle("hidden", k !== name));
         document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("active", b.dataset.section === name));
         $("page-title").textContent = titles[name];
+        if (name === "repository") { closeUser(); loadRepo(); }
     }
 
     /* ---------- autofill / prefilled fields: keep floating labels in sync ---------- */
@@ -968,11 +1018,12 @@
     /* ---------- admin access ---------- */
     let isAdmin = false;
     function applyAdmin() {
-        document.querySelector('.nav button[data-section="announcements"]').classList.toggle("hidden", !isAdmin);
+        document.querySelectorAll(".nav button[data-admin]").forEach(b => b.classList.toggle("hidden", !isAdmin));
         const b = $("admin-claim");
         b.textContent = isAdmin ? "Admin Access Granted" : "Claim Admin Access";
         b.disabled = isAdmin;
-        if (!isAdmin && !$("sec-announcements").classList.contains("hidden")) showSection("requests");
+        if (!isAdmin) { repoUsers = []; $("repo-list").textContent = ""; $("repo-detail").textContent = ""; }
+        if (!isAdmin && ADMIN_SECTIONS.some(k => !$("sec-" + k).classList.contains("hidden"))) showSection("requests");
     }
     async function refreshAdmin() {
         if (!currentEmail || !token) return;
@@ -1000,6 +1051,160 @@
             setLoading(btn, false);
             applyAdmin();
         }
+    }
+
+    /* ---------- repository (admin only) ---------- */
+    let repoUsers = [];
+    let detailFor = "";
+    const CSV_COLS = [
+        ["Account Email", "email"], ["Verified", "verified"], ["Role", "role"],
+        ["First Name", "firstName"], ["Middle Name", "middleName"], ["Last Name", "lastName"],
+        ["Contact No.", "contact"], ["UP Student Email", "upEmail"], ["Telegram Handle", "tg"], ["Facebook URL", "fb"],
+        ["Account Created", "created"], ["Profile Updated", "updated"]
+    ];
+    // user data is always inserted with textContent (never innerHTML)
+    function mk(tag, cls, text) {
+        const e = document.createElement(tag);
+        if (cls) e.className = cls;
+        if (text != null) e.textContent = text;
+        return e;
+    }
+    function nameOf(u) { return [u.firstName, u.middleName, u.lastName].filter(Boolean).join(" ") || u.email; }
+    function initialsFor(u) {
+        const a = (u.firstName || "").trim()[0] || "", b = (u.lastName || "").trim()[0] || "";
+        return (a + b).toUpperCase() || (u.email || "?")[0].toUpperCase();
+    }
+    function roleOf(u) { return u.admin ? "Admin" : "Regular"; }
+    function avatarInto(box, u, photo) {
+        box.textContent = "";
+        if (photo && /^data:image\//.test(photo)) {
+            const img = document.createElement("img");
+            img.src = photo; img.alt = "";
+            box.appendChild(img);
+        } else {
+            box.textContent = initialsFor(u);
+        }
+    }
+
+    function renderRepoList() {
+        const box = $("repo-list");
+        box.textContent = "";
+        $("repo-count").textContent = repoUsers.length + (repoUsers.length === 1 ? " user" : " users");
+        if (!repoUsers.length) { box.appendChild(mk("p", "repo-count", "No users yet.")); return; }
+        repoUsers.forEach(u => {
+            const row = mk("button", "user-row");
+            row.type = "button";
+            const ava = mk("div", "u-ava");
+            avatarInto(ava, u, "");
+            const main = mk("div", "u-main");
+            main.appendChild(mk("div", "u-name", nameOf(u)));
+            main.appendChild(mk("div", "u-sub", u.email));
+            row.appendChild(ava);
+            row.appendChild(main);
+            if (u.admin) row.appendChild(mk("span", "badge", "Admin"));
+            row.addEventListener("click", () => openUser(u.email));
+            box.appendChild(row);
+        });
+    }
+
+    function renderDetail(u, photo) {
+        const box = $("repo-detail");
+        box.textContent = "";
+        const head = mk("div", "detail-head");
+        const ph = mk("div", "detail-photo");
+        avatarInto(ph, u, photo);
+        const who = mk("div");
+        who.appendChild(mk("div", "detail-name", nameOf(u)));
+        who.appendChild(mk("div", "u-sub", roleOf(u)));
+        head.appendChild(ph);
+        head.appendChild(who);
+        box.appendChild(head);
+
+        const rows = [
+            ["First name", u.firstName], ["Middle name", u.middleName], ["Last name", u.lastName],
+            ["Contact no.", u.contact], ["UP student email", u.upEmail], ["Telegram handle", u.tg],
+            ["Facebook URL", u.fb, "link"],
+            ["Account email", u.email], ["Role", roleOf(u)], ["Email verified", u.verified ? "Yes" : "No"],
+            ["Account created", u.created], ["Profile updated", u.updated]
+        ];
+        const grid = mk("div", "detail-grid");
+        rows.forEach(r => {
+            const row = mk("div", "drow");
+            row.appendChild(mk("div", "dk", r[0]));
+            const v = mk("div", "dv");
+            if (!r[1]) v.textContent = "—";
+            else if (r[2] === "link" && /^https?:\/\//i.test(r[1])) {
+                const a = mk("a", "", r[1]);
+                a.href = r[1]; a.target = "_blank"; a.rel = "noopener noreferrer";
+                v.appendChild(a);
+            } else v.textContent = r[1];
+            row.appendChild(v);
+            grid.appendChild(row);
+        });
+        box.appendChild(grid);
+    }
+
+    async function openUser(email) {
+        const u = repoUsers.find(x => x.email === email);
+        if (!u) return;
+        detailFor = email;
+        $("repo-list-view").classList.add("hidden");
+        $("repo-detail-view").classList.remove("hidden");
+        setMessage($("repo-msg"), "", "");
+        renderDetail(u, "");
+        try {
+            const r = await authCall("admin_user", { target: email });   // fetches the photo too
+            if (r.status === "success" && detailFor === email) renderDetail(r.user, r.user.photo || "");
+        } catch (err) { if (err.message !== "auth") console.error(err); }
+    }
+    function closeUser() {
+        detailFor = "";
+        $("repo-detail-view").classList.add("hidden");
+        $("repo-list-view").classList.remove("hidden");
+    }
+
+    async function loadRepo() {
+        const rm = $("repo-msg");
+        setMessage(rm, "", "");
+        if (!repoUsers.length) { $("repo-list").textContent = ""; $("repo-list").appendChild(mk("p", "repo-count", "Loading…")); }
+        try {
+            const r = await authCall("admin_users");
+            if (r.status === "success") {
+                repoUsers = r.users.slice().sort((a, b) =>
+                    (a.lastName || a.firstName || a.email).toLowerCase().localeCompare((b.lastName || b.firstName || b.email).toLowerCase()) ||
+                    a.email.localeCompare(b.email));
+                renderRepoList();
+            } else {
+                $("repo-list").textContent = "";
+                setMessage(rm, r.message, ERR);
+            }
+        } catch (err) {
+            if (err.message !== "auth") { console.error(err); setMessage(rm, netError(err), ERR); }
+        }
+    }
+
+    function csvEscape(v) {
+        let s = String(v == null ? "" : v);
+        // stop spreadsheet apps from running cells that start like formulas (phone numbers like +63... are left alone)
+        if (/^[=@\t\r]/.test(s) || (/^[+\-]/.test(s) && !/^[+\-]?[0-9()][0-9\s\-()]*$/.test(s))) s = "'" + s;
+        return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    }
+    function downloadCsv() {
+        const rm = $("repo-msg");
+        if (!repoUsers.length) return setMessage(rm, "No users to download yet.", ERR);
+        const rows = [CSV_COLS.map(c => csvEscape(c[0])).join(",")];
+        repoUsers.forEach(u => rows.push(CSV_COLS.map(c =>
+            csvEscape(c[1] === "verified" ? (u.verified ? "Yes" : "No") : c[1] === "role" ? roleOf(u) : u[c[1]])
+        ).join(",")));
+        const blob = new Blob(["﻿" + rows.join("\r\n")], { type: "text/csv;charset=utf-8" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "EVE1-users-" + new Date().toLocaleDateString("en-CA") + ".csv";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        setMessage(rm, "Downloaded " + repoUsers.length + " user" + (repoUsers.length === 1 ? "" : "s") + ".", OK);
     }
 
     /* ---------- requests (emailed to the Beadle) ---------- */
@@ -1063,6 +1268,8 @@
 
     $("req-form").addEventListener("submit", sendRequest);
     $("admin-claim").addEventListener("click", claimAdmin);
+    $("repo-back").addEventListener("click", closeUser);
+    $("repo-download").addEventListener("click", downloadCsv);
     document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshAdmin(); });
     ["r-beadle", "r-course", "r-text"].forEach(id => $(id).addEventListener("input", markRequestDirty));
     $("avatar-btn").addEventListener("click", openProfile);
