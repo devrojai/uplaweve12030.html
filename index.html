@@ -137,10 +137,13 @@
         .btn:active:not(:disabled) { transform: translateY(0) scale(.98); }
         .btn:disabled { opacity: .7; cursor: not-allowed; }
         .btn.loading, .btn.ghost.loading, .btn.submitted.loading, .btn.loading:disabled { color: transparent !important; }
+        /* Spinner: pinned with inset:0 + margin:auto so it is always dead-center, whatever the button's size or padding */
         .btn.loading::before {
-            content: ""; position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; margin: -10px 0 0 -10px;
+            content: ""; position: absolute; inset: 0; margin: auto; width: 20px; height: 20px; box-sizing: border-box;
             border: 3px solid rgba(255,255,255,.4); border-top-color: var(--white); border-radius: 50%; animation: spin .7s linear infinite;
         }
+        /* Ghost buttons have no maroon fill, so the spinner must be maroon to be visible */
+        .btn.ghost.loading::before { border-color: rgba(118,9,12,.25); border-top-color: var(--maroon); }
         @keyframes spin { to { transform: rotate(360deg); } }
         .btn.ghost { background: transparent; color: var(--maroon); box-shadow: none; }
         .btn.ghost:hover:not(:disabled) { background: var(--maroon); color: var(--white); }
@@ -485,7 +488,7 @@
         <div id="auth-view">
             <div id="form-wrap">
                 <h2 id="form-title">Welcome Back</h2>
-                <p class="sub" id="form-sub">Log in to continue</p>
+                <p class="sub" id="form-sub">Log In to Continue</p>
                 <form id="auth-form" novalidate>
                     <div class="field">
                         <input type="email" id="email" placeholder=" " autocomplete="username" required>
@@ -1884,7 +1887,7 @@
         } catch (err) {
             if (err.message !== "auth") alert(netError(err));
         }
-        setLoading(btn, true);
+        setLoading(btn, false);
     }
 
     function openAnnModal(a) {
