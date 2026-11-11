@@ -798,8 +798,9 @@ details.course[open] summary::after { transform: rotate(180deg); }
 
 <!-- Add Course Section -->
 <section class="section hidden" id="sec-addcourse">
-    <h2>ADD COURSE</h2>
+   <h2 id="c-heading">ADD COURSE</h2>
     <form class="req-form" id="course-form" novalidate>
+        <div class="edit-banner hidden" id="c-edit-banner">You're editing a course. Saving will update it for everyone.</div>
         <div class="field"><input type="text" id="c-title" placeholder=" " maxlength="120"><label for="c-title">Course Title</label></div>
         <div class="field"><input type="text" id="c-code" placeholder=" " maxlength="30"><label for="c-code">Course Code</label></div>
         <div class="group-title">Semester</div>
@@ -823,6 +824,7 @@ details.course[open] summary::after { transform: rotate(180deg); }
         <p class="hint">Optional. Up to 5 files per upload (max 10 MB across both uploads).</p>
 
         <button type="submit" class="btn" id="c-send">Add course</button>
+        <button type="button" class="btn ghost hidden" id="c-cancel">Cancel editing</button>
         <div class="msg" id="c-message"></div>
     </form>
 </section>
@@ -1318,6 +1320,7 @@ const ADMIN_SECTIONS = ["bin", "directory", "addcourse"];
         b.disabled = isAdmin || adminPending;
         if (!isAdmin) { repoUsers = []; repoPhotos = {}; mentionUsers = []; $("repo-list").textContent = ""; $("repo-detail").textContent = ""; }
         if (!isAdmin && ADMIN_SECTIONS.some(k => !$("sec-" + k).classList.contains("hidden"))) showSection("announcements");
+        if (courseAdminShown !== isAdmin) { courseAdminShown = isAdmin; renderCourses(); }
     }
     async function refreshAdmin() {
         if (!currentEmail || !token) return;
@@ -2244,8 +2247,7 @@ function mentionHandle(u) {
     syncCalSel(true);
 
 /* ===== COURSES ===== */
-let courseList = [], courseOpen = "", cSyl = [], cDocs = [];
-const SEMS = ["1st", "2nd"];
+let courseList = [], courseOpen = "", cSyl = [], cDocs = [], editingCourseId = "", courseAdminShown = false;const SEMS = ["1st", "2nd"];
 const AYS = ["AY 2025-2026", "AY 2026-2027", "AY 2027-2028", "AY 2028-2029", "AY 2029-2030"];
 function fillOpts(id, ph, vals) {
     const s = $(id); s.textContent = "";
@@ -2302,6 +2304,19 @@ function renderCourses() {
             files.forEach(f => list.appendChild(courseFileBtn(f)));
             addRow(label, list);
         });
+
+        if (c.edited) addRow("Last edited", c.edited);
+        if (isAdmin) {
+            const act = mk("div", "ann-actions");
+            act.style.cssText = "padding:12px 16px;border-top:1px solid rgba(58,58,58,.1);justify-content:flex-end";
+            const eb = mk("button", "btn sm ghost", "Edit"); eb.type = "button"; eb.style.width = "auto";
+            eb.onclick = () => startCourseEdit(c);
+            const db = mk("button", "btn sm", "Delete"); db.type = "button"; db.style.width = "auto";
+            db.onclick = () => deleteCourse(c, db);
+            act.append(eb, db);
+            body.appendChild(act);
+        }
+        
         d.appendChild(body);
         box.appendChild(d);
     });
@@ -2327,16 +2342,54 @@ $("courses-toggle").addEventListener("click", () => {
 
 const renderCSyl = () => renderFileList("c-syl-list", cSyl, i => { cSyl.splice(i, 1); renderCSyl(); courseDirty(); });
 const renderCDocs = () => renderFileList("c-doc-list", cDocs, i => { cDocs.splice(i, 1); renderCDocs(); courseDirty(); });
-function courseDirty() {
-    const b = $("c-send");
-    if (b.classList.contains("submitted")) { b.classList.remove("submitted"); b.disabled = false; b.textContent = "Add course"; }
+function courseMode() {
+    const editing = !!editingCourseId, b = $("c-send");
+    b.classList.remove("submitted"); b.disabled = false;
+    b.textContent = editing ? "Save changes" : "Add course";
+    $("c-cancel").classList.toggle("hidden", !editing);
+    $("c-edit-banner").classList.toggle("hidden", !editing);
+    $("c-heading").textContent = editing ? "EDIT COURSE" : "ADD COURSE";
+    titles.addcourse = editing ? "Edit Course" : "Add Course";
+    if (!$("sec-addcourse").classList.contains("hidden")) $("page-title").textContent = titles.addcourse;
 }
+function courseDirty() { if ($("c-send").classList.contains("submitted")) courseMode(); }
+
 function resetCourseForm() {
     ["c-title", "c-code", "c-prof"].forEach(id => { $(id).value = ""; });
     ["c-sem", "c-ay"].forEach(id => { $(id).value = ""; if ($(id)._sync) $(id)._sync(); });
-    cSyl = []; cDocs = []; renderCSyl(); renderCDocs();
-    courseDirty(); setMessage($("c-message"), "", ""); syncFields();
+    editingCourseId = ""; cSyl = []; cDocs = []; renderCSyl(); renderCDocs();
+    courseMode(); setMessage($("c-message"), "", ""); syncFields();
 }
+
+function startCourseEdit(c) {
+    resetCourseForm();
+    editingCourseId = c.id;
+    $("c-title").value = c.title; $("c-code").value = c.code; $("c-prof").value = c.professor;
+    const ay = $("c-ay");
+    if (c.ay && !Array.from(ay.options).some(o => o.value === c.ay)) { const o = mk("option", "", c.ay); o.value = c.ay; ay.appendChild(o); }
+    $("c-sem").value = c.semester; ay.value = c.ay;
+    ["c-sem", "c-ay"].forEach(id => { if ($(id)._sync) $(id)._sync(); });
+    const keep = f => ({ id: f.id, name: f.name, type: f.type, size: f.size });
+    cSyl = (c.syllabus || []).map(keep); cDocs = (c.documents || []).map(keep);
+    renderCSyl(); renderCDocs(); courseMode(); syncFields();
+    showSection("addcourse"); window.scrollTo(0, 0);
+}
+
+async function deleteCourse(c, btn) {
+    if (!confirm('Delete "' + c.title + '" and its files? This can\'t be undone.')) return;
+    setLoading(btn, true);
+    try {
+        const r = await authCall("delete_course", { id: c.id });
+        if (r.status === "success") {
+            courseList = courseList.filter(x => x.id !== c.id);
+            renderCourseNav(); renderCourses();
+            return;
+        }
+        alert(r.message || "Couldn't delete the course.");
+    } catch (err) { if (err.message !== "auth") alert(netError(err)); }
+    setLoading(btn, false);
+}
+
 async function postCourse(e) {
     e.preventDefault();
     const btn = $("c-send"), cm = $("c-message");
@@ -2347,17 +2400,25 @@ async function postCourse(e) {
     if (!title || !code || !sem || !ay || !prof) return setMessage(cm, "Please fill in all course fields.", ERR);
     const total = cSyl.concat(cDocs).reduce((s, f) => s + f.size, 0);
     if (total > MAX_TOTAL_FILE_SIZE) return setMessage(cm, "Total file size exceeds the 10 MB limit.", ERR);
+    const wasEdit = !!editingCourseId, editedId = editingCourseId;
     setLoading(btn, true); setMessage(cm, "", "");
     let added = false;
     try {
-        const r = await authCall("add_course", { title, code, semester: sem, ay, professor: prof, syllabus: cSyl, documents: cDocs });
-        if (r.status === "success") { resetCourseForm(); added = true; loadCourses(); }
-        else setMessage(cm, r.message || "Couldn't add the course.", ERR);
+        const payload = { title, code, semester: sem, ay, professor: prof, syllabus: cSyl, documents: cDocs };
+        if (wasEdit) payload.id = editedId;
+        const r = await authCall(wasEdit ? "edit_course" : "add_course", payload);
+        if (r.status === "success") {
+            resetCourseForm();
+            if (wasEdit) { courseOpen = editedId; showSection("courses"); }
+            else { added = true; loadCourses(); }
+        } else setMessage(cm, r.message || "Couldn't save the course.", ERR);
     } catch (err) { if (err.message !== "auth") setMessage(cm, netError(err), ERR); }
     setLoading(btn, false);
     if (added) { btn.textContent = "Course Added"; btn.classList.add("submitted"); btn.disabled = true; }
 }
+}
 $("course-form").addEventListener("submit", postCourse);
+$("c-cancel").addEventListener("click", () => { const id = editingCourseId; resetCourseForm(); courseOpen = id; showSection("courses"); });
 $("course-form").addEventListener("input", courseDirty);
 $("c-sem").addEventListener("change", courseDirty);
 $("c-ay").addEventListener("change", courseDirty);
@@ -2413,8 +2474,11 @@ $("c-doc").addEventListener("change", e => handleFileSelect(e, cDocs, "c-doc-lis
     $("burger").addEventListener("click", () => $("drawer").classList.contains("open") ? closeMenu() : openMenu());
     $("overlay").addEventListener("click", () => { closeMenu(); closeProfile(); closeAnnModal(); closeFileModal(); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeMenu(); closeProfile(); closeDelete(); closeAnnModal(); closeFileModal(); } });
-    document.querySelectorAll(".nav button[data-section]").forEach(b => b.addEventListener("click", () => { showSection(b.dataset.section); closeMenu(); }));    $("logout-btn").addEventListener("click", leaveApp);
-    $("delete-open").addEventListener("click", openDelete);
+document.querySelectorAll(".nav button[data-section]").forEach(b => b.addEventListener("click", () => {
+    if (b.dataset.section === "addcourse" && editingCourseId) resetCourseForm();
+    showSection(b.dataset.section); closeMenu();
+}));
+$("logout-btn").addEventListener("click", leaveApp);    $("delete-open").addEventListener("click", openDelete);
     $("del-cancel").addEventListener("click", closeDelete);
     $("del-form").addEventListener("submit", handleDelete);
 
