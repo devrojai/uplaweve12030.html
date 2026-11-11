@@ -782,22 +782,18 @@
             </form>
         </section>
 
-        <!-- Directory Section -->
-        <section class="section hidden" id="sec-directory">
-            <h2>DIRECTORY</h2>
-            <div id="repo-list-view">
-                <div class="repo-bar">
-                    <span class="repo-count" id="repo-count"></span>
-                    <button type="button" class="btn sm" id="repo-download">Download CSV</button>
-                </div>
-                <div class="user-list" id="repo-list"></div>
-            </div>
-            <div id="repo-detail-view" class="hidden">
-                <button type="button" class="linkish back-link" id="repo-back">&larr; All users</button>
-                <div id="repo-detail"></div>
-            </div>
-            <div class="msg" id="repo-msg"></div>
-        </section>
+<!-- Directory Section -->
+<section class="section hidden" id="sec-directory">
+    <h2>DIRECTORY</h2>
+    <div id="repo-list-view">
+        <div class="repo-bar">
+            <span class="repo-count" id="repo-count"></span>
+            <button type="button" class="btn sm" id="repo-download">Download CSV</button>
+        </div>
+        <div class="user-list" id="repo-list"></div>
+    </div>
+    <div class="msg" id="repo-msg"></div>
+</section>       
 
 <!-- Courses Section -->
 <section class="section hidden" id="sec-courses">
@@ -878,6 +874,16 @@
             <div id="course-modal-actions" class="ann-actions" style="margin-top: 16px; justify-content: flex-end;"></div>
         </div>
     </div>
+
+    <!-- User Details Modal -->
+<div class="modal hidden" id="user-modal" role="dialog" aria-modal="true">
+    <div class="modal-card course-card">
+        <div id="user-modal-body"></div>
+        <div class="ann-actions" style="margin-top: 16px; justify-content: flex-end;">
+            <button type="button" class="btn ghost sm" id="user-modal-close" style="width: auto;">Close</button>
+        </div>
+    </div>
+</div>
     
     <!-- File Preview Modal Prompt -->
     <div class="modal hidden" id="file-modal" role="dialog" aria-modal="true" style="z-index: 80;">
@@ -1346,10 +1352,10 @@ const ADMIN_SECTIONS = ["bin", "directory", "addcourse"];
         b.classList.toggle("submitted", !isAdmin && adminPending);
         b.textContent = isAdmin ? "Admin Access Granted" : (adminPending ? "Request Sent" : "Request Admin Access");
         b.disabled = isAdmin || adminPending;
-        if (!isAdmin) { repoUsers = []; repoPhotos = {}; mentionUsers = []; $("repo-list").textContent = ""; $("repo-detail").textContent = ""; }
-        if (!isAdmin && ADMIN_SECTIONS.some(k => !$("sec-" + k).classList.contains("hidden"))) showSection("announcements");
-        if (courseAdminShown !== isAdmin) { courseAdminShown = isAdmin; renderCourses(); }
-    }
+        if (!isAdmin) { repoUsers = []; repoPhotos = {}; mentionUsers = []; $("repo-list").textContent = ""; closeUser(); $("user-modal-body").textContent = ""; }
+if (!isAdmin && ADMIN_SECTIONS.some(k => !$("sec-" + k).classList.contains("hidden"))) showSection("announcements");
+if (courseAdminShown !== isAdmin) { courseAdminShown = isAdmin; renderCourses(); }
+}
     async function refreshAdmin() {
         if (!currentEmail || !token) return;
         try {
@@ -1431,8 +1437,8 @@ const ADMIN_SECTIONS = ["bin", "directory", "addcourse"];
     }
 
     function renderDetail(u, photo) {
-        const box = $("repo-detail");
-        box.textContent = "";
+    const box = $("user-modal-body");   // was $("repo-detail")
+    box.textContent = "";
         const head = mk("div", "detail-head");
         const ph = mk("div", "detail-photo");
         avatarInto(ph, u, photo);
@@ -1468,23 +1474,21 @@ const ADMIN_SECTIONS = ["bin", "directory", "addcourse"];
     }
 
     async function openUser(email) {
-        const u = repoUsers.find(x => x.email === email);
-        if (!u) return;
-        detailFor = email;
-        $("repo-list-view").classList.add("hidden");
-        $("repo-detail-view").classList.remove("hidden");
-        setMessage($("repo-msg"), "", "");
-        renderDetail(u, repoPhotos[email] || "");
-        try {
-            const r = await authCall("admin_user", { target: email });
-            if (r.status === "success" && detailFor === email) renderDetail(r.user, r.user.photo || "");
-        } catch (err) { if (err.message !== "auth") console.error(err); }
-    }
-    function closeUser() {
-        detailFor = "";
-        $("repo-detail-view").classList.add("hidden");
-        $("repo-list-view").classList.remove("hidden");
-    }
+    const u = repoUsers.find(x => x.email === email);
+    if (!u) return;
+    detailFor = email;
+    setMessage($("repo-msg"), "", "");
+    renderDetail(u, repoPhotos[email] || "");
+    $("user-modal").classList.remove("hidden");
+    try {
+        const r = await authCall("admin_user", { target: email });
+        if (r.status === "success" && detailFor === email) renderDetail(r.user, r.user.photo || "");
+    } catch (err) { if (err.message !== "auth") console.error(err); }
+}
+function closeUser() {
+    detailFor = "";
+    $("user-modal").classList.add("hidden");
+}
 
     async function loadRepo() {
         const rm = $("repo-msg");
@@ -2524,7 +2528,7 @@ $("c-doc").addEventListener("change", e => handleFileSelect(e, cDocs, "c-doc-lis
 
     $("burger").addEventListener("click", () => $("drawer").classList.contains("open") ? closeMenu() : openMenu());
     $("overlay").addEventListener("click", () => { closeMenu(); closeProfile(); closeAnnModal(); closeFileModal(); });
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeMenu(); closeProfile(); closeDelete(); closeAnnModal(); closeCourseModal(); closeFileModal(); } });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeMenu(); closeProfile(); closeDelete(); closeAnnModal(); closeCourseModal(); closeUser(); closeFileModal(); } });    
     document.querySelectorAll(".nav button[data-section]").forEach(b => b.addEventListener("click", () => {
     if (b.dataset.section === "addcourse" && editingCourseId) resetCourseForm();
     showSection(b.dataset.section); closeMenu();
@@ -2535,7 +2539,8 @@ $("logout-btn").addEventListener("click", leaveApp);    $("delete-open").addEven
 
     $("req-form").addEventListener("submit", sendRequest);
     $("admin-claim").addEventListener("click", claimAdmin);
-    $("repo-back").addEventListener("click", closeUser);
+    $("user-modal-close").addEventListener("click", closeUser);
+    $("user-modal").addEventListener("click", e => { if (e.target === e.currentTarget) closeUser(); });
     $("repo-download").addEventListener("click", downloadCsv);
     document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshAdmin(); });
     ["r-beadle", "r-topic", "r-course", "r-text"].forEach(id => $(id).addEventListener("input", markRequestDirty));
