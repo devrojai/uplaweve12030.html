@@ -228,6 +228,13 @@ html[data-theme="night"] { --sb-track: #0b0b0c; --sb-thumb: #5a2226; --sb-thumb-
         .field textarea:focus { border-color: var(--maroon); box-shadow: 0 0 0 4px rgba(118,9,12,.15); }
         .field textarea:focus ~ label,
         .field textarea:not(:placeholder-shown) ~ label { top: 5px; font-size: var(--fs-n1); font-weight: 600; }
+        .field textarea:focus ~ label,
+.field textarea:not(:placeholder-shown) ~ label {
+    top: 2px; left: 2px; right: 14px;
+    padding: 3px 14px 4px;
+    background: var(--surface);
+    border-radius: var(--r-md) var(--r-md) 0 0;
+}
         .btn.submitted, .btn.submitted:disabled { background: #0a4424; border-color: #0a4424; color: var(--white); opacity: 1; cursor: default; box-shadow: 0 6px 16px rgba(10,68,36,.35); }
 
         /* File Upload Multi-Support */
@@ -867,8 +874,7 @@ html[data-theme="night"] .drawer-foot .btn-danger:hover {
 .field-err { margin: 4px 2px 0; font-size: var(--fs-n1); font-weight: 600; color: var(--err); }
 
 /* ================= NEW: modal helper classes ================= */
-.modal-card.modal-wide { text-align: left; width: 520px; max-width: 95vw; }
-.modal-card.modal-file { text-align: left; width: 640px; max-width: 95vw; }
+.modal-card.modal-wide { text-align: left; width: 520px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }.modal-card.modal-file { text-align: left; width: 640px; max-width: 95vw; }
 #file-modal { z-index: 80; }
 .modal-head { margin-bottom: 8px; }
 .modal-gap { margin-bottom: 14px; }
