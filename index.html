@@ -725,7 +725,7 @@
                     <textarea id="b-text" placeholder=" " maxlength="2000"></textarea><label for="b-text">Announcement</label>
                     <div class="mention-list hidden" id="mention-list"></div>
                 </div>
-                <p class="hint">Type @ to tag a user, or @everyone to notify all users. They'll be notified by email.</p>
+                <p class="hint">Type @ followed by a first name, surname or nickname (e.g. @juan) to tag a user, or @everyone to notify all users. They'll be notified by email.</p>
                 
                 <div class="file-upload-area">
                     <button type="button" class="btn sm ghost" id="b-file-btn">Attach Files</button>
@@ -1710,16 +1710,26 @@
         });
         box.classList.remove("hidden");
     }
+
+    // Shortest name that points to this person alone: nickname, then first name, then surname
+function mentionHandle(u) {
+    const cands = [u.nickname, u.firstName, u.lastName].map(s => (s || "").trim()).filter(Boolean);
+    const unique = (w) => !mentionUsers.some(x => x.email !== u.email && mentionAliases(x).includes(w.toLowerCase()));
+    return cands.find(unique) || cands[0] || nameOf(u);
+}
+    
     function mentionPick(u) {
-        const ta = $("b-text"), pos = ta.selectionStart, ins = "@" + nameOf(u) + " ";
-        ta.value = ta.value.slice(0, mStart) + ins + ta.value.slice(pos);
-        ta.selectionStart = ta.selectionEnd = mStart + ins.length;
-        if (!u.everyone) {
-            mentionSel = mentionSel.filter(x => x.email !== u.email);
-            mentionSel.push({ email: u.email, name: nameOf(u) });
-        }
-        hideMention(); ta.focus(); syncFields();
+    const ta = $("b-text"), pos = ta.selectionStart;
+    const handle = u.everyone ? "everyone" : mentionHandle(u);
+    const ins = "@" + handle + " ";
+    ta.value = ta.value.slice(0, mStart) + ins + ta.value.slice(pos);
+    ta.selectionStart = ta.selectionEnd = mStart + ins.length;
+    if (!u.everyone) {
+        mentionSel = mentionSel.filter(x => x.email !== u.email);
+        mentionSel.push({ email: u.email, name: handle });
     }
+    hideMention(); ta.focus(); syncFields();
+}
     function mentionKey(e) {
         if ($("mention-list").classList.contains("hidden") || !mMatches.length) return;
         if (e.key === "ArrowDown") { e.preventDefault(); mIdx = (mIdx + 1) % mMatches.length; renderMention(); }
@@ -1776,7 +1786,7 @@
         setMessage(bm, "", "");
         try {
             const everyone = /(^|\s)@everyone(?=\s|$|[.,!?])/.test(text);
-            let mentions = mentionSel.filter(u => text.includes("@" + u.name)).map(u => u.email);
+            let mentions = mentionSel.map(u => u.email);
             if (everyone) {
                 await loadMentionUsers();
                 mentions = Array.from(new Set(mentions.concat(mentionUsers.map(u => u.email))));
@@ -1907,7 +1917,7 @@
 
     function richText(el, text, mentions) {
         const names = (mentions || []).map(m => "@" + m.name).concat("@everyone").sort((a, b) => b.length - a.length);
-        const re = new RegExp("(" + names.map(n => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")", "g");
+        const re = new RegExp("(" + names.map(n => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")(?![\\p{L}\\p{N}_])", "gu");
         text.split(re).forEach((part, i) => el.appendChild(i % 2 ? mk("span", "mention", part) : document.createTextNode(part)));
     }
 
