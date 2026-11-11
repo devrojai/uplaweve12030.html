@@ -484,6 +484,22 @@
             .cal-more { display: none; }
             .cal-dow { letter-spacing: 0; font-size: 10px; }
         }
+
+        /* Courses */
+.nav .grp-toggle .chev { margin-left: auto; width: 16px; height: 16px; transition: transform .25s var(--ease); }
+.nav .grp-toggle.open .chev { transform: rotate(180deg); }
+.course-nav { margin: 0 0 0 18px; padding-left: 8px; border-left: 2px solid rgba(255,255,255,.2); }
+.course-nav button { font-size: var(--fs-n1); padding: 10px 12px; }
+.course-nav .none { padding: 8px 12px; font-size: var(--fs-n1); opacity: .6; }
+details.course { margin: 0 0 10px; background: var(--white); border: 2px solid rgba(58,58,58,.15); border-left: 6px solid var(--maroon); border-radius: 12px; }
+details.course summary { display: flex; align-items: center; gap: 10px; padding: 14px 18px; cursor: pointer; list-style: none; font-size: var(--fs-1); font-weight: 800; color: var(--maroon); }
+details.course summary::-webkit-details-marker { display: none; }
+details.course summary .ct { flex: 1; min-width: 0; word-break: break-word; }
+details.course summary::after { content: "\25BE"; transition: transform .25s var(--ease); }
+details.course[open] summary::after { transform: rotate(180deg); }
+.course-body { margin: 0 18px 16px; border: 2px solid rgba(58,58,58,.12); border-radius: 12px; overflow: hidden; }
+.req-form .sdrop { margin: 8px 0 14px; }
+
     </style>
 </head>
 <body>
@@ -573,7 +589,16 @@
             <button type="button" data-section="requests">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                 Requests
+                
             </button>
+
+            <button type="button" class="grp-toggle" id="courses-toggle">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    Courses
+    <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+</button>
+<div class="course-nav hidden" id="course-nav"></div>
+            
             <div class="nav-label hidden" data-admin>Admin tools</div>
             <button type="button" data-section="bin" data-admin class="hidden">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
@@ -583,6 +608,12 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 1 0 7.75"/></svg>
                 Directory
             </button>
+
+            <button type="button" data-section="addcourse" data-admin class="hidden">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+    Add Course
+</button>
+            
         </nav>
         <div class="drawer-foot">
             <button type="button" class="btn" id="logout-btn">Log Out</button>
@@ -757,6 +788,45 @@
             </div>
             <div class="msg" id="repo-msg"></div>
         </section>
+
+<!-- Courses Section -->
+<section class="section hidden" id="sec-courses">
+    <h2>COURSES</h2>
+    <div id="course-list" style="margin-top:18px"></div>
+    <div class="msg" id="course-msg"></div>
+</section>
+
+<!-- Add Course Section -->
+<section class="section hidden" id="sec-addcourse">
+    <h2>ADD COURSE</h2>
+    <form class="req-form" id="course-form" novalidate>
+        <div class="field"><input type="text" id="c-title" placeholder=" " maxlength="120"><label for="c-title">Course Title</label></div>
+        <div class="field"><input type="text" id="c-code" placeholder=" " maxlength="30"><label for="c-code">Course Code</label></div>
+        <div class="group-title">Semester</div>
+        <select id="c-sem" aria-label="Semester"></select>
+        <div class="group-title">Academic Year</div>
+        <select id="c-ay" aria-label="Academic Year"></select>
+        <div class="field"><input type="text" id="c-prof" placeholder=" " maxlength="100"><label for="c-prof">Professor</label></div>
+
+        <div class="group-title">Syllabus</div>
+        <div class="file-upload-area">
+            <button type="button" class="btn sm ghost" id="c-syl-btn">Upload Syllabus</button>
+            <input type="file" id="c-syl" class="hidden" multiple>
+            <div class="file-list" id="c-syl-list"></div>
+        </div>
+        <div class="group-title">Other Documents</div>
+        <div class="file-upload-area">
+            <button type="button" class="btn sm ghost" id="c-doc-btn">Upload Other Documents</button>
+            <input type="file" id="c-doc" class="hidden" multiple>
+            <div class="file-list" id="c-doc-list"></div>
+        </div>
+        <p class="hint">Optional. Up to 5 files per upload (max 10 MB across both uploads).</p>
+
+        <button type="submit" class="btn" id="c-send">Add course</button>
+        <div class="msg" id="c-message"></div>
+    </form>
+</section>
+        
     </main>
 
     <!-- Announcement Details Modal Prompt -->
@@ -1002,8 +1072,8 @@
         }
     }
 
-    const titles = { announcements: "Announcements", calendar: "Calendar", requests: "Requests", bin: "Announcement Bin", directory: "Directory" };
-    const ADMIN_SECTIONS = ["bin", "directory"];
+    const titles = { announcements: "Announcements", calendar: "Calendar", requests: "Requests", bin: "Announcement Bin", directory: "Directory", courses: "Courses", addcourse: "Add Course" };
+const ADMIN_SECTIONS = ["bin", "directory", "addcourse"];
 
     function enterApp(email, tok, admin) {
         currentEmail = email;
@@ -1020,6 +1090,7 @@
         renderAvatars();
         loadProfile();
         refreshAdmin();
+        loadCourses();
     }
     function leaveApp() {
         if (token && currentEmail) callScript({ action: "logout", email: currentEmail, token }).catch(() => {});
@@ -1032,6 +1103,7 @@
         resetProfileState();
         resetRequestForm();
         annList = []; annFilter = ""; annSearchTerm = ""; carIdx = 0; dlSel = todayIso(); mentionUsers = []; mentionSel = []; repoPhotos = {}; resetBinForm();
+        courseList = []; courseOpen = ""; renderCourseNav(); resetCourseForm();
         isAdmin = false;
         adminPending = false;
         applyAdmin();
@@ -1063,6 +1135,7 @@
         if (name === "directory") { closeUser(); loadRepo(); }
         if (name === "announcements" || name === "calendar") loadAnnouncements();
         if (name === "bin") loadMentionUsers();
+        if (name === "courses") loadCourses();
     }
 
     function syncFields() {
@@ -1855,7 +1928,7 @@ function mentionHandle(u) {
             body.appendChild(mk("div", "preview-fallback", "Loading file…"));
             let msg = "";
             try {
-                const r = await authCall("announcement_file", { id: file.id });
+                const r = await authCall(file.action || "announcement_file", { id: file.id });
                 if (r.status === "success" && r.file && r.file.data) {
                     file.data = r.file.data;
                     file.type = r.file.type || file.type;
@@ -2170,6 +2243,129 @@ function mentionHandle(u) {
     MONTHS.forEach((n, i) => { const o = mk("option", "", n); o.value = String(i); $("dl-month").appendChild(o); });
     syncCalSel(true);
 
+/* ===== COURSES ===== */
+let courseList = [], courseOpen = "", cSyl = [], cDocs = [];
+const SEMS = ["1st", "2nd"];
+const AYS = ["AY 2025-2026", "AY 2026-2027", "AY 2027-2028", "AY 2028-2029", "AY 2029-2030"];
+function fillOpts(id, ph, vals) {
+    const s = $(id); s.textContent = "";
+    const o0 = mk("option", "", ph); o0.value = ""; s.appendChild(o0);
+    vals.forEach(v => { const o = mk("option", "", v); o.value = v; s.appendChild(o); });
+}
+fillOpts("c-sem", "Select semester", SEMS);
+fillOpts("c-ay", "Select academic year", AYS);
+
+function renderCourseNav() {
+    const box = $("course-nav"); box.textContent = "";
+    if (!courseList.length) { box.appendChild(mk("div", "none", "No courses yet")); return; }
+    courseList.forEach(c => {
+        const b = mk("button", "", c.title); b.type = "button";
+        b.onclick = () => { courseOpen = c.id; showSection("courses"); closeMenu(); };
+        box.appendChild(b);
+    });
+}
+function courseFileBtn(f) {
+    const b = mk("button", "attach-btn", f.name); b.type = "button";
+    b.onclick = () => openFileModal(Object.assign({}, f, { action: "course_file" }));
+    return b;
+}
+function renderCourses() {
+    const box = $("course-list"); box.textContent = "";
+    if (!courseList.length) {
+        const e = mk("div", "empty");
+        e.appendChild(mk("b", "", "No courses yet"));
+        e.appendChild(mk("p", "", "Courses will be listed here once an admin adds them."));
+        box.appendChild(e); return;
+    }
+    let target = null;
+    courseList.forEach(c => {
+        const d = mk("details", "course"); d.open = c.id === courseOpen;
+        if (d.open) target = d;
+        const s = mk("summary");
+        s.appendChild(mk("span", "ct", c.title));
+        s.appendChild(mk("span", "badge", c.code));
+        d.appendChild(s);
+        const body = mk("div", "course-body");
+        const addRow = (k, node) => {
+            const row = mk("div", "drow"); row.appendChild(mk("div", "dk", k));
+            const v = mk("div", "dv");
+            if (typeof node === "string") v.textContent = node || "—"; else v.appendChild(node);
+            row.appendChild(v); body.appendChild(row);
+        };
+        addRow("Course code", c.code);
+        addRow("Semester", c.semester ? c.semester + " Semester" : "");
+        addRow("Academic year", c.ay);
+        addRow("Professor", c.professor);
+        [["Syllabus", c.syllabus], ["Other documents", c.documents]].forEach(([label, files]) => {
+            if (!files || !files.length) return;
+            const list = mk("div", "attach-list");
+            files.forEach(f => list.appendChild(courseFileBtn(f)));
+            addRow(label, list);
+        });
+        d.appendChild(body);
+        box.appendChild(d);
+    });
+    if (target) target.scrollIntoView({ block: "start" });
+    courseOpen = "";
+}
+async function loadCourses() {
+    const m = $("course-msg");
+    setMessage(m, "", "");
+    try {
+        const r = await authCall("courses_list");
+        if (r.status === "success") {
+            courseList = (r.courses || []).slice().sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: "base" }));
+            renderCourseNav(); renderCourses();
+        } else setMessage(m, r.message, ERR);
+    } catch (err) { if (err.message !== "auth") setMessage(m, netError(err), ERR); }
+}
+$("courses-toggle").addEventListener("click", () => {
+    const open = $("course-nav").classList.toggle("hidden") === false;
+    $("courses-toggle").classList.toggle("open", open);
+    if (open) { showSection("courses"); }
+});
+
+const renderCSyl = () => renderFileList("c-syl-list", cSyl, i => { cSyl.splice(i, 1); renderCSyl(); courseDirty(); });
+const renderCDocs = () => renderFileList("c-doc-list", cDocs, i => { cDocs.splice(i, 1); renderCDocs(); courseDirty(); });
+function courseDirty() {
+    const b = $("c-send");
+    if (b.classList.contains("submitted")) { b.classList.remove("submitted"); b.disabled = false; b.textContent = "Add course"; }
+}
+function resetCourseForm() {
+    ["c-title", "c-code", "c-prof"].forEach(id => { $(id).value = ""; });
+    ["c-sem", "c-ay"].forEach(id => { $(id).value = ""; if ($(id)._sync) $(id)._sync(); });
+    cSyl = []; cDocs = []; renderCSyl(); renderCDocs();
+    courseDirty(); setMessage($("c-message"), "", ""); syncFields();
+}
+async function postCourse(e) {
+    e.preventDefault();
+    const btn = $("c-send"), cm = $("c-message");
+    if (btn.classList.contains("submitted")) return;
+    const clean = v => v.replace(/\s+/g, " ").trim();
+    const title = clean($("c-title").value), code = clean($("c-code").value), prof = clean($("c-prof").value);
+    const sem = $("c-sem").value, ay = $("c-ay").value;
+    if (!title || !code || !sem || !ay || !prof) return setMessage(cm, "Please fill in all course fields.", ERR);
+    const total = cSyl.concat(cDocs).reduce((s, f) => s + f.size, 0);
+    if (total > MAX_TOTAL_FILE_SIZE) return setMessage(cm, "Total file size exceeds the 10 MB limit.", ERR);
+    setLoading(btn, true); setMessage(cm, "", "");
+    let added = false;
+    try {
+        const r = await authCall("add_course", { title, code, semester: sem, ay, professor: prof, syllabus: cSyl, documents: cDocs });
+        if (r.status === "success") { resetCourseForm(); added = true; loadCourses(); }
+        else setMessage(cm, r.message || "Couldn't add the course.", ERR);
+    } catch (err) { if (err.message !== "auth") setMessage(cm, netError(err), ERR); }
+    setLoading(btn, false);
+    if (added) { btn.textContent = "Course Added"; btn.classList.add("submitted"); btn.disabled = true; }
+}
+$("course-form").addEventListener("submit", postCourse);
+$("course-form").addEventListener("input", courseDirty);
+$("c-sem").addEventListener("change", courseDirty);
+$("c-ay").addEventListener("change", courseDirty);
+$("c-syl-btn").addEventListener("click", () => $("c-syl").click());
+$("c-doc-btn").addEventListener("click", () => $("c-doc").click());
+$("c-syl").addEventListener("change", e => handleFileSelect(e, cSyl, "c-syl-list", "c-message", courseDirty));
+$("c-doc").addEventListener("change", e => handleFileSelect(e, cDocs, "c-doc-list", "c-message", courseDirty));
+    
     const drops = [];
     function enhanceSelect(sel) {
         const wrap = mk("div", "sdrop");
@@ -2202,8 +2398,7 @@ function mentionHandle(u) {
         sync();
     }
     document.addEventListener("click", e => drops.forEach(d => { if (!d.wrap.contains(e.target)) d.close(); }));
-    ["dl-month", "dl-year", "ann-filter"].forEach(id => enhanceSelect($(id)));
-
+["dl-month", "dl-year", "ann-filter", "c-sem", "c-ay"].forEach(id => enhanceSelect($(id)));
     // Event Bindings
     $("auth-form").addEventListener("submit", handleSubmit);
     $("toggle-link").addEventListener("click", toggleMode);
@@ -2218,8 +2413,7 @@ function mentionHandle(u) {
     $("burger").addEventListener("click", () => $("drawer").classList.contains("open") ? closeMenu() : openMenu());
     $("overlay").addEventListener("click", () => { closeMenu(); closeProfile(); closeAnnModal(); closeFileModal(); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeMenu(); closeProfile(); closeDelete(); closeAnnModal(); closeFileModal(); } });
-    document.querySelectorAll(".nav button").forEach(b => b.addEventListener("click", () => { showSection(b.dataset.section); closeMenu(); }));
-    $("logout-btn").addEventListener("click", leaveApp);
+    document.querySelectorAll(".nav button[data-section]").forEach(b => b.addEventListener("click", () => { showSection(b.dataset.section); closeMenu(); }));    $("logout-btn").addEventListener("click", leaveApp);
     $("delete-open").addEventListener("click", openDelete);
     $("del-cancel").addEventListener("click", closeDelete);
     $("del-form").addEventListener("submit", handleDelete);
