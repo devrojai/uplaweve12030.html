@@ -998,8 +998,9 @@ details.course[open] summary::after { transform: rotate(180deg); }
         } catch (err) {
             setMessage(m, netError(err), ERR);
             shakeCard();
-        } finally {
+               } finally {
             setLoading(btn, false);
+        }
     }
 
     async function handleResend() {
@@ -2412,9 +2413,8 @@ async function postCourse(e) {
             else { added = true; loadCourses(); }
         } else setMessage(cm, r.message || "Couldn't save the course.", ERR);
     } catch (err) { if (err.message !== "auth") setMessage(cm, netError(err), ERR); }
-    setLoading(btn, false);
+        setLoading(btn, false);
     if (added) { btn.textContent = "Course Added"; btn.classList.add("submitted"); btn.disabled = true; }
-}
 }
 $("course-form").addEventListener("submit", postCourse);
 $("c-cancel").addEventListener("click", () => { const id = editingCourseId; resetCourseForm(); courseOpen = id; showSection("courses"); });
