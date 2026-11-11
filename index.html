@@ -397,7 +397,7 @@
         .m-item small { display: block; font-size: var(--fs-n1); opacity: .65; }
         .m-item b { display: block; }
         .m-item:hover, .m-item.active { background: rgba(118,9,12,.1); }
-        .mention { color: var(--maroon); font-weight: 700; background: rgba(118,9,12,.08); border-radius: 4px; padding: 0 3px; }
+        .mention { color: var(--maroon); font-weight: 700; background: transparent; border-radius: 4px; padding: 0 3px; }
 
         /* ---- Announcement cards ---- */
         /* ---- Announcements: heading space, toolbar, carousel ---- */
@@ -407,12 +407,11 @@
         .car-nav { display: flex; align-items: center; gap: 10px; }
         .car-count { min-width: 3.5em; text-align: center; font-size: var(--fs-n1); font-weight: 700; color: var(--maroon); }
         .car-nav .dp-nav:disabled { opacity: .35; cursor: not-allowed; transform: none; background: rgba(118,9,12,.08); color: var(--maroon); }
+        
         .ann-list {
             position: relative;
             display: flex;
-            flex-direction: column;
-            flex-wrap: wrap;
-            height: 380px;
+            flex-direction: row;
             gap: 16px;
             padding: 2px 0 8px;
             overflow-x: auto;
@@ -422,13 +421,20 @@
             outline: none;
         }
         .ann-list::-webkit-scrollbar { display: none; }
-        .ann-list > * {
-            flex: 0 0 calc(50% - 8px);
+        
+        .ann-page {
+            flex: 0 0 100%;
             min-width: 100%;
-            height: calc(50% - 8px);
+            height: 600px;
+            overflow-y: auto;
             scroll-snap-align: start;
             scroll-snap-stop: always;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding-right: 6px;
         }
+        
         .car-dots { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
         .car-dot { width: 10px; height: 10px; padding: 0; border: none; border-radius: 999px; background: rgba(58,58,58,.25); cursor: pointer; transition: width .25s var(--ease), background .2s; }
         .car-dot.on { width: 26px; background: var(--maroon); }
@@ -452,7 +458,7 @@
 
         .ann-card {
             padding: 16px 18px; background: var(--white); border: 2px solid rgba(58,58,58,.12); border-left: 6px solid var(--maroon); border-radius: 12px; animation: swap .4s var(--ease);
-            display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; cursor: pointer; text-align: left; transition: transform .2s, box-shadow .2s;
+            display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; cursor: pointer; text-align: left; transition: transform .2s, box-shadow .2s; flex-shrink: 0;
         }
         .ann-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.12); }
         .ann-card.past { border-left-color: var(--charcoal); opacity: .8; }
@@ -663,11 +669,11 @@
         <section class="section hidden" id="sec-announcements">
             <h2>ANNOUNCEMENTS</h2>
             <div class="ann-tools hidden" id="ann-tools">
-                <select id="ann-filter" aria-label="Filter by title"></select>
+                <select id="ann-filter" aria-label="Filter by Topic"></select>
                 <div class="car-nav" id="car-nav">
-                    <button type="button" class="dp-nav" id="car-prev" aria-label="Previous announcement"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+                    <button type="button" class="dp-nav" id="car-prev" aria-label="Previous window"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
                     <span class="car-count" id="car-count"></span>
-                    <button type="button" class="dp-nav" id="car-next" aria-label="Next announcement"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+                    <button type="button" class="dp-nav" id="car-next" aria-label="Next window"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
                 </div>
             </div>
             <div class="ann-list" id="ann-list" tabindex="0" aria-label="Announcements carousel"></div>
@@ -695,7 +701,7 @@
             <form class="req-form" id="bin-form" novalidate>
                 <div class="edit-banner hidden" id="b-edit-banner">You're editing an announcement. Saving will mark it as edited by you.</div>
                 <div class="field"><input type="text" id="b-title" placeholder=" " autocomplete="off" maxlength="120"><label for="b-title">Title</label></div>
-                <div class="field"><input type="text" id="b-course" placeholder=" " autocomplete="off" maxlength="30"><label for="b-course">Course</label></div>
+                <div class="field"><input type="text" id="b-course" placeholder=" " autocomplete="off" maxlength="30"><label for="b-course">Topic</label></div>
                 <div class="field has-peek">
                     <input type="text" id="b-deadline" placeholder=" " readonly autocomplete="off"><label for="b-deadline">Deadline (optional)</label>
                     <button type="button" class="peek" id="b-deadline-btn" aria-label="Open calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></button>
@@ -1665,7 +1671,7 @@
         const title = $("b-title").value.replace(/\s+/g, " ").trim();
         const course = $("b-course").value.replace(/\s+/g, " ").trim();
         const text = $("b-text").value.trim();
-        if (!title || !course || !text) return setMessage(bm, "Please fill in the title, course and announcement.", ERR);
+        if (!title || !course || !text) return setMessage(bm, "Please fill in the title, topic and announcement.", ERR);
         if (!!binStart !== !!binEnd) return setMessage(bm, "A period needs both a beginning date and an end date.", ERR);
         if (binStart && binEnd < binStart) return setMessage(bm, "The end date can't be before the beginning date.", ERR);
         const wasEdit = !!editingId;
@@ -1804,22 +1810,21 @@
     }
     let annFilter = "", carIdx = 0;
     const CAR_GAP = 16;
-    const annVisible = () => annFilter ? annList.filter(a => a.title === annFilter) : annList;
+    const annVisible = () => annFilter ? annList.filter(a => a.course === annFilter) : annList;
 
     function carUpdate() {
-        const count = annVisible().length;
-        const totalSets = Math.ceil(count / 2);
-        const currentSet = count ? Math.floor(carIdx / 2) + 1 : 0;
-        $("car-count").textContent = count ? currentSet + " / " + totalSets : "";
+        const list = annVisible();
+        const totalPages = Math.ceil(list.length / 10);
+        $("car-count").textContent = list.length ? (carIdx + 1) + " / " + totalPages : "";
         $("car-prev").disabled = carIdx <= 0;
-        $("car-next").disabled = carIdx >= count - 2;
-        $("car-nav").classList.toggle("hidden", count <= 2);
+        $("car-next").disabled = carIdx >= totalPages - 1;
+        $("car-nav").classList.toggle("hidden", totalPages <= 1);
         const d = $("car-dots"); d.textContent = "";
-        if (totalSets > 1 && totalSets <= 12) {
-            for (let i = 0; i < totalSets; i++) {
-                const b = mk("button", "car-dot" + (i === Math.floor(carIdx / 2) ? " on" : "")); b.type = "button";
-                b.setAttribute("aria-label", "Go to set " + (i + 1));
-                b.onclick = () => carGo(i * 2);
+        if (totalPages > 1 && totalPages <= 12) {
+            for (let i = 0; i < totalPages; i++) {
+                const b = mk("button", "car-dot" + (i === carIdx ? " on" : "")); b.type = "button";
+                b.setAttribute("aria-label", "Go to window " + (i + 1));
+                b.onclick = () => carGo(i);
                 d.appendChild(b);
             }
         }
@@ -1835,14 +1840,15 @@
         const box = $("ann-list"), fs = $("ann-filter");
         box.textContent = "";
         $("ann-tools").classList.toggle("hidden", !annList.length);
-        // filter options: every existing title, A to Z
-        const titles = Array.from(new Set(annList.map(a => a.title)))
+        
+        const topics = Array.from(new Set(annList.map(a => a.course).filter(Boolean)))
             .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base", numeric: true }));
-        if (annFilter && !titles.includes(annFilter)) annFilter = "";
+        if (annFilter && !topics.includes(annFilter)) annFilter = "";
         fs.textContent = "";
-        [""].concat(titles).forEach(t => { const o = mk("option", "", t || "All titles"); o.value = t; fs.appendChild(o); });
+        [""].concat(topics).forEach(t => { const o = mk("option", "", t || "All Topics"); o.value = t; fs.appendChild(o); });
         fs.value = annFilter;
         if (fs._sync) fs._sync();
+        
         const list = annVisible();
         if (!list.length) {
             const e = mk("div", "empty");
@@ -1850,7 +1856,15 @@
             e.appendChild(mk("p", "", "Announcements will be posted here."));
             box.appendChild(e); carIdx = 0; carUpdate(); return;
         }
-        list.forEach(a => box.appendChild(annCard(a)));
+
+        const pageSize = 10;
+        for (let i = 0; i < list.length; i += pageSize) {
+            const pageDiv = mk("div", "ann-page");
+            const chunk = list.slice(i, i + pageSize);
+            chunk.forEach(a => pageDiv.appendChild(annCard(a)));
+            box.appendChild(pageDiv);
+        }
+
         carGo(carIdx, true);
     }
     // date -> [{a, kind}] : a deadline shows on its date, a period shows on every day it covers
@@ -2038,11 +2052,11 @@
     $("dl-today").addEventListener("click", () => { const t = new Date(); dlY = t.getFullYear(); dlM = t.getMonth(); dlSel = todayIso(); renderCalendar(); });
     // Announcements carousel + filter
     $("ann-filter").addEventListener("change", () => { annFilter = $("ann-filter").value; carIdx = 0; renderAnnouncements(); });
-    $("car-prev").addEventListener("click", () => carGo(carIdx - 2));
-    $("car-next").addEventListener("click", () => carGo(carIdx + 2));
+    $("car-prev").addEventListener("click", () => carGo(carIdx - 1));
+    $("car-next").addEventListener("click", () => carGo(carIdx + 1));
     $("ann-list").addEventListener("keydown", e => {
-        if (e.key === "ArrowRight") { e.preventDefault(); carGo(carIdx + 2); }
-        else if (e.key === "ArrowLeft") { e.preventDefault(); carGo(carIdx - 2); }
+        if (e.key === "ArrowRight") { e.preventDefault(); carGo(carIdx + 1); }
+        else if (e.key === "ArrowLeft") { e.preventDefault(); carGo(carIdx - 1); }
     });
     let carRaf = 0;
     $("ann-list").addEventListener("scroll", () => {   // keeps the counter and dots in sync when swiping
@@ -2050,7 +2064,7 @@
         carRaf = requestAnimationFrame(() => {
             const box = $("ann-list"), first = box.children[0];
             if (!first) return;
-            const i = Math.round(box.scrollLeft / first.offsetWidth) * 2;
+            const i = Math.round(box.scrollLeft / first.offsetWidth);
             if (i !== carIdx) { carIdx = i; carUpdate(); }
         });
     });
