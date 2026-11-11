@@ -246,7 +246,7 @@
 
 
         /* ---- Request form ---- */
-        .req-form { max-width: 560px; }
+        .req-form { max-width: 560px; margin-top: 18px; }
         .field textarea {
             width: 100%; min-height: 150px; padding: 26px 14px 10px; resize: vertical; color: var(--charcoal); background: var(--white);
             font-family: inherit; font-size: var(--fs-0); line-height: var(--lh);
@@ -479,10 +479,9 @@
 
     <main class="content">
         <section class="section" id="sec-requests">
-            <h2>Requests</h2>
-            <p>Send a request to your Beadle.</p>
+            <h2>REQUESTS</h2>
             <form class="req-form" id="req-form" novalidate>
-                <div class="field"><input type="email" id="r-beadle" placeholder=" " autocomplete="off" maxlength="100" autocapitalize="off" spellcheck="false"><label for="r-beadle">UP Email Address of the Beadle</label></div>
+                <div class="field"><input type="email" id="r-beadle" placeholder=" " autocomplete="off" maxlength="100" autocapitalize="off" spellcheck="false"><label for="r-beadle">UP Email Address of the Officer</label></div>
                 <p class="hint">Must end with @up.edu.ph</p>
                 <div class="field"><input type="text" id="r-course" placeholder=" " autocomplete="off" maxlength="30"><label for="r-course">Course Code</label></div>
                 <div class="field"><textarea id="r-text" placeholder=" " maxlength="2000"></textarea><label for="r-text">Type your request here</label></div>
