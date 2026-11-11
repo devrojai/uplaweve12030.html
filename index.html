@@ -407,9 +407,28 @@
         .car-nav { display: flex; align-items: center; gap: 10px; }
         .car-count { min-width: 3.5em; text-align: center; font-size: var(--fs-n1); font-weight: 700; color: var(--maroon); }
         .car-nav .dp-nav:disabled { opacity: .35; cursor: not-allowed; transform: none; background: rgba(118,9,12,.08); color: var(--maroon); }
-        .ann-list { position: relative; display: flex; flex-direction: row; gap: 16px; padding: 2px 0 8px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; outline: none; }
+        .ann-list {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            flex-wrap: wrap;
+            height: 380px;
+            gap: 16px;
+            padding: 2px 0 8px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+            outline: none;
+        }
         .ann-list::-webkit-scrollbar { display: none; }
-        .ann-list > * { flex: 0 0 100%; min-width: 0; scroll-snap-align: start; scroll-snap-stop: always; }
+        .ann-list > * {
+            flex: 0 0 calc(50% - 8px);
+            min-width: 100%;
+            height: calc(50% - 8px);
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+        }
         .car-dots { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
         .car-dot { width: 10px; height: 10px; padding: 0; border: none; border-radius: 999px; background: rgba(58,58,58,.25); cursor: pointer; transition: width .25s var(--ease), background .2s; }
         .car-dot.on { width: 26px; background: var(--maroon); }
@@ -431,12 +450,17 @@
         .cal-sel .sdrop:last-child { flex: 1.2 1 0; min-width: 0; }
         .cal-sel .sdrop-btn { font-size: var(--fs-1); }
 
-        .ann-card { padding: 16px 18px; background: var(--white); border: 2px solid rgba(58,58,58,.12); border-left: 6px solid var(--maroon); border-radius: 12px; animation: swap .4s var(--ease); }
+        .ann-card {
+            padding: 16px 18px; background: var(--white); border: 2px solid rgba(58,58,58,.12); border-left: 6px solid var(--maroon); border-radius: 12px; animation: swap .4s var(--ease);
+            display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; cursor: pointer; text-align: left; transition: transform .2s, box-shadow .2s;
+        }
+        .ann-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.12); }
         .ann-card.past { border-left-color: var(--charcoal); opacity: .8; }
         .ann-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
         .ann-title { font-size: var(--fs-1); font-weight: 800; line-height: 1.2; color: var(--maroon); word-break: break-word; }
         .ann-meta { margin: 4px 0 10px; font-size: var(--fs-n1); opacity: .7; }
-        .ann-body { white-space: pre-wrap; word-break: break-word; }
+        .ann-body { white-space: pre-wrap; word-break: break-word; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .ann-modal-body { white-space: pre-wrap; word-break: break-word; }
         .ann-edited { margin-top: 10px; font-size: var(--fs-n1); font-weight: 700; color: var(--maroon); }
         .ann-actions { display: flex; gap: 8px; margin-top: 12px; }
         .ann-actions .btn { margin: 0; }
@@ -717,6 +741,22 @@
             <div class="msg" id="repo-msg"></div>
         </section>
     </main>
+
+    <!-- Announcement Details Modal Prompt Window -->
+    <div class="modal hidden" id="ann-modal" role="dialog" aria-modal="true" aria-labelledby="ann-modal-title">
+        <div class="modal-card" style="text-align: left; width: 500px;">
+            <div class="ann-top" style="margin-bottom: 8px;">
+                <h3 id="ann-modal-title" class="ann-title"></h3>
+                <span id="ann-modal-badge" class="badge"></span>
+            </div>
+            <div id="ann-modal-meta" class="ann-meta" style="margin-bottom: 14px;"></div>
+            <div id="ann-modal-body" class="ann-modal-body" style="margin-bottom: 14px;"></div>
+            <div id="ann-modal-edited" class="ann-edited" style="margin-bottom: 14px;"></div>
+            <div id="ann-modal-actions" class="ann-actions" style="margin-top: 16px; justify-content: flex-end;">
+                <button type="button" class="btn ghost sm" id="ann-modal-close" style="width: auto;">Close</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Delete account modal -->
     <div class="modal hidden" id="del-modal" role="dialog" aria-modal="true" aria-labelledby="del-title">
@@ -1347,9 +1387,11 @@
         try {
             const r = await authCall("admin_users");
             if (r.status === "success") {
-                repoUsers = r.users.slice().sort((a, b) =>
-                    (a.lastName || a.firstName || a.email).toLowerCase().localeCompare((b.lastName || b.firstName || b.email).toLowerCase()) ||
-                    a.email.localeCompare(b.email));
+                repoUsers = r.users.slice().sort((a, b) => {
+                    const surnameA = (a.lastName || a.firstName || a.email).toLowerCase();
+                    const surnameB = (b.lastName || b.firstName || b.email).toLowerCase();
+                    return surnameA.localeCompare(surnameB) || a.email.localeCompare(b.email);
+                });
                 renderRepoList();
                 loadRepoPhotos();
             } else {
@@ -1669,6 +1711,7 @@
                 if (editingId === a.id) resetBinForm();
                 annList = annList.filter(x => x.id !== a.id);
                 renderAnnouncements(); renderCalendar();
+                closeAnnModal();
                 return;
             }
             alert(r.message || "Couldn't delete the announcement.");
@@ -1677,9 +1720,49 @@
         }
         setLoading(btn, false);
     }
+    function openAnnModal(a) {
+        $("ann-modal-title").textContent = a.title;
+        $("ann-modal-badge").textContent = a.course;
+        const bits = [];
+        if (a.deadline) bits.push("Deadline: " + prettyDate(a.deadline));
+        if (a.periodStart && a.periodEnd) bits.push("Period: " + prettyDate(a.periodStart) + " – " + prettyDate(a.periodEnd));
+        bits.push("Posted by " + a.author + " on " + a.created);
+        $("ann-modal-meta").textContent = bits.join(" · ");
+        const body = $("ann-modal-body");
+        body.textContent = "";
+        richText(body, a.message, a.mentions);
+        const edited = $("ann-modal-edited");
+        edited.textContent = a.edited ? "✎ Edited by the author on " + a.edited : "";
+        
+        const actions = $("ann-modal-actions");
+        actions.textContent = "";
+        if (isAdmin) {
+            if (a.mine) {
+                const eb = mk("button", "btn sm ghost", "Edit"); eb.type = "button";
+                eb.style.width = "auto";
+                eb.addEventListener("click", () => { closeAnnModal(); startEdit(a); });
+                actions.appendChild(eb);
+            }
+            const db = mk("button", "btn sm", "Delete"); db.type = "button";
+            db.style.width = "auto";
+            db.addEventListener("click", () => deleteAnnouncement(a, db));
+            actions.appendChild(db);
+        }
+        const cb = mk("button", "btn ghost sm", "Close"); cb.type = "button";
+        cb.style.width = "auto";
+        cb.addEventListener("click", closeAnnModal);
+        actions.appendChild(cb);
+
+        $("ann-modal").classList.remove("hidden");
+    }
+    function closeAnnModal() { $("ann-modal").classList.add("hidden"); }
+    $("ann-modal-close").addEventListener("click", closeAnnModal);
+
     function annCard(a) {
         const ref = a.deadline || a.periodEnd || "";
         const c = mk("article", "ann-card" + (ref && ref < todayIso() ? " past" : ""));
+        c.setAttribute("role", "button");
+        c.setAttribute("tabindex", "0");
         const top = mk("div", "ann-top");
         top.appendChild(mk("h3", "ann-title", a.title));
         top.appendChild(mk("span", "badge", a.course));
@@ -1693,15 +1776,27 @@
         richText(body, a.message, a.mentions);
         c.appendChild(body);
         if (a.edited) c.appendChild(mk("div", "ann-edited", "✎ Edited by the author on " + a.edited));
+
+        c.addEventListener("click", (e) => {
+            if (e.target.closest("button")) return;
+            openAnnModal(a);
+        });
+        c.addEventListener("keydown", (e) => {
+            if ((e.key === "Enter" || e.key === " ") && !e.target.closest("button")) {
+                e.preventDefault();
+                openAnnModal(a);
+            }
+        });
+
         if (isAdmin) {
             const row = mk("div", "ann-actions");
             if (a.mine) {
                 const eb = mk("button", "btn sm ghost", "Edit"); eb.type = "button";
-                eb.addEventListener("click", () => startEdit(a));
+                eb.addEventListener("click", (e) => { e.stopPropagation(); startEdit(a); });
                 row.appendChild(eb);
             }
             const db = mk("button", "btn sm", "Delete"); db.type = "button";
-            db.addEventListener("click", () => deleteAnnouncement(a, db));
+            db.addEventListener("click", (e) => { e.stopPropagation(); deleteAnnouncement(a, db); });
             row.appendChild(db);
             c.appendChild(row);
         }
@@ -1712,17 +1807,21 @@
     const annVisible = () => annFilter ? annList.filter(a => a.title === annFilter) : annList;
 
     function carUpdate() {
-        const n = annVisible().length;
-        $("car-count").textContent = n ? (carIdx + 1) + " / " + n : "";
+        const count = annVisible().length;
+        const totalSets = Math.ceil(count / 2);
+        const currentSet = count ? Math.floor(carIdx / 2) + 1 : 0;
+        $("car-count").textContent = count ? currentSet + " / " + totalSets : "";
         $("car-prev").disabled = carIdx <= 0;
-        $("car-next").disabled = carIdx >= n - 1;
-        $("car-nav").classList.toggle("hidden", n < 2);
+        $("car-next").disabled = carIdx >= count - 2;
+        $("car-nav").classList.toggle("hidden", count <= 2);
         const d = $("car-dots"); d.textContent = "";
-        if (n > 1 && n <= 12) for (let i = 0; i < n; i++) {
-            const b = mk("button", "car-dot" + (i === carIdx ? " on" : "")); b.type = "button";
-            b.setAttribute("aria-label", "Go to announcement " + (i + 1));
-            b.onclick = () => carGo(i);
-            d.appendChild(b);
+        if (totalSets > 1 && totalSets <= 12) {
+            for (let i = 0; i < totalSets; i++) {
+                const b = mk("button", "car-dot" + (i === Math.floor(carIdx / 2) ? " on" : "")); b.type = "button";
+                b.setAttribute("aria-label", "Go to set " + (i + 1));
+                b.onclick = () => carGo(i * 2);
+                d.appendChild(b);
+            }
         }
     }
     function carGo(i, instant) {
@@ -1882,8 +1981,8 @@
     bindPeek("del-peek", "del-password");
 
     $("burger").addEventListener("click", () => $("drawer").classList.contains("open") ? closeMenu() : openMenu());
-    $("overlay").addEventListener("click", () => { closeMenu(); closeProfile(); });
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeMenu(); closeProfile(); closeDelete(); } });
+    $("overlay").addEventListener("click", () => { closeMenu(); closeProfile(); closeAnnModal(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeMenu(); closeProfile(); closeDelete(); closeAnnModal(); } });
     document.querySelectorAll(".nav button").forEach(b => b.addEventListener("click", () => { showSection(b.dataset.section); closeMenu(); }));
     $("logout-btn").addEventListener("click", leaveApp);
     $("delete-open").addEventListener("click", openDelete);
@@ -1939,11 +2038,11 @@
     $("dl-today").addEventListener("click", () => { const t = new Date(); dlY = t.getFullYear(); dlM = t.getMonth(); dlSel = todayIso(); renderCalendar(); });
     // Announcements carousel + filter
     $("ann-filter").addEventListener("change", () => { annFilter = $("ann-filter").value; carIdx = 0; renderAnnouncements(); });
-    $("car-prev").addEventListener("click", () => carGo(carIdx - 1));
-    $("car-next").addEventListener("click", () => carGo(carIdx + 1));
+    $("car-prev").addEventListener("click", () => carGo(carIdx - 2));
+    $("car-next").addEventListener("click", () => carGo(carIdx + 2));
     $("ann-list").addEventListener("keydown", e => {
-        if (e.key === "ArrowRight") { e.preventDefault(); carGo(carIdx + 1); }
-        else if (e.key === "ArrowLeft") { e.preventDefault(); carGo(carIdx - 1); }
+        if (e.key === "ArrowRight") { e.preventDefault(); carGo(carIdx + 2); }
+        else if (e.key === "ArrowLeft") { e.preventDefault(); carGo(carIdx - 2); }
     });
     let carRaf = 0;
     $("ann-list").addEventListener("scroll", () => {   // keeps the counter and dots in sync when swiping
@@ -1951,7 +2050,7 @@
         carRaf = requestAnimationFrame(() => {
             const box = $("ann-list"), first = box.children[0];
             if (!first) return;
-            const i = Math.round(box.scrollLeft / (first.offsetWidth + CAR_GAP));
+            const i = Math.round(box.scrollLeft / first.offsetWidth) * 2;
             if (i !== carIdx) { carIdx = i; carUpdate(); }
         });
     });
