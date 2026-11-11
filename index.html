@@ -39,12 +39,21 @@
         document.getElementById("message").innerText = "";
     }
 
+    // Helper function to hash passwords securely using SHA-256
+    async function hashPassword(password) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
     async function handleSubmit() {
         const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
+        const rawPassword = document.getElementById("password").value;
         const msgDiv = document.getElementById("message");
 
-        if (!email || !password) {
+        if (!email || !rawPassword) {
             msgDiv.style.color = "red";
             msgDiv.innerText = "Please fill in all fields.";
             return;
@@ -53,16 +62,17 @@
         msgDiv.style.color = "black";
         msgDiv.innerText = "Processing...";
 
-        const payload = {
-            action: isSignup ? "signup" : "login",
-            email: email,
-            password: password
-        };
-
         try {
-            // Note: mode 'no-cors' can sometimes obscure response data in strict configurations, 
-            // but standard CORS works fine if Apps Script is deployed to 'Anyone'.
-            const response = await fetch(SCRIPT_URL, {
+            // Hash the password before sending it anywhere
+            const hashedPassword = await hashPassword(rawPassword);
+
+            const payload = {
+                action: isSignup ? "signup" : "login",
+                email: email,
+                password: hashedPassword
+            };
+
+            const response = await fetch(https://script.google.com/macros/s/AKfycbyXGio_hof7wKZQcprT51cwFxrQ-_GQBEQvsz83hHNy_Qe1EW8EsCW1xydoLhxBjGOyoQ/exec, {
                 method: "POST",
                 body: JSON.stringify(payload)
             });
@@ -73,7 +83,7 @@
                 msgDiv.style.color = "green";
                 msgDiv.innerText = result.message;
                 if (!isSignup) {
-                    // Handle successful login routing here (e.g., redirect or show dashboard)
+                    // Handle successful login routing here
                 }
             } else {
                 msgDiv.style.color = "red";
@@ -86,6 +96,6 @@
         }
     }
 </script>
-
+    
 </body>
 </html>
