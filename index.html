@@ -99,7 +99,23 @@
             color: rgba(58,58,58,.6); pointer-events: none; transition: all .2s var(--ease);
         }
         .field input:focus ~ label,
-        .field input:not(:placeholder-shown) ~ label { top: 5px; font-size: var(--fs-n1); font-weight: 600; }
+        .field input:not(:placeholder-shown) ~ label,
+        .field.filled label { top: 5px; font-size: var(--fs-n1); font-weight: 600; }
+        /* Browser autofill: float the label (separate rules, because an unsupported selector would void a shared rule) */
+        .field input:-webkit-autofill ~ label { top: 5px; font-size: var(--fs-n1); font-weight: 600; }
+        .field input:autofill ~ label { top: 5px; font-size: var(--fs-n1); font-weight: 600; }
+        /* Keep autofilled fields white with our text colour instead of the browser's pale blue */
+        .field input:-webkit-autofill,
+        .field input:-webkit-autofill:hover,
+        .field input:-webkit-autofill:focus {
+            -webkit-box-shadow: 0 0 0 1000px var(--white) inset;
+            -webkit-text-fill-color: var(--charcoal);
+            caret-color: var(--charcoal);
+            font-family: var(--font); font-size: var(--fs-0);
+            transition: background-color 600000s 0s;
+            animation: onAutoFillStart .01s;
+        }
+        @keyframes onAutoFillStart { from { opacity: 1; } to { opacity: 1; } }
         .field input:focus { border-color: var(--maroon); box-shadow: 0 0 0 4px rgba(118,9,12,.15); }
         .field input:focus ~ label { color: var(--maroon); }
         .peek {
@@ -451,6 +467,7 @@
         if (isSignup) toggleMode();
         $("password").value = "";
         setMessage($("message"), "", "");
+        syncFields();
     }
 
     /* ---------- verify panel ---------- */
@@ -527,6 +544,7 @@
         showPanel("forgot");
         $("forgot-email").value = $("email").value.trim();
         setMessage($("forgot-message"), "", "");
+        syncFields();
     }
     async function handleForgot(e) {
         e.preventDefault();
@@ -552,6 +570,7 @@
         closeMenu();
         $("del-password").value = "";
         setMessage($("del-message"), "", "");
+        syncFields();
         $("del-modal").classList.remove("hidden");
         setTimeout(() => $("del-password").focus(), 50);
     }
@@ -617,6 +636,24 @@
         document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("active", b.dataset.section === name));
         $("page-title").textContent = titles[name];
     }
+
+    /* ---------- autofill / prefilled fields: keep floating labels in sync ---------- */
+    function isAutofilled(input) {
+        try { if (input.matches(":-webkit-autofill")) return true; } catch (e) {}
+        try { if (input.matches(":autofill")) return true; } catch (e) {}
+        return false;
+    }
+    function syncFields() {
+        document.querySelectorAll(".field input").forEach(i => {
+            i.closest(".field").classList.toggle("filled", !!i.value || isAutofilled(i));
+        });
+    }
+    document.addEventListener("input", syncFields);
+    document.addEventListener("change", syncFields);
+    document.addEventListener("animationstart", (e) => { if (e.animationName === "onAutoFillStart") syncFields(); });
+    // Browsers fill saved logins shortly after load, so check a few times
+    [0, 100, 300, 600, 1000, 2000, 3500].forEach(ms => setTimeout(syncFields, ms));
+    window.addEventListener("pageshow", syncFields);
 
     /* ---------- events ---------- */
     $("auth-form").addEventListener("submit", handleSubmit);
