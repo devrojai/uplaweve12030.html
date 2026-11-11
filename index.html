@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Eve1 2030</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2376090c'/%3E%3Ctext x='32' y='42' text-anchor='middle' font-family='Segoe UI,Arial,sans-serif' font-weight='800' font-size='27' fill='%23ffffff'%3EEVE%3C/text%3E%3C/svg%3E">
     <style>
         :root {
             --maroon: #76090c;
@@ -230,7 +231,7 @@
         .nav button.active { background: var(--maroon); border-left-color: var(--white); }
         .nav svg { width: 20px; height: 20px; flex: none; }
         .drawer-foot { padding: 14px 16px 20px; border-top: 1px solid rgba(255,255,255,.15); }
-        .drawer-foot .btn { background: transparent; border-color: var(--white); box-shadow: none; margin: 0; }
+        .drawer-foot .btn { background: transparent; border-color: var(--white); box-shadow: none; margin: 14px 0 0; }
         .drawer-foot .btn:hover:not(:disabled) { background: var(--white); color: var(--maroon); filter: none; }
 
         .content { padding: 84px 22px 30px; max-width: 900px; margin: 0 auto; }
@@ -243,11 +244,7 @@
         .empty b { font-size: var(--fs-1); }
         .empty p { margin-top: 6px; font-size: var(--fs-0); opacity: .7; }
 
-        /* ---- Delete account (danger zone) ---- */
-        .danger-zone { margin-top: 18px; padding-top: 16px; border-top: 1px dashed rgba(255,255,255,.28); }
-        .dz-label { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: var(--fs-n1); font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; opacity: .75; }
-        .dz-label::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--maroon); box-shadow: 0 0 0 3px rgba(118,9,12,.45); animation: blink 2s ease-in-out infinite; }
-        @keyframes blink { 0%, 100% { box-shadow: 0 0 0 3px rgba(118,9,12,.45); } 50% { box-shadow: 0 0 0 7px rgba(118,9,12,0); } }
+        /* ---- Delete account button ---- */
         .btn-danger {
             position: relative; overflow: hidden; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
             padding: 12px; font-weight: 700; letter-spacing: .4px; color: var(--white);
@@ -419,11 +416,8 @@
             </button>
         </nav>
         <div class="drawer-foot">
+            <button type="button" class="btn-danger" id="delete-open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="lid"><path d="M3 6h18"/><path d="M8 6V4h8v2"/></g><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg><span>Delete account</span></button>
             <button type="button" class="btn" id="logout-btn">Log Out</button>
-            <div class="danger-zone">
-                <span class="dz-label">Danger zone</span>
-                <button type="button" class="btn-danger" id="delete-open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="lid"><path d="M3 6h18"/><path d="M8 6V4h8v2"/></g><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg><span>Delete account</span></button>
-            </div>
         </div>
     </aside>
 
@@ -727,7 +721,6 @@
         document.body.classList.add("app-mode");
         $("stage").classList.add("hidden");
         $("app").classList.remove("hidden");
-        $("chip").textContent = email;
         $("drawer-email").textContent = email;
         $("p-acct").textContent = email;
         showSection("requests");
@@ -821,6 +814,7 @@
     function renderAvatars() {
         renderAvatar($("avatar-inner"), profile.photo);
         renderAvatar($("photo-inner"), pendingPhoto);
+        $("chip").textContent = (profile.firstName || "").trim();   // first name shown beside the profile picture
     }
     function fillProfile(p) {
         profile = Object.assign(emptyProfile(), p || {});
