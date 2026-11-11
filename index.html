@@ -778,18 +778,50 @@ html[data-theme="night"] {
 .blob.b1 { background: var(--blob1); }
 .blob.b2 { background: var(--blob2); }
 .blob.b3 { background: var(--blob1); opacity: .35; }
-/* Law-themed decoration: columns (top-right) and scales of justice (bottom-left) */
-.bg { --law: rgba(118,9,12,.14); }
-html[data-theme="classic"] .bg { --law: rgba(255,255,255,.16); }
-html[data-theme="night"] .bg { --law: rgba(255,255,255,.09); }
+        
+/* Flowing waves + soft moving gradient */
+.bg { --sheen: rgba(118,9,12,.12); --wave-a: rgba(118,9,12,.16); --wave-b: rgba(118,9,12,.03); }
+html[data-theme="classic"] .bg { --sheen: rgba(255,255,255,.10); --wave-a: rgba(255,255,255,.16); --wave-b: rgba(10,68,36,.10); }
+html[data-theme="night"] .bg { --sheen: rgba(163,23,30,.16); --wave-a: rgba(163,23,30,.20); --wave-b: rgba(95,208,143,.05); }
 
-.bg::before, .bg::after {
-    content: ""; position: absolute; pointer-events: none;
-    background: var(--law);
-    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
-    -webkit-mask-size: contain; mask-size: contain;
-    -webkit-mask-position: center; mask-position: center;
+/* Moving gradient glow */
+.bg::before {
+    content: ""; position: absolute; inset: -30%; pointer-events: none;
+    background:
+        radial-gradient(ellipse at 28% 32%, var(--sheen), transparent 55%),
+        radial-gradient(ellipse at 72% 68%, var(--sheen), transparent 55%);
+    animation: bgDrift 26s ease-in-out infinite alternate;
 }
+@keyframes bgDrift {
+    0%   { transform: translate(-4%, -3%) scale(1); }
+    100% { transform: translate(5%, 4%) scale(1.12); }
+}
+
+/* Layered waves along the bottom */
+.bg::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 34%; pointer-events: none;
+    background: linear-gradient(to top, var(--wave-a), var(--wave-b));
+    -webkit-mask-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 200' preserveAspectRatio='none'%3E%3Cpath d='M0 100C150 40 350 40 600 100S1050 160 1200 100V200H0Z'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 200' preserveAspectRatio='none'%3E%3Cpath d='M0 120C200 60 400 60 600 120S1000 180 1200 120V200H0Z'/%3E%3C/svg%3E");
+    mask-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 200' preserveAspectRatio='none'%3E%3Cpath d='M0 100C150 40 350 40 600 100S1050 160 1200 100V200H0Z'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 200' preserveAspectRatio='none'%3E%3Cpath d='M0 120C200 60 400 60 600 120S1000 180 1200 120V200H0Z'/%3E%3C/svg%3E");
+    -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
+    -webkit-mask-size: 1200px 100%, 1800px 80%; mask-size: 1200px 100%, 1800px 80%;
+    -webkit-mask-position: 0 100%, 0 100%; mask-position: 0 100%, 0 100%;
+    animation: waveFlow 28s linear infinite;
+}
+@keyframes waveFlow {
+    to {
+        -webkit-mask-position: 1200px 100%, -1800px 100%;
+        mask-position: 1200px 100%, -1800px 100%;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .bg::before, .bg::after { animation: none; }
+}
+        
 /* Courthouse columns */
 .bg::before {
     width: 440px; height: 367px; top: -30px; right: -70px;
