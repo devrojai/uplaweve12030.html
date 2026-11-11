@@ -232,8 +232,6 @@
         .drawer-foot { padding: 14px 16px 20px; border-top: 1px solid rgba(255,255,255,.15); }
         .drawer-foot .btn { background: transparent; border-color: var(--white); box-shadow: none; margin: 0; }
         .drawer-foot .btn:hover:not(:disabled) { background: var(--white); color: var(--maroon); filter: none; }
-        .danger-link { display: block; margin: 14px auto 0; background: none; border: none; color: var(--white); opacity: .65; font-size: var(--fs-n1); cursor: pointer; text-decoration: underline; }
-        .danger-link:hover { opacity: 1; }
 
         .content { padding: 84px 22px 30px; max-width: 900px; margin: 0 auto; }
         .section { animation: swap .45s var(--ease); }
@@ -244,6 +242,79 @@
         .empty .ico svg { width: 26px; height: 26px; }
         .empty b { font-size: var(--fs-1); }
         .empty p { margin-top: 6px; font-size: var(--fs-0); opacity: .7; }
+
+        /* ---- Delete account (danger zone) ---- */
+        .danger-zone { margin-top: 18px; padding-top: 16px; border-top: 1px dashed rgba(255,255,255,.28); }
+        .dz-label { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: var(--fs-n1); font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; opacity: .75; }
+        .dz-label::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--maroon); box-shadow: 0 0 0 3px rgba(118,9,12,.45); animation: blink 2s ease-in-out infinite; }
+        @keyframes blink { 0%, 100% { box-shadow: 0 0 0 3px rgba(118,9,12,.45); } 50% { box-shadow: 0 0 0 7px rgba(118,9,12,0); } }
+        .btn-danger {
+            position: relative; overflow: hidden; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
+            padding: 12px; font-weight: 700; letter-spacing: .4px; color: var(--white);
+            background: linear-gradient(135deg, rgba(118,9,12,.6), rgba(118,9,12,.18));
+            border: 2px solid var(--maroon); border-radius: 10px; cursor: pointer;
+            transition: transform .2s var(--ease), box-shadow .25s, background .25s;
+        }
+        .btn-danger svg { width: 20px; height: 20px; flex: none; }
+        .btn-danger .lid { transform-origin: 3px 6px; transition: transform .3s var(--ease); }
+        .btn-danger::after { content: ""; position: absolute; top: 0; left: -75%; width: 50%; height: 100%; background: linear-gradient(120deg, transparent, rgba(255,255,255,.3), transparent); transform: skewX(-20deg); }
+        .btn-danger:hover { background: var(--maroon); transform: translateY(-2px); box-shadow: 0 10px 22px rgba(118,9,12,.6), 0 0 0 3px rgba(255,255,255,.15); }
+        .btn-danger:hover::after { left: 130%; transition: left .7s; }
+        .btn-danger:hover .lid { transform: translate(1px, -2px) rotate(-18deg); }
+        .btn-danger:active { transform: scale(.97); }
+
+        /* ---- Avatar (top right) ---- */
+        .avatar {
+            width: 42px; height: 42px; flex: none; padding: 0; overflow: hidden; cursor: pointer;
+            border: 2px solid var(--white); border-radius: 50%; background: var(--charcoal); color: var(--white);
+            font-weight: 700; display: grid; place-items: center;
+            transition: transform .25s var(--ease), box-shadow .25s;
+        }
+        .avatar:hover { transform: scale(1.08); box-shadow: 0 0 0 4px rgba(255,255,255,.28); }
+        .avatar span, .photo-preview > span { display: grid; place-items: center; width: 100%; height: 100%; }
+        .avatar img, .photo-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+        /* ---- Profile drawer (right) ---- */
+        .pdrawer {
+            position: fixed; top: 0; right: 0; bottom: 0; width: 420px; max-width: 100vw; z-index: 50;
+            background: var(--white); color: var(--charcoal);
+            transform: translateX(100%); transition: transform .4s var(--ease);
+            display: flex; flex-direction: column; box-shadow: -10px 0 40px rgba(0,0,0,.35);
+        }
+        .pdrawer.open { transform: translateX(0); }
+        .phead { display: flex; align-items: center; justify-content: space-between; height: 60px; padding: 0 12px 0 20px; flex: none; background: var(--maroon); color: var(--white); }
+        .phead h2 { font-size: var(--fs-1); color: inherit; text-align: left; }
+        .pclose { width: 40px; height: 40px; display: grid; place-items: center; color: var(--white); background: transparent; border: none; border-radius: 50%; cursor: pointer; transition: background .2s, transform .3s var(--ease); }
+        .pclose:hover { background: rgba(255,255,255,.18); transform: rotate(90deg); }
+        .pclose svg { width: 22px; height: 22px; }
+        .pform { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+        .pbody { flex: 1; overflow-y: auto; padding: 22px 22px 10px; }
+        .pfoot { flex: none; padding: 14px 22px 18px; border-top: 1px solid rgba(58,58,58,.15); background: var(--white); }
+        .pfoot .btn { margin-top: 0; }
+
+        .photo-box { text-align: center; margin-bottom: 20px; }
+        .photo-preview {
+            position: relative; width: 116px; height: 116px; margin: 0 auto 12px; overflow: hidden; cursor: pointer;
+            border-radius: 50%; background: var(--charcoal); color: var(--white); font-size: var(--fs-3); font-weight: 800;
+            border: 4px solid var(--white); box-shadow: 0 0 0 3px var(--maroon), 0 10px 24px rgba(0,0,0,.25);
+            display: grid; place-items: center; transition: transform .3s var(--ease);
+        }
+        .photo-preview:hover { transform: scale(1.04); }
+        .photo-preview .cam { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(58,58,58,.6); color: var(--white); opacity: 0; transition: opacity .25s; }
+        .photo-preview:hover .cam, .photo-preview:focus-visible .cam { opacity: 1; }
+        .photo-preview .cam svg { width: 30px; height: 30px; }
+        .photo-actions { display: flex; gap: 8px; justify-content: center; }
+        .btn.sm { width: auto; margin: 0; padding: 8px 16px; font-size: var(--fs-n1); }
+        .acct { margin-top: 12px; font-size: var(--fs-n1); opacity: .7; }
+        .acct b { color: var(--maroon); word-break: break-all; }
+        .group-title { margin: 18px 0 2px; font-size: var(--fs-n1); font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: var(--maroon); display: flex; align-items: center; gap: 10px; }
+        .group-title::after { content: ""; flex: 1; height: 2px; background: rgba(118,9,12,.18); }
+        .hint { margin: -8px 2px 0; font-size: var(--fs-n1); opacity: .6; }
+
+        /* ---- Delete modal icon ---- */
+        .modal-card { text-align: center; }
+        .modal-ico { width: 60px; height: 60px; margin: -56px auto 12px; border-radius: 50%; background: var(--maroon); color: var(--white); display: grid; place-items: center; box-shadow: 0 8px 20px rgba(118,9,12,.5), 0 0 0 6px var(--white); animation: pulse 3s ease-in-out infinite; }
+        .modal-ico svg { width: 28px; height: 28px; }
 
         /* ============ DELETE MODAL ============ */
         .modal { position: fixed; inset: 0; z-index: 70; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(58,58,58,.7); backdrop-filter: blur(3px); animation: fade .25s; }
@@ -330,6 +401,7 @@
         <div class="site">Eve1 2030</div>
         <div class="page" id="page-title">Requests</div>
         <div class="user-chip" id="chip"></div>
+        <button type="button" class="avatar" id="avatar-btn" aria-label="Open profile" title="Profile"><span id="avatar-inner"></span></button>
     </header>
 
     <div class="overlay" id="overlay"></div>
@@ -348,8 +420,52 @@
         </nav>
         <div class="drawer-foot">
             <button type="button" class="btn" id="logout-btn">Log Out</button>
-            <button type="button" class="danger-link" id="delete-open">Delete account</button>
+            <div class="danger-zone">
+                <span class="dz-label">Danger zone</span>
+                <button type="button" class="btn-danger" id="delete-open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="lid"><path d="M3 6h18"/><path d="M8 6V4h8v2"/></g><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg><span>Delete account</span></button>
+            </div>
         </div>
+    </aside>
+
+    <aside class="pdrawer" id="pdrawer" aria-label="Profile">
+        <div class="phead">
+            <h2>Profile</h2>
+            <button type="button" class="pclose" id="pclose" aria-label="Close profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+        <form class="pform" id="p-form" novalidate>
+            <div class="pbody">
+                <div class="photo-box">
+                    <div class="photo-preview" id="photo-preview" tabindex="0" role="button" aria-label="Change photo">
+                        <span id="photo-inner"></span>
+                        <div class="cam"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+                    </div>
+                    <div class="photo-actions">
+                        <button type="button" class="btn sm" id="photo-upload">Upload photo</button>
+                        <button type="button" class="btn sm ghost" id="photo-remove">Remove</button>
+                    </div>
+                    <input type="file" id="photo-file" accept="image/*" class="hidden">
+                    <div class="acct">Logged in as <b id="p-acct"></b></div>
+                </div>
+
+                <div class="group-title">Name</div>
+                <div class="field"><input type="text" id="p-first" placeholder=" " autocomplete="given-name" maxlength="60"><label for="p-first">First name</label></div>
+                <div class="field"><input type="text" id="p-middle" placeholder=" " autocomplete="additional-name" maxlength="60"><label for="p-middle">Middle name</label></div>
+                <div class="field"><input type="text" id="p-last" placeholder=" " autocomplete="family-name" maxlength="60"><label for="p-last">Last name</label></div>
+
+                <div class="group-title">Contact</div>
+                <div class="field"><input type="tel" id="p-contact" placeholder=" " autocomplete="tel" maxlength="20"><label for="p-contact">Contact no.</label></div>
+                <div class="field"><input type="email" id="p-upemail" placeholder=" " autocomplete="off" maxlength="100"><label for="p-upemail">UP student email address</label></div>
+                <p class="hint">Must end with @up.edu.ph</p>
+                <div class="field"><input type="text" id="p-tg" placeholder=" " autocomplete="off" maxlength="33" autocapitalize="off" spellcheck="false"><label for="p-tg">Telegram handle</label></div>
+                <p class="hint">Example: @juandelacruz</p>
+                <div class="field"><input type="text" id="p-fb" placeholder=" " autocomplete="off" maxlength="200" inputmode="url" autocapitalize="off" spellcheck="false"><label for="p-fb">Facebook URL</label></div>
+                <p class="hint">Example: https://facebook.com/yourname</p>
+            </div>
+            <div class="pfoot">
+                <button type="submit" class="btn" id="p-save">Save changes</button>
+                <div class="msg" id="p-message"></div>
+            </div>
+        </form>
     </aside>
 
     <main class="content">
@@ -376,6 +492,7 @@
     <!-- Delete account modal -->
     <div class="modal hidden" id="del-modal" role="dialog" aria-modal="true" aria-labelledby="del-title">
         <div class="modal-card">
+            <div class="modal-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="lid"><path d="M3 6h18"/><path d="M8 6V4h8v2"/></g><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></div>
             <h3 id="del-title">Delete account?</h3>
             <p>This permanently deletes your account and can't be undone. Enter your password to confirm.</p>
             <form id="del-form" novalidate>
@@ -404,6 +521,7 @@
     let isSignup = false;
     let pending = null;          // {email, hash} in memory only (for "resend")
     let currentEmail = null;     // logged-in email
+    let token = null;            // session token from the server
     let cooldownTimer = null;
 
     /* ---------- helpers ---------- */
@@ -510,7 +628,7 @@
             pending = { email, hash };
             const result = await callScript({ action: isSignup ? "signup" : "login", email, password: hash });
 
-            if (result.status === "success") { sessionStorage.setItem("userEmail", email); enterApp(email); }
+            if (result.status === "success") { sessionStorage.setItem("userEmail", email); sessionStorage.setItem("token", result.token || ""); enterApp(email, result.token); }
             else if (result.status === "verify_sent") showVerify(email, "We sent a verification link to");
             else if (result.status === "unverified") showVerify(email, "Your email isn't verified yet. Check the link we sent to");
             else { setMessage(m, result.message, ERR); shakeCard(); }
@@ -586,6 +704,7 @@
             const r = await callScript({ action: "delete", email: currentEmail, password: hash });
             if (r.status === "success") {
                 closeDelete();
+                token = null; // the account (and its session) no longer exists
                 leaveApp();
                 setMessage($("message"), "Your account has been deleted.", OK);
             } else {
@@ -602,19 +721,28 @@
     /* ---------- app view ---------- */
     const titles = { requests: "Requests", announcements: "Announcement Bin" };
 
-    function enterApp(email) {
+    function enterApp(email, tok) {
         currentEmail = email;
+        token = tok || null;
         document.body.classList.add("app-mode");
         $("stage").classList.add("hidden");
         $("app").classList.remove("hidden");
         $("chip").textContent = email;
         $("drawer-email").textContent = email;
+        $("p-acct").textContent = email;
         showSection("requests");
+        renderAvatars();
+        loadProfile();
     }
     function leaveApp() {
+        if (token && currentEmail) callScript({ action: "logout", email: currentEmail, token }).catch(() => {});
         sessionStorage.removeItem("userEmail");
+        sessionStorage.removeItem("token");
         currentEmail = null;
+        token = null;
         pending = null;
+        resetProfileState();
+        closeProfile();
         closeMenu();
         closeDelete();
         document.body.classList.remove("app-mode");
@@ -624,6 +752,7 @@
         showAuthForm();
     }
     function openMenu() {
+        closeProfile();
         $("drawer").classList.add("open"); $("overlay").classList.add("show");
         $("burger").classList.add("open"); $("burger").setAttribute("aria-expanded", "true");
     }
@@ -655,6 +784,166 @@
     [0, 100, 300, 600, 1000, 2000, 3500].forEach(ms => setTimeout(syncFields, ms));
     window.addEventListener("pageshow", syncFields);
 
+    /* ---------- authenticated calls ---------- */
+    async function authCall(action, extra) {
+        const r = await callScript(Object.assign({ action, email: currentEmail, token }, extra || {}));
+        if (r.status === "auth") {
+            token = null;               // don't try to log out a dead session
+            leaveApp();
+            setMessage($("message"), "Your session expired. Please log in again.", ERR);
+            throw new Error("auth");
+        }
+        return r;
+    }
+
+    /* ---------- profile ---------- */
+    const emptyProfile = () => ({ firstName: "", middleName: "", lastName: "", contact: "", upEmail: "", tg: "", fb: "", photo: "" });
+    let profile = emptyProfile();
+    let profileLoaded = false;
+    let pendingPhoto = "";
+    let photoChanged = false;
+
+    function initialsOf(p) {
+        const a = (p.firstName || "").trim()[0] || "", b = (p.lastName || "").trim()[0] || "";
+        const t = (a + b).toUpperCase();
+        return t || (currentEmail ? currentEmail[0].toUpperCase() : "?");
+    }
+    function renderAvatar(el, photo) {
+        el.textContent = "";
+        if (photo && /^data:image\//.test(photo)) {
+            const img = document.createElement("img");
+            img.src = photo; img.alt = "";
+            el.appendChild(img);
+        } else {
+            el.textContent = initialsOf(profile);
+        }
+    }
+    function renderAvatars() {
+        renderAvatar($("avatar-inner"), profile.photo);
+        renderAvatar($("photo-inner"), pendingPhoto);
+    }
+    function fillProfile(p) {
+        profile = Object.assign(emptyProfile(), p || {});
+        $("p-first").value = profile.firstName;
+        $("p-middle").value = profile.middleName;
+        $("p-last").value = profile.lastName;
+        $("p-contact").value = profile.contact;
+        $("p-upemail").value = profile.upEmail;
+        $("p-tg").value = profile.tg;
+        $("p-fb").value = profile.fb;
+        pendingPhoto = profile.photo;
+        photoChanged = false;
+        renderAvatars();
+        syncFields();
+    }
+    function resetProfileState() {
+        profileLoaded = false;
+        fillProfile(null);
+        setMessage($("p-message"), "", "");
+    }
+    async function loadProfile() {
+        try {
+            const r = await authCall("profile_get");
+            if (r.status === "success") { fillProfile(r.profile); profileLoaded = true; }
+        } catch (err) { if (err.message !== "auth") console.error(err); }
+    }
+    function openProfile() {
+        closeMenu();
+        setMessage($("p-message"), "", "");
+        if (!profileLoaded) loadProfile();
+        $("pdrawer").classList.add("open");
+        $("overlay").classList.add("show");
+    }
+    function closeProfile() {
+        $("pdrawer").classList.remove("open");
+        if (!$("drawer").classList.contains("open")) $("overlay").classList.remove("show");
+    }
+
+    /* photo: crop to a square, shrink and re-encode so it fits in a single sheet cell */
+    function processImage(file) {
+        return new Promise((resolve, reject) => {
+            if (!file.type.startsWith("image/")) return reject(new Error("Please choose an image file."));
+            if (file.size > 15 * 1024 * 1024) return reject(new Error("That image is too large (max 15 MB)."));
+            const reader = new FileReader();
+            reader.onerror = () => reject(new Error("Couldn't read that file."));
+            reader.onload = () => {
+                const img = new Image();
+                img.onerror = () => reject(new Error("That image couldn't be opened."));
+                img.onload = () => {
+                    for (const size of [256, 192, 144, 112]) {
+                        const canvas = document.createElement("canvas");
+                        canvas.width = canvas.height = size;
+                        const ctx = canvas.getContext("2d");
+                        ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, size, size);
+                        const side = Math.min(img.width, img.height);
+                        ctx.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, size, size);
+                        for (let q = 0.9; q >= 0.35; q -= 0.1) {
+                            const url = canvas.toDataURL("image/jpeg", q);
+                            if (url.length <= 45000) return resolve(url);
+                        }
+                    }
+                    reject(new Error("Couldn't shrink that image enough. Try another photo."));
+                };
+                img.src = reader.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function readProfileForm() {
+        const clean = (v) => v.replace(/\s+/g, " ").trim();
+        const p = {
+            firstName: clean($("p-first").value), middleName: clean($("p-middle").value), lastName: clean($("p-last").value),
+            contact: clean($("p-contact").value), upEmail: clean($("p-upemail").value).toLowerCase(),
+            tg: clean($("p-tg").value), fb: clean($("p-fb").value)
+        };
+        if ([p.firstName, p.middleName, p.lastName].some(n => n.length > 60)) return { error: "Names must be 60 characters or fewer." };
+        if (p.contact && !/^[0-9+\-\s()]{7,20}$/.test(p.contact)) return { error: "Enter a valid contact number (digits, +, -, spaces)." };
+        if (p.upEmail && (!EMAIL_RE.test(p.upEmail) || !/@([a-z0-9-]+\.)*up\.edu\.ph$/.test(p.upEmail))) return { error: "Enter a valid UP email that ends in @up.edu.ph." };
+        if (p.tg) {
+            const h = p.tg.replace(/^@/, "");
+            if (!/^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(h)) return { error: "Telegram handle must be 5–32 characters: letters, numbers, underscores." };
+            p.tg = "@" + h;
+        }
+        if (p.fb) {
+            if (!/^https?:\/\//i.test(p.fb)) p.fb = "https://" + p.fb;
+            if (p.fb.length > 200 || !/^https?:\/\/(www\.|m\.|web\.|mbasic\.)?(facebook\.com|fb\.com|fb\.me)\/\S+$/i.test(p.fb))
+                return { error: "Enter a valid Facebook link, e.g. https://facebook.com/yourname" };
+        }
+        return { values: p };
+    }
+
+    async function saveProfile(e) {
+        e.preventDefault();
+        const pm = $("p-message"), btn = $("p-save");
+        if (!profileLoaded) {
+            setMessage(pm, "Still loading your profile — try again in a moment.", ERR);
+            loadProfile();
+            return;
+        }
+        const res = readProfileForm();
+        if (res.error) return setMessage(pm, res.error, ERR);
+
+        const payload = Object.assign({}, res.values);
+        if (photoChanged) payload.photo = pendingPhoto;
+
+        setLoading(btn, true);
+        setMessage(pm, "", "");
+        try {
+            const r = await authCall("profile_save", payload);
+            if (r.status === "success") {
+                fillProfile(r.profile);
+                setMessage(pm, "Profile saved!", OK);
+            } else {
+                setMessage(pm, r.message, ERR);
+            }
+        } catch (err) {
+            if (err.message !== "auth") { console.error(err); setMessage(pm, netError(err), ERR); }
+        } finally {
+            setLoading(btn, false);
+        }
+    }
+
     /* ---------- events ---------- */
     $("auth-form").addEventListener("submit", handleSubmit);
     $("toggle-link").addEventListener("click", toggleMode);
@@ -667,17 +956,46 @@
     bindPeek("del-peek", "del-password");
 
     $("burger").addEventListener("click", () => $("drawer").classList.contains("open") ? closeMenu() : openMenu());
-    $("overlay").addEventListener("click", closeMenu);
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeMenu(); closeDelete(); } });
+    $("overlay").addEventListener("click", () => { closeMenu(); closeProfile(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeMenu(); closeProfile(); closeDelete(); } });
     document.querySelectorAll(".nav button").forEach(b => b.addEventListener("click", () => { showSection(b.dataset.section); closeMenu(); }));
     $("logout-btn").addEventListener("click", leaveApp);
     $("delete-open").addEventListener("click", openDelete);
     $("del-cancel").addEventListener("click", closeDelete);
     $("del-form").addEventListener("submit", handleDelete);
 
+    $("avatar-btn").addEventListener("click", openProfile);
+    $("pclose").addEventListener("click", closeProfile);
+    $("p-form").addEventListener("submit", saveProfile);
+    const pickPhoto = () => $("photo-file").click();
+    $("photo-upload").addEventListener("click", pickPhoto);
+    $("photo-preview").addEventListener("click", pickPhoto);
+    $("photo-preview").addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pickPhoto(); } });
+    $("photo-file").addEventListener("change", async (e) => {
+        const file = e.target.files[0];
+        e.target.value = "";
+        if (!file) return;
+        try {
+            pendingPhoto = await processImage(file);
+            photoChanged = true;
+            renderAvatar($("photo-inner"), pendingPhoto);
+            setMessage($("p-message"), "Photo ready — press Save changes.", OK);
+        } catch (err) {
+            setMessage($("p-message"), err.message, ERR);
+        }
+    });
+    $("photo-remove").addEventListener("click", () => {
+        pendingPhoto = "";
+        photoChanged = true;
+        renderAvatar($("photo-inner"), "");
+        setMessage($("p-message"), "Photo removed — press Save changes.", OK);
+    });
+
     // Restore session on reload
     const saved = sessionStorage.getItem("userEmail");
-    if (saved) enterApp(saved);
+    const savedToken = sessionStorage.getItem("token");
+    if (saved && savedToken) enterApp(saved, savedToken);
+    else sessionStorage.removeItem("userEmail");
 </script>
 
 </body>
