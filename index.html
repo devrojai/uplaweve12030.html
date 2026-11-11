@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eve1 2030</title>
+    <title>EVE1 2030</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2376090c'/%3E%3Ctext x='32' y='42' text-anchor='middle' font-family='Segoe UI,Arial,sans-serif' font-weight='800' font-size='27' fill='%23ffffff'%3EEVE%3C/text%3E%3C/svg%3E">
     <style>
         :root {
@@ -244,18 +244,33 @@
         .empty b { font-size: var(--fs-1); }
         .empty p { margin-top: 6px; font-size: var(--fs-0); opacity: .7; }
 
+
+        /* ---- Request form ---- */
+        .req-form { max-width: 560px; }
+        .field textarea {
+            width: 100%; min-height: 150px; padding: 26px 14px 10px; resize: vertical; color: var(--charcoal); background: var(--white);
+            font-family: inherit; font-size: var(--fs-0); line-height: var(--lh);
+            border: 2px solid rgba(58,58,58,.25); border-radius: 10px; outline: none;
+            transition: border-color .25s, box-shadow .25s;
+        }
+        .field textarea:focus { border-color: var(--maroon); box-shadow: 0 0 0 4px rgba(118,9,12,.15); }
+        .field textarea:focus ~ label,
+        .field textarea:not(:placeholder-shown) ~ label { top: 5px; font-size: var(--fs-n1); font-weight: 600; }
+        .field textarea:focus ~ label { color: var(--maroon); }
+        .btn.submitted, .btn.submitted:disabled { background: #0a4424; border-color: #0a4424; color: var(--white); opacity: 1; cursor: default; box-shadow: 0 6px 16px rgba(10,68,36,.35); }
+
         /* ---- Delete account button ---- */
         .btn-danger {
             position: relative; overflow: hidden; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
-            padding: 12px; font-weight: 700; letter-spacing: .4px; color: var(--white);
-            background: linear-gradient(135deg, rgba(118,9,12,.6), rgba(118,9,12,.18));
+            margin-top: 12px; padding: 12px; font-weight: 700; letter-spacing: .4px; color: var(--white);
+            background: var(--maroon);
             border: 2px solid var(--maroon); border-radius: 10px; cursor: pointer;
             transition: transform .2s var(--ease), box-shadow .25s, background .25s;
         }
         .btn-danger svg { width: 20px; height: 20px; flex: none; }
         .btn-danger .lid { transform-origin: 3px 6px; transition: transform .3s var(--ease); }
         .btn-danger::after { content: ""; position: absolute; top: 0; left: -75%; width: 50%; height: 100%; background: linear-gradient(120deg, transparent, rgba(255,255,255,.3), transparent); transform: skewX(-20deg); }
-        .btn-danger:hover { background: var(--maroon); transform: translateY(-2px); box-shadow: 0 10px 22px rgba(118,9,12,.6), 0 0 0 3px rgba(255,255,255,.15); }
+        .btn-danger:hover { background: var(--maroon); filter: brightness(1.15); transform: translateY(-2px); box-shadow: 0 10px 22px rgba(118,9,12,.6), 0 0 0 3px rgba(255,255,255,.15); }
         .btn-danger:hover::after { left: 130%; transition: left .7s; }
         .btn-danger:hover .lid { transform: translate(1px, -2px) rotate(-18deg); }
         .btn-danger:active { transform: scale(.97); }
@@ -337,7 +352,7 @@
         <div class="logo">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
         </div>
-        <div class="brand">Eve1 2030</div>
+        <div class="brand">EVE1 2030</div>
 
         <!-- Login / Signup -->
         <div id="auth-view">
@@ -395,7 +410,7 @@
 <div class="app hidden" id="app">
     <header class="topbar">
         <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false" aria-controls="drawer"><span></span><span></span><span></span></button>
-        <div class="site">Eve1 2030</div>
+        <div class="site">EVE1 2030</div>
         <div class="page" id="page-title">Requests</div>
         <div class="user-chip" id="chip"></div>
         <button type="button" class="avatar" id="avatar-btn" aria-label="Open profile" title="Profile"><span id="avatar-inner"></span></button>
@@ -404,7 +419,7 @@
     <div class="overlay" id="overlay"></div>
 
     <aside class="drawer" id="drawer" aria-label="Main menu">
-        <div class="drawer-head"><b>Eve1 2030</b><small id="drawer-email"></small></div>
+        <div class="drawer-head"><b>EVE1 2030</b><small id="drawer-email"></small></div>
         <nav class="nav">
             <button type="button" data-section="requests" class="active">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
@@ -416,8 +431,8 @@
             </button>
         </nav>
         <div class="drawer-foot">
-            <button type="button" class="btn-danger" id="delete-open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="lid"><path d="M3 6h18"/><path d="M8 6V4h8v2"/></g><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg><span>Delete account</span></button>
             <button type="button" class="btn" id="logout-btn">Log Out</button>
+            <button type="button" class="btn-danger" id="delete-open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="lid"><path d="M3 6h18"/><path d="M8 6V4h8v2"/></g><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg><span>Delete account</span></button>
         </div>
     </aside>
 
@@ -465,12 +480,15 @@
     <main class="content">
         <section class="section" id="sec-requests">
             <h2>Requests</h2>
-            <p>View and manage incoming requests.</p>
-            <div class="empty">
-                <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
-                <b>No requests yet</b>
-                <p>New requests will show up here.</p>
-            </div>
+            <p>Send a request to your Beadle.</p>
+            <form class="req-form" id="req-form" novalidate>
+                <div class="field"><input type="email" id="r-beadle" placeholder=" " autocomplete="off" maxlength="100" autocapitalize="off" spellcheck="false"><label for="r-beadle">UP Email Address of the Beadle</label></div>
+                <p class="hint">Must end with @up.edu.ph</p>
+                <div class="field"><input type="text" id="r-course" placeholder=" " autocomplete="off" maxlength="30"><label for="r-course">Course Code</label></div>
+                <div class="field"><textarea id="r-text" placeholder=" " maxlength="2000"></textarea><label for="r-text">Type your request here</label></div>
+                <button type="submit" class="btn" id="r-send">Send</button>
+                <div class="msg" id="r-message"></div>
+            </form>
         </section>
         <section class="section hidden" id="sec-announcements">
             <h2>Announcement Bin</h2>
@@ -735,6 +753,7 @@
         token = null;
         pending = null;
         resetProfileState();
+        resetRequestForm();
         closeProfile();
         closeMenu();
         closeDelete();
@@ -938,6 +957,46 @@
         }
     }
 
+
+    /* ---------- requests (emailed to the Beadle) ---------- */
+    function resetRequestForm() {
+        ["r-beadle", "r-course", "r-text"].forEach(id => { $(id).value = ""; });
+        const b = $("r-send");
+        b.classList.remove("submitted"); b.disabled = false; b.textContent = "Send";
+        setMessage($("r-message"), "", "");
+    }
+    function markRequestDirty() {
+        const b = $("r-send");
+        if (b.classList.contains("submitted")) { b.classList.remove("submitted"); b.disabled = false; b.textContent = "Send"; setMessage($("r-message"), "", ""); }
+    }
+    async function sendRequest(e) {
+        e.preventDefault();
+        const btn = $("r-send"), rm = $("r-message");
+        if (btn.classList.contains("submitted")) return;
+        const beadle = $("r-beadle").value.trim().toLowerCase();
+        const course = $("r-course").value.replace(/\s+/g, " ").trim();
+        const text = $("r-text").value.trim();
+        if (!beadle || !course || !text) return setMessage(rm, "Please fill in all fields.", ERR);
+        if (!EMAIL_RE.test(beadle) || !/@([a-z0-9-]+\.)*up\.edu\.ph$/.test(beadle)) return setMessage(rm, "Enter a valid UP email that ends in @up.edu.ph.", ERR);
+
+        setLoading(btn, true);
+        setMessage(rm, "", "");
+        try {
+            const r = await authCall("send_request", { beadleEmail: beadle, courseCode: course, message: text });
+            if (r.status === "success") {
+                setLoading(btn, false);
+                btn.textContent = "SUBMITTED";
+                btn.classList.add("submitted");
+                btn.disabled = true;
+                return;
+            }
+            setMessage(rm, r.message || "Couldn't send your request.", ERR);
+        } catch (err) {
+            if (err.message !== "auth") { console.error(err); setMessage(rm, netError(err), ERR); }
+        }
+        setLoading(btn, false);
+    }
+
     /* ---------- events ---------- */
     $("auth-form").addEventListener("submit", handleSubmit);
     $("toggle-link").addEventListener("click", toggleMode);
@@ -958,6 +1017,8 @@
     $("del-cancel").addEventListener("click", closeDelete);
     $("del-form").addEventListener("submit", handleDelete);
 
+    $("req-form").addEventListener("submit", sendRequest);
+    ["r-beadle", "r-course", "r-text"].forEach(id => $(id).addEventListener("input", markRequestDirty));
     $("avatar-btn").addEventListener("click", openProfile);
     $("pclose").addEventListener("click", closeProfile);
     $("p-form").addEventListener("submit", saveProfile);
