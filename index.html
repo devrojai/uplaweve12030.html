@@ -540,8 +540,7 @@ html[data-theme="classic"] {
     --top-bg: #76090c; --top-ink: #ffffff; --top-site: #ffffff; --top-accent: #0a4424; --top-line: rgba(255,255,255,.2);
     --dr-bg: #76090c; --dr-ink: #ffffff; --dr-muted: #f0d6d6; --dr-line: rgba(255,255,255,.2); --dr-hover: rgba(255,255,255,.12);
     --dr-act-bg: #5a0709; --dr-act-ink: #ffffff; --dr-act-line: #ffffff;
-    --dr-title: #ffffff; --dr-btn: #ffffff; --dr-danger: #ffd0d0;    --dr-act-bg: #76090c; --dr-act-ink: #ffffff; --dr-act-line: #0a4424;
-    --dr-title: #76090c; --dr-btn: #76090c; --dr-danger: #76090c;
+    --dr-title: #ffffff; --dr-btn: #ffffff; --dr-danger: #ffd0d0;
     --bg-grad: linear-gradient(160deg, #8a0d11 0%, #76090c 45%, #4f0608 100%);
     --shadow-md: 0 6px 18px rgba(60,20,20,.12);
 }
@@ -820,6 +819,58 @@ html[data-theme="night"] .bg { --sheen: rgba(163,23,30,.16); --wave-a: rgba(163,
         var(--bg);
     background-attachment: fixed;
 }
+
+/* ================= CLASSIC: side menu hover + footer buttons ================= */
+
+/* 1. Menu buttons: light background, red text on hover (the active page keeps its own look) */
+html[data-theme="classic"] .nav button:not(.active):hover {
+    background: #fffdf9;
+    color: #76090c;
+}
+
+/* 2. Appearance switch: same effect on hover and on the selected button (Classic) */
+html[data-theme="classic"] .drawer .theme-switch button:hover,
+html[data-theme="classic"] .drawer .theme-switch button.on {
+    background: #fffdf9;
+    color: #76090c;
+}
+
+/* 3. Log Out and Delete account: maroon text on a white background */
+html[data-theme="classic"] .drawer-foot .btn,
+html[data-theme="classic"] .drawer-foot .btn-danger {
+    background: #ffffff;
+    color: #76090c;
+    border: 1px solid #ffffff;
+}
+html[data-theme="classic"] .drawer-foot .btn:hover:not(:disabled),
+html[data-theme="classic"] .drawer-foot .btn-danger:hover {
+    background: #f3ebe1;
+    color: #76090c;
+    border-color: #f3ebe1;
+}
+
+/* ================= CLASSIC: greens → white beige ================= */
+html[data-theme="classic"] {
+    --accent2: #d4c7b6;      /* title underline */
+    --ok: #f3ebe1;           /* "submitted" buttons */
+    --okmsg: #5b4a46;        /* success message text (dark warm brown so it stays readable) */
+    --period: #e8dfd3;       /* calendar period chips, legend dot, past cards */
+    --top-accent: #f3ebe1;   /* thin line on top of the top bar and profile header */
+    --dr-act-line: #f3ebe1;  /* accent line beside the active menu item */
+    --glow2: rgba(243,235,225,.06);
+    --blob2: rgba(243,235,225,.25);
+}
+html[data-theme="classic"] .bg { --wave-b: rgba(243,235,225,.10); }
+
+/* Beige backgrounds need dark text instead of white */
+html[data-theme="classic"] .btn.submitted,
+html[data-theme="classic"] .btn.submitted:disabled {
+    background: #f3ebe1;
+    border-color: #cbb99f;
+    color: #76090c;
+}
+html[data-theme="classic"] .cal-chip.period { color: #76090c; }
+html[data-theme="classic"] .cal-legend .k.pd { box-shadow: inset 0 0 0 1px #cbb99f; }
         
     </style>
     
