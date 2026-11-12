@@ -932,7 +932,22 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
 .ann-key.period { border-left-color: var(--period); }
 .ann-key.period strong { color: var(--ink); }
 .ann-posted { margin-top: 4px; font-size: var(--fs-n1); font-weight: 400; color: var(--muted); }        
-        
+/* Pin, course links, rich text */
+#ann-modal { z-index: 75; }
+#link-modal { z-index: 85; }
+#course-modal .course-card { width: 860px; }
+.course-anns { margin-top: 16px; }
+.course-ann { margin-bottom: 14px; }
+.course-ann .btn { margin-top: 6px; }
+.link-list { display: flex; flex-direction: column; gap: 6px; max-height: 50vh; overflow-y: auto; margin: 10px 0; }
+.link-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--r-md); cursor: pointer; font-weight: 600; }
+.link-row input { width: 18px; height: 18px; accent-color: var(--accent); }
+.badge.pinned { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.fmt-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 14px 0 -6px; }
+.fmt-bar button, .fmt-bar select { padding: 5px 10px; min-width: 34px; font-weight: 700; color: var(--accent-text); background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-md); cursor: pointer; }
+.fmt-bar button:hover, .fmt-bar select:hover { background: var(--hover); }
+.ann-body a, .ann-modal-body a { color: var(--accent-text); text-decoration: underline; }
+.ann-body mark, .ann-modal-body mark { padding: 0 2px; border-radius: 2px; }        
 .ann-archive-bar { display: flex; justify-content: flex-end; margin: 0 0 10px; }
 .ann-status { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line-strong); cursor: default; }
 .ann-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: nowrap; }
@@ -945,10 +960,10 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
 .ann-right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
 
 /* Archive buttons filled in Classic and Night */
-html[data-theme="classic"] .archive-btn,
-html[data-theme="night"] .archive-btn { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-html[data-theme="classic"] .archive-btn:hover:not(:disabled),
-html[data-theme="night"] .archive-btn:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); color: var(--on-accent); }
+html[data-theme="classic"] .archive-btn, html[data-theme="classic"] .pin-btn,
+html[data-theme="night"] .archive-btn, html[data-theme="night"] .pin-btn { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+html[data-theme="classic"] .archive-btn:hover:not(:disabled), html[data-theme="classic"] .pin-btn:hover:not(:disabled),
+html[data-theme="night"] .archive-btn:hover:not(:disabled), html[data-theme="night"] .pin-btn:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); color: var(--on-accent); }
 
 /* "No announcements" / "Nothing archived" boxes use the full width */
 .ann-list > .empty { flex: 0 0 100%; min-width: 100%; }
@@ -1230,6 +1245,31 @@ html[data-theme="night"] .archive-btn:hover:not(:disabled) { background: var(--a
                     </div>
                 </div>
                 <p class="hint">If you set a period, both the beginning and end dates are needed.</p>
+                
+                <div class="fmt-bar" id="fmt-bar">
+                    <button type="button" data-fmt="b" title="Bold"><b>B</b></button>
+                    <button type="button" data-fmt="i" title="Italic"><i>I</i></button>
+                    <button type="button" data-fmt="u" title="Underline"><u>U</u></button>
+                    <button type="button" data-fmt="bullet" title="Bullets">• List</button>
+                    <button type="button" data-fmt="link" title="Hyperlink">Link</button>
+                    <select id="fmt-color" aria-label="Text color">
+                        <option value="">Text color</option>
+                        <option value="#c62828">Red</option>
+                        <option value="#1565c0">Blue</option>
+                        <option value="#2e7d32">Green</option>
+                        <option value="#ef6c00">Orange</option>
+                        <option value="#6a1b9a">Purple</option>
+                        <option value="#757575">Gray</option>
+                    </select>
+                    <select id="fmt-hl" aria-label="Highlight">
+                        <option value="">Highlight</option>
+                        <option value="#fff176">Yellow</option>
+                        <option value="#a5d6a7">Green</option>
+                        <option value="#f8bbd0">Pink</option>
+                        <option value="#90caf9">Blue</option>
+                    </select>
+                </div>
+                
                 <div class="field">
                     <textarea id="b-text" placeholder=" " maxlength="2000"></textarea><label for="b-text">Announcement</label>
                     <div class="mention-list hidden" id="mention-list"></div>
@@ -1341,7 +1381,10 @@ html[data-theme="night"] .archive-btn:hover:not(:disabled) { background: var(--a
                 <h3 id="course-modal-title" class="ann-title"></h3>
                 <span id="course-modal-badge" class="badge"></span>
             </div>
-            <div class="detail-grid" id="course-modal-grid"></div>            
+            <div class="detail-grid" id="course-modal-grid"></div> 
+
+            <div id="course-modal-anns"></div>
+            
             <div id="course-modal-edited" class="ann-edited"></div>
             <div id="course-modal-actions" class="ann-actions modal-actions-end"></div>
         </div>
@@ -1369,6 +1412,19 @@ html[data-theme="night"] .archive-btn:hover:not(:disabled) { background: var(--a
         </div>
     </div>
 
+<div class="modal hidden" id="link-modal" role="dialog" aria-modal="true">
+    <div class="modal-card modal-wide">
+        <h3>Add to course</h3>
+        <p id="link-modal-sub"></p>
+        <div class="link-list" id="link-modal-list"></div>
+        <div class="msg" id="link-modal-msg"></div>
+        <div class="modal-actions modal-actions-end">
+            <button type="button" class="btn ghost sm" id="link-cancel">Cancel</button>
+            <button type="button" class="btn sm" id="link-save">Save</button>
+        </div>
+    </div>
+</div>
+    
 <!-- Confirm / Notice Modal -->
 <div class="modal hidden" id="confirm-modal" role="dialog" aria-modal="true">    
     <div class="modal-card">
@@ -1613,6 +1669,7 @@ const ADMIN_SECTIONS = ["bin", "directory", "addcourse"];
     function enterApp(email, tok, admin) {
         currentEmail = email;
         token = tok || null;
+        loadPins();
         document.body.classList.add("app-mode");
         $("stage").classList.add("hidden");
         $("app").classList.remove("hidden");
@@ -1633,6 +1690,7 @@ const ADMIN_SECTIONS = ["bin", "directory", "addcourse"];
         sessionStorage.removeItem("token");
         sessionStorage.removeItem("isAdmin");
         currentEmail = null;
+        pins = new Set();
         token = null;
         pending = null;
         resetProfileState();
@@ -2578,10 +2636,51 @@ pre.className = "file-text";
     let annList = [], dlY = NOW.getFullYear(), dlM = NOW.getMonth(), dlSel = todayIso();
     let annSearchTerm = "";
 
-    function richText(el, text, mentions) {
+    let pins = new Set();
+    function loadPins() {
+        try { pins = new Set(JSON.parse(localStorage.getItem("eve1Pins:" + currentEmail) || "[]")); } catch (e) { pins = new Set(); }
+    }
+    function togglePin(a) {
+        if (pins.has(a.id)) pins.delete(a.id); else pins.add(a.id);
+        try { localStorage.setItem("eve1Pins:" + currentEmail, JSON.stringify(Array.from(pins))); } catch (e) {}
+        annRefresh();
+    }
+    
+           function richText(el, text, mentions) {
         const names = (mentions || []).map(m => "@" + m.name).concat("@everyone").sort((a, b) => b.length - a.length);
         const re = new RegExp("(" + names.map(n => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")(?![\\p{L}\\p{N}_])", "gu");
-        text.split(re).forEach((part, i) => el.appendChild(i % 2 ? mk("span", "mention", part) : document.createTextNode(part)));
+        const addText = (parent, s) => {
+            if (!s) return;
+            s.split(re).forEach((part, i) => parent.appendChild(i % 2 ? mk("span", "mention", part) : document.createTextNode(part)));
+        };
+        const TAG = /\[(\/?)(b|i|u|color|hl|url)(?:=([^\]\s]*))?\]/gi;
+        const stack = [{ node: el, tag: null }];
+        let last = 0, m;
+        while ((m = TAG.exec(text))) {
+            const top = () => stack[stack.length - 1].node;
+            addText(top(), text.slice(last, m.index));
+            last = TAG.lastIndex;
+            const close = m[1] === "/", tag = m[2].toLowerCase(), val = m[3] || "";
+            if (close) {
+                const idx = stack.map(s => s.tag).lastIndexOf(tag);
+                if (idx > 0) stack.length = idx; else addText(top(), m[0]);
+                continue;
+            }
+            let n = null;
+            if (tag === "b") n = mk("strong");
+            else if (tag === "i") n = mk("em");
+            else if (tag === "u") n = mk("u");
+            else if (tag === "color" && /^#[0-9a-f]{3,8}$/i.test(val)) { n = mk("span"); n.style.color = val; }
+            else if (tag === "hl" && /^#[0-9a-f]{3,8}$/i.test(val)) { n = mk("mark"); n.style.background = val; n.style.color = "#1b1b1b"; }
+            else if (tag === "url") {
+                const href = safeUrl(val);
+                if (href) { n = mk("a"); n.href = href; n.target = "_blank"; n.rel = "noopener noreferrer"; n.addEventListener("click", e => e.stopPropagation()); }
+            }
+            if (!n) { addText(top(), m[0]); continue; }
+            top().appendChild(n);
+            stack.push({ node: n, tag });
+        }
+        addText(stack[stack.length - 1].node, text.slice(last));
     }
 
     async function deleteAnnouncement(a, btn) {
@@ -2591,6 +2690,7 @@ pre.className = "file-text";
             if (r.status === "success") {
                 if (editingId === a.id) resetBinForm();
                 annList = annList.filter(x => x.id !== a.id);
+                courseList.forEach(c => { c.announcementIds = (c.announcementIds || []).filter(x => x !== a.id); });
                 renderAnnouncements(); renderCalendar();
                 closeAnnModal();
                 return;
@@ -2660,6 +2760,9 @@ setEdited(edited, a.edited ? "Edited by the author on " + longDate(a.edited) : "
             }
             const db = mk("button", "btn sm", "Delete"); db.type = "button";
             db.addEventListener("click", () => deleteAnnouncement(a, db));
+            const lb = mk("button", "btn sm ghost", "Add to course"); lb.type = "button";
+            lb.addEventListener("click", () => openLinkModal(a));
+            actions.appendChild(lb);
             actions.appendChild(db);
         }
                const cb = mk("button", "btn ghost sm", "Close"); cb.type = "button";
@@ -2726,12 +2829,10 @@ setEdited(edited, a.edited ? "Edited by the author on " + longDate(a.edited) : "
     function annFooter(a, full) {
         const wrap = mk("div", "ann-status");
         const foot = mk("div", "ann-foot");
-        const lab = mk("label", "read-tick");
-        const cb = mk("input"); cb.type = "checkbox"; cb.checked = !!a.myRead;
-        cb.addEventListener("change", () => setAnnStatus(a, { read: cb.checked }));
-        lab.append(cb, document.createTextNode("I have read this"));
+        const pb = mk("button", "btn sm ghost pin-btn", pins.has(a.id) ? "Unpin" : "Pin"); pb.type = "button";
+        pb.addEventListener("click", () => togglePin(a));
         const ab = mk("button", "btn sm ghost archive-btn", a.myArchived ? "Unarchive" : "Archive"); ab.type = "button";        ab.addEventListener("click", () => { setAnnStatus(a, { archived: !a.myArchived }); if (full) closeAnnModal(); });
-        foot.append(lab, ab);
+        foot.append(pb, ab);
         wrap.appendChild(foot);
 
         const rb = (a.readBy || []).slice().sort((x, y) => (y.mine ? 1 : 0) - (x.mine ? 1 : 0));
@@ -2767,8 +2868,8 @@ setEdited(edited, a.edited ? "Edited by the author on " + longDate(a.edited) : "
 
         const tags = mk("div", "ann-tags");
         const due = dueLabel(a);
-        if (due) tags.appendChild(mk("span", "badge " + due.cls, due.text));
-        tags.appendChild(mk("span", "badge", a.course));
+        if (pins.has(a.id)) tags.appendChild(mk("span", "badge pinned", "📌 Pinned"));
+        if (due) tags.appendChild(mk("span", "badge " + due.cls, due.text));        tags.appendChild(mk("span", "badge", a.course));
         c.appendChild(tags);
 
         const body = mk("div", "ann-body");
@@ -2789,8 +2890,7 @@ setEdited(edited, a.edited ? "Edited by the author on " + longDate(a.edited) : "
     }
 
 let annFilter = "", carIdx = 0, annShowArchive = false, openAnnId = "";    const annVisible = () => {
-        return annList.filter(a => {
-            if (!!a.myArchived !== annShowArchive) return false;
+        return annList.slice().sort((x, y) => (pins.has(y.id) ? 1 : 0) - (pins.has(x.id) ? 1 : 0)).filter(a => {            if (!!a.myArchived !== annShowArchive) return false;
             const matchesTopic = annFilter ? a.course === annFilter : true;
             if (!matchesTopic) return false;
             if (!annSearchTerm) return true;
@@ -2942,7 +3042,58 @@ let annFilter = "", carIdx = 0, annShowArchive = false, openAnnId = "";    const
     syncCalSel(true);
 
 /* ===== COURSES ===== */
-let courseList = [], courseOpen = "", cSyl = [], cDocs = [], editingCourseId = "", courseAdminShown = false;const SEMS = ["1st", "2nd"];
+
+let linkFor = null;
+async function saveCourseLinks(c, ids) {
+    const keep = f => ({ id: f.id, name: f.name, type: f.type, size: f.size });
+    const r = await authCall("edit_course", {
+        id: c.id, title: c.title, code: c.code, semester: c.semester, ay: c.ay, professor: c.professor,
+        casesLink: c.casesLink || "", digestsLink: c.digestsLink || "",
+        syllabus: (c.syllabus || []).map(keep), documents: (c.documents || []).map(keep),
+        announcementIds: ids
+    });
+    if (r.status !== "success") return false;
+    c.announcementIds = ids;
+    return true;
+}
+function openLinkModal(a) {
+    linkFor = a;
+    $("link-modal-sub").textContent = 'Tick the courses that should show "' + a.title + '".';
+    const box = $("link-modal-list"); box.textContent = "";
+    if (!courseList.length) box.appendChild(mk("p", "repo-count", "No courses yet."));
+    courseList.forEach(c => {
+        const lab = mk("label", "link-row");
+        const cb = mk("input"); cb.type = "checkbox"; cb.value = c.id;
+        cb.checked = (c.announcementIds || []).includes(a.id);
+        lab.append(cb, document.createTextNode(c.code + " — " + c.title));
+        box.appendChild(lab);
+    });
+    setMessage($("link-modal-msg"), "", "");
+    $("link-modal").classList.remove("hidden");
+}
+function closeLinkModal() { $("link-modal").classList.add("hidden"); linkFor = null; }
+async function saveLinks() {
+    if (!linkFor) return;
+    const btn = $("link-save"), msg = $("link-modal-msg"), id = linkFor.id;
+    setLoading(btn, true);
+    try {
+        for (const cb of Array.from($("link-modal-list").querySelectorAll("input"))) {
+            const c = courseList.find(x => x.id === cb.value);
+            if (!c) continue;
+            const cur = c.announcementIds || [];
+            if (cb.checked === cur.includes(id)) continue;
+            const ids = cb.checked ? cur.concat(id) : cur.filter(x => x !== id);
+            if (!(await saveCourseLinks(c, ids))) { setMessage(msg, "Couldn't update " + c.code + ".", ERR); setLoading(btn, false); return; }
+        }
+        closeLinkModal(); renderCourses();
+    } catch (err) { if (err.message !== "auth") setMessage(msg, netError(err), ERR); }
+    setLoading(btn, false);
+}
+$("link-cancel").addEventListener("click", closeLinkModal);
+$("link-save").addEventListener("click", saveLinks);
+$("link-modal").addEventListener("click", e => { if (e.target === e.currentTarget) closeLinkModal(); });
+    
+let courseList = [], courseOpen = "", cSyl = [], cDocs = [], editingCourseId = "", editingCourseAnn = [], courseAdminShown = false;const SEMS = ["1st", "2nd"];
 const AYS = ["AY 2025-2026", "AY 2026-2027", "AY 2027-2028", "AY 2028-2029", "AY 2029-2030"];
 function fillOpts(id, ph, vals) {
     const s = $(id); s.textContent = "";
@@ -3052,6 +3203,30 @@ function openCourseModal(c) {
         files.forEach(f => list.appendChild(courseFileBtn(f)));
         addRow(label, list);
     });
+
+    const annBox = $("course-modal-anns"); annBox.textContent = "";
+    const linked = (c.announcementIds || []).map(id => annList.find(a => a.id === id)).filter(Boolean);
+    if (linked.length) {
+        annBox.appendChild(mk("div", "attach-title course-anns", "Announcements"));
+        linked.forEach(a => {
+            const item = mk("div", "course-ann");
+            item.appendChild(annCard(a));
+            if (isAdmin) {
+                const rb = mk("button", "btn sm ghost", "Remove from course"); rb.type = "button";
+                rb.onclick = async () => {
+                    setLoading(rb, true);
+                    try {
+                        if (await saveCourseLinks(c, (c.announcementIds || []).filter(x => x !== a.id))) { openCourseModal(c); return; }
+                        notify("Couldn't remove the announcement.");
+                    } catch (err) { if (err.message !== "auth") notify(netError(err)); }
+                    setLoading(rb, false);
+                };
+                item.appendChild(rb);
+            }
+            annBox.appendChild(item);
+        });
+    }
+    
 setEdited($("course-modal-edited"), c.edited ? "Last edited on " + c.edited : "");
     const actions = $("course-modal-actions"); actions.textContent = "";
     if (isAdmin) {
@@ -3096,13 +3271,14 @@ function courseDirty() { if ($("c-send").classList.contains("submitted")) course
 
 function resetCourseForm() {
     ["c-title", "c-code", "c-prof", "c-cases", "c-digests"].forEach(id => { $(id).value = ""; });    ["c-sem", "c-ay"].forEach(id => { $(id).value = ""; if ($(id)._sync) $(id)._sync(); });
-    editingCourseId = ""; cSyl = []; cDocs = []; renderCSyl(); renderCDocs();
+    editingCourseId = ""; editingCourseAnn = []; cSyl = []; cDocs = []; renderCSyl(); renderCDocs();
     courseMode(); setMessage($("c-message"), "", ""); syncFields();
 }
 
 function startCourseEdit(c) {
     resetCourseForm();
     editingCourseId = c.id;
+    editingCourseAnn = (c.announcementIds || []).slice();
     $("c-title").value = c.title; $("c-code").value = c.code; $("c-prof").value = c.professor;
         $("c-cases").value = c.casesLink || ""; $("c-digests").value = c.digestsLink || "";
     const ay = $("c-ay");
@@ -3149,7 +3325,8 @@ async function postCourse(e) {
     setLoading(btn, true); setMessage(cm, "", "");
     let added = false;
     try {
-        const payload = { title, code, semester: sem, ay, professor: prof, casesLink, digestsLink, syllabus: cSyl, documents: cDocs };        if (wasEdit) payload.id = editedId;
+        const payload = { title, code, semester: sem, ay, professor: prof, casesLink, digestsLink, syllabus: cSyl, documents: cDocs };        
+        if (wasEdit) { payload.id = editedId; payload.announcementIds = editingCourseAnn; }
         const r = await authCall(wasEdit ? "edit_course" : "add_course", payload);
         if (r.status === "success") {
             resetCourseForm();
@@ -3236,8 +3413,8 @@ $("c-doc").addEventListener("change", e => handleFileSelect(e, cDocs, "c-doc-lis
     document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
     if (!$("confirm-modal").classList.contains("hidden")) { $("confirm-no").click(); return; }
-    closeMenu(); closeProfile(); closeDelete(); closeAnnModal(); closeCourseModal(); closeUser(); closeFileModal();
-});    document.querySelectorAll(".nav button[data-section]").forEach(b => b.addEventListener("click", () => {
+    closeMenu(); closeProfile(); closeDelete(); closeLinkModal(); closeAnnModal(); closeCourseModal(); closeUser(); closeFileModal();});    
+    document.querySelectorAll(".nav button[data-section]").forEach(b => b.addEventListener("click", () => {
     if (b.dataset.section === "addcourse" && editingCourseId) resetCourseForm();
     showSection(b.dataset.section); closeMenu();
 }));
@@ -3285,6 +3462,41 @@ $("logout-btn").addEventListener("click", leaveApp);    $("delete-open").addEven
         setMessage($("p-message"), "Photo removed — press Save Changes.", OK);
     });
 
+    function fmtFire(ta) { ta.focus(); ta.dispatchEvent(new Event("input", { bubbles: true })); }
+    function fmtWrap(open, close, def) {
+        const ta = $("b-text"), s = ta.selectionStart, e = ta.selectionEnd, v = ta.value;
+        const sel = v.slice(s, e) || def || "text";
+        ta.value = v.slice(0, s) + open + sel + close + v.slice(e);
+        ta.selectionStart = s + open.length; ta.selectionEnd = s + open.length + sel.length;
+        fmtFire(ta);
+    }
+    function fmtBullets() {
+        const ta = $("b-text"), v = ta.value, s = ta.selectionStart, e = ta.selectionEnd;
+        const ls = s === 0 ? 0 : v.lastIndexOf("\n", s - 1) + 1;
+        let le = v.indexOf("\n", e); if (le < 0) le = v.length;
+        const block = v.slice(ls, le).split("\n").map(l => l.startsWith("• ") ? l.slice(2) : "• " + l).join("\n");
+        ta.value = v.slice(0, ls) + block + v.slice(le);
+        ta.selectionStart = ls; ta.selectionEnd = ls + block.length;
+        fmtFire(ta);
+    }
+    function fmtLink() {
+        const u = prompt("Link address (e.g. https://example.com)");
+        if (!u) return;
+        const href = safeUrl(u);
+        if (!href) return setMessage($("b-message"), "Enter a valid link.", ERR);
+        fmtWrap("[url=" + href + "]", "[/url]", "link");
+    }
+    $("fmt-bar").addEventListener("click", e => {
+        const b = e.target.closest("button[data-fmt]");
+        if (!b) return;
+        const f = b.dataset.fmt;
+        if (f === "b" || f === "i" || f === "u") fmtWrap("[" + f + "]", "[/" + f + "]");
+        else if (f === "bullet") fmtBullets();
+        else if (f === "link") fmtLink();
+    });
+    $("fmt-color").addEventListener("change", e => { if (e.target.value) fmtWrap("[color=" + e.target.value + "]", "[/color]"); e.target.value = ""; });
+    $("fmt-hl").addEventListener("change", e => { if (e.target.value) fmtWrap("[hl=" + e.target.value + "]", "[/hl]"); e.target.value = ""; });
+    
     $("bin-form").addEventListener("submit", postAnnouncement);
     $("bin-form").addEventListener("input", binDirty);
     $("b-cancel").addEventListener("click", () => { resetBinForm(); showSection("announcements"); });
