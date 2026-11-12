@@ -1071,7 +1071,6 @@ html[data-theme="night"] .archive-btn:hover:not(:disabled), html[data-theme="nig
 .course-ann-card .icon-btn.mv:hover:not(:disabled) { background: var(--accent); color: var(--on-accent); }
 .course-ann-card .icon-btn:disabled { opacity: .3; cursor: not-allowed; }
 .cm-list .course-ann.course-ann-card { margin: 0; }
-.cm-sort { align-self: flex-start; margin-top: 10px; }
 
 /* Hidden courses (admins see them dimmed) */
 .course-row.is-hidden { opacity: .6; border-left-color: var(--period); }
@@ -1106,6 +1105,28 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
     background: var(--accent); border: 2px solid var(--accent); border-radius: var(--r-md);
 }
 .fmt-bar .btn.add-course-btn:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); color: var(--on-accent); }
+
+/* Sort button sits on the right of the "ANNOUNCEMENTS" heading line, same type as the heading */
+.cm-sec-title .cm-sort {
+    order: 2;                       /* after the ::after rule line, so the line stays in the middle */
+    flex: none; margin: 0; min-height: 0; width: auto;
+    padding: 6px 12px;
+    font-size: inherit; font-weight: 800; letter-spacing: inherit;
+    text-transform: uppercase; line-height: 1;
+}
+
+/* Drag handle + dragging state */
+.course-ann-card .icon-btn.grip {
+    width: 24px; height: 28px; margin-left: -4px;
+    background: transparent; color: var(--muted);
+    cursor: grab; touch-action: none;
+}
+.course-ann-card .icon-btn.grip:hover { background: var(--accent-soft); color: var(--accent-text); }
+.course-ann-card .icon-btn.grip svg { width: 16px; height: 16px; }
+.course-ann-card.dragging {
+    cursor: grabbing; user-select: none; position: relative; z-index: 2;
+    background: var(--hover); border-color: var(--accent); box-shadow: var(--shadow-md);
+}
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
@@ -3304,6 +3325,42 @@ async function saveCourseLinks(c, ids) {
     c.announcementIds = ids;
     return true;
 }
+
+// Background, batched saving of announcement order (UI updates first, server catches up)
+const orderSync = {};
+function orderState(c) {
+    const s = orderSync[c.id] = orderSync[c.id] || { saved: [], timer: 0, pending: false, busy: false, again: false, rerender: null };
+    if (!s.pending && !s.busy) s.saved = (c.announcementIds || []).slice();
+    return s;
+}
+function queueSave(c) {
+    const s = orderState(c);
+    s.pending = true;
+    clearTimeout(s.timer);
+    s.timer = setTimeout(() => runOrderSave(c, s), 400);
+}
+async function runOrderSave(c, s) {
+    s.pending = false;
+    if (s.busy) { s.again = true; return; }
+    s.busy = true;
+    try {
+        do {
+            s.again = false;
+            const ids = (c.announcementIds || []).slice();
+            const r = await authCall("edit_course", courseEditPayload(c, { announcementIds: ids }));
+            if (r.status !== "success") throw new Error(r.message || "Couldn't save the new order.");
+            s.saved = ids;
+        } while (s.again);
+    } catch (err) {
+        if (err.message !== "auth") {
+            c.announcementIds = s.saved.slice();      // roll back
+            if (s.rerender) s.rerender();
+            notify(err.message === "Failed to fetch" ? netError(err) : err.message);
+        }
+    }
+    s.busy = false;
+}
+
 // Newly linked announcements slot in by recency (newest on top) without disturbing manual order
 function insertByRecency(ids, id) {
     const a = annList.find(x => x.id === id), t = a ? String(a.created || "") : "";
@@ -3530,69 +3587,129 @@ function openCourseModal(c) {
 
     // Linked announcements
     const annBox = $("course-modal-anns"); annBox.textContent = "";
-    const linked = (c.announcementIds || []).map(id => annList.find(a => a.id === id)).filter(Boolean);
-        if (linked.length) {
+    const byId = id => annList.find(a => a.id === id);
+    if ((c.announcementIds || []).some(byId)) {
         const sec = mk("div", "cm-sec");
         const head = mk("div", "cm-sec-title", "Announcements");
-        head.appendChild(mk("span", "cm-count", String(linked.length)));
-        sec.appendChild(head);
+        const count = mk("span", "cm-count", "0");
+        head.appendChild(count);
+        let sortBtn = null;
+        if (isAdmin) {
+            sortBtn = mk("button", "btn sm ghost cm-sort", "Sort newest first"); sortBtn.type = "button";
+            head.appendChild(sortBtn);
+        }
         const list = mk("div", "cm-list");
-    const moveAnn = async (from, to) => {
-            const body = document.querySelector("#course-modal .cm-body"), y = body ? body.scrollTop : 0;
-            const ids = linked.map(x => x.id);
+        sec.append(head, list);
+        annBox.appendChild(sec);
+
+        const st = orderState(c);
+        st.rerender = () => { if (list.isConnected) renderItems(); };
+
+        const visibleIds = () => (c.announcementIds || []).filter(byId);
+        const reorder = ids => { c.announcementIds = ids; renderItems(); queueSave(c); };
+        const move = (from, to) => {
+            const ids = visibleIds();
+            if (to < 0 || to >= ids.length) return;
             ids.splice(to, 0, ids.splice(from, 1)[0]);
-            try {
-                if (await saveCourseLinks(c, ids)) { openCourseModal(c); const b = document.querySelector("#course-modal .cm-body"); if (b) b.scrollTop = y; return; }
-                notify("Couldn't reorder the announcements.");
-            } catch (err) { if (err.message !== "auth") notify(netError(err)); }
+            reorder(ids);
         };
-        const iconSvg = d => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>';
-        linked.forEach((a, idx) => {
+        if (sortBtn) sortBtn.onclick = () => reorder(visibleIds().sort((x, y) =>
+            String(byId(y).created || "").localeCompare(String(byId(x).created || ""))));
+
+        // Pointer-based drag (works with mouse and touch)
+        function startDrag(ev, item, grip) {
+            if (ev.button !== 0) return;
+            ev.preventDefault();
+            const scroller = document.querySelector("#course-modal .cm-body");
+            const before = Array.from(list.children).map(x => x.dataset.id);
+            let lastY = ev.clientY, raf = 0;
+            item.classList.add("dragging");
+            const tick = () => {
+                const r = scroller.getBoundingClientRect();
+                if (lastY < r.top + 40) scroller.scrollTop -= 12;
+                else if (lastY > r.bottom - 40) scroller.scrollTop += 12;
+                const others = Array.from(list.children).filter(x => x !== item);
+                const target = others.find(s => { const b = s.getBoundingClientRect(); return lastY < b.top + b.height / 2; });
+                if (target) { if (item.nextSibling !== target) list.insertBefore(item, target); }
+                else if (list.lastChild !== item) list.appendChild(item);
+                raf = requestAnimationFrame(tick);
+            };
+            raf = requestAnimationFrame(tick);
+               const onMove = e => { lastY = e.clientY; };
+            const end = e => {
+                cancelAnimationFrame(raf);
+                window.removeEventListener("pointermove", onMove);
+                window.removeEventListener("pointerup", end);
+                window.removeEventListener("pointercancel", end);
+                item.classList.remove("dragging");
+                const after = Array.from(list.children).map(x => x.dataset.id);
+                if (e.type === "pointerup" && after.join() !== before.join()) reorder(after);
+                else renderItems();
+            };
+            window.addEventListener("pointermove", onMove);
+            window.addEventListener("pointerup", end);
+            window.addEventListener("pointercancel", end);
+        }
+
+        const GRIP_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
+        const MINUS_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>';
+
+        function makeItem(a) {
             const item = mk("article", "course-ann course-ann-card");
+            item.dataset.id = a.id;
             item.setAttribute("role", "button"); item.tabIndex = 0;
+
+            if (isAdmin) {
+                const grip = mk("button", "icon-btn grip"); grip.type = "button";
+                grip.title = "Drag to reorder (or use ↑ ↓ keys)";
+                grip.setAttribute("aria-label", "Reorder announcement");
+                grip.innerHTML = GRIP_SVG;
+                grip.addEventListener("click", ev => ev.stopPropagation());
+                grip.addEventListener("pointerdown", ev => startDrag(ev, item, grip));
+                grip.addEventListener("keydown", ev => {
+                    if (ev.key !== "ArrowUp" && ev.key !== "ArrowDown") return;
+                    ev.preventDefault(); ev.stopPropagation();
+                    const i = visibleIds().indexOf(a.id);
+                    move(i, i + (ev.key === "ArrowUp" ? -1 : 1));
+                    const g = list.querySelector('[data-id="' + a.id + '"] .grip'); if (g) g.focus();
+                });
+                item.appendChild(grip);
+            }
+
             const tw = mk("div", "ann-titlewrap");
             tw.appendChild(mk("h3", "ann-title", a.title));
-            if (isNewAnn(a)) tw.appendChild(mk("span", "new-tag", "NEW"));   // same 72-hour rule as the parent card
+            if (isNewAnn(a)) tw.appendChild(mk("span", "new-tag", "NEW"));
             item.appendChild(tw);
             item.addEventListener("click", () => openAnnModal(a));
             item.addEventListener("keydown", e => {
                 if (e.target === item && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openAnnModal(a); }
             });
+
             if (isAdmin) {
                 const foot = mk("div", "course-ann-foot");
-                const mkBtn = (cls, title, svg, fn, disabled) => {
-                    const b = mk("button", "icon-btn " + cls); b.type = "button";
-                    b.title = title; b.setAttribute("aria-label", title); b.innerHTML = iconSvg(svg); b.disabled = !!disabled;
-                    b.addEventListener("click", ev => { ev.stopPropagation(); fn(b); });
-                    return b;
-                };
-                foot.appendChild(mkBtn("mv", "Move up", '<path d="M18 15l-6-6-6 6"/>', () => moveAnn(idx, idx - 1), idx === 0));
-                foot.appendChild(mkBtn("mv", "Move down", '<path d="M6 9l6 6 6-6"/>', () => moveAnn(idx, idx + 1), idx === linked.length - 1));
-                foot.appendChild(mkBtn("", "Remove from course", '<circle cx="12" cy="12" r="10"/><path d="M8 12h8"/>', async (rb) => {
-                    rb.disabled = true;
-                    try {
-                        if (await saveCourseLinks(c, (c.announcementIds || []).filter(x => x !== a.id))) { openCourseModal(c); return; }
-                        notify("Couldn't remove the announcement.");
-                    } catch (err) { if (err.message !== "auth") notify(netError(err)); }
-                    rb.disabled = false;
-                }));
+                const rb = mk("button", "icon-btn"); rb.type = "button";
+                rb.title = "Remove from course"; rb.setAttribute("aria-label", "Remove from course");
+                rb.innerHTML = MINUS_SVG;
+                rb.addEventListener("click", ev => {
+                    ev.stopPropagation();
+                    c.announcementIds = (c.announcementIds || []).filter(x => x !== a.id);
+                    renderItems(); queueSave(c);
+                });
+                foot.appendChild(rb);
                 item.appendChild(foot);
             }
-            list.appendChild(item);
-        });
-        sec.appendChild(list);
-        if (isAdmin && linked.length > 1) {
-            const sb = mk("button", "btn sm ghost cm-sort", "Sort newest first"); sb.type = "button";
-            sb.onclick = async () => {
-                const ids = linked.slice().sort((x, y) => String(y.created || "").localeCompare(String(x.created || ""))).map(x => x.id);
-                setLoading(sb, true);
-                try { if (await saveCourseLinks(c, ids)) { openCourseModal(c); return; } notify("Couldn't sort."); }
-                catch (err) { if (err.message !== "auth") notify(netError(err)); }
-                setLoading(sb, false);
-            };
-            sec.appendChild(sb);
+            return item;
         }
-        annBox.appendChild(sec);
+
+        function renderItems() {
+            list.textContent = "";
+            const ids = visibleIds();
+            count.textContent = String(ids.length);
+            if (sortBtn) sortBtn.classList.toggle("hidden", ids.length < 2);
+            sec.classList.toggle("hidden", !ids.length);
+            ids.forEach(id => list.appendChild(makeItem(byId(id))));
+        }
+        renderItems();
     }
 
     // Footer
