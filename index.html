@@ -1314,18 +1314,18 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
 #dibs-list .skeleton { display: block; margin-bottom: 16px; }
 #dibs-list .skeleton.card-sk { height: 200px; }
 
-.dibs-table { min-width: 0; table-layout: fixed; font-size: .8rem; }
-.dibs-table th { padding: 7px 8px; font-size: .65rem; letter-spacing: 1px; }
-.dibs-table td { padding: 7px 8px; }
-.dibs-table th.c-num { width: 34px; }
-.dibs-table th.c-take { width: 86px; }
-.dibs-table th.c-st { width: 46px; text-align: center; }
-.dibs-table th.c-act { width: 56px; }
-.dibs-table th.c-act.wide { width: 134px; }
+.dibs-table { min-width: 560px; table-layout: fixed; font-size: .8rem; }
+.dibs-table th { padding: 8px 10px; font-size: .65rem; letter-spacing: .6px; white-space: nowrap; }
+.dibs-table td { padding: 8px 10px; }
+.dibs-table th.c-num { width: 36px; }
+.dibs-table th.c-take { width: 110px; }
+.dibs-table th.c-st { width: 90px; text-align: center; }
+.dibs-table th.c-act { width: 110px; text-align: center; }
+.dibs-table th.c-act.wide { width: 160px; }
 .dibs-table td.dibs-title { font-weight: 600; line-height: 1.35; }
 .dibs-table td.dibs-by { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dibs-table td.dibs-stc { text-align: center; }
-.dibs-table .dibs-actions { flex-wrap: nowrap; align-items: center; gap: 6px; }
+.dibs-table .dibs-actions { flex-wrap: nowrap; align-items: center; justify-content: center; gap: 6px; }
 
 .dibs-dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; vertical-align: middle; }
 .dibs-dot.approved { background: #2e7d32; }
@@ -1346,6 +1346,19 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
 
 .dibs-limit-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: var(--fs-n1); color: var(--muted); }
 .dibs-limit { width: 64px; padding: 4px 6px; color: var(--ink); background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-md); }
+
+.dsys-bar { display: flex; align-items: center; gap: 12px; }
+.dsys-bar .group-title { flex: 1; margin: 18px 0 8px; }
+.dibs-sys-row .dibs-actions { align-items: center; }
+
+.stepper { display: inline-flex; align-items: stretch; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-md); overflow: hidden; transition: border-color .2s, box-shadow .2s; }
+.stepper:focus-within { border-color: var(--accent-text); box-shadow: 0 0 0 3px var(--accent-soft); }
+.stepper input { width: 56px; padding: 8px 0; text-align: center; font-weight: 700; color: var(--ink); background: transparent; border: 0; outline: 0; -moz-appearance: textfield; appearance: textfield; }
+.stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.stepper button { width: 34px; padding: 0; font-size: 1.2rem; font-weight: 700; line-height: 1; color: var(--accent-text); background: var(--surface2); border: 0; cursor: pointer; transition: background .2s, color .2s; }
+.stepper button:hover { background: var(--accent); color: var(--on-accent); }
+.stepper-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 14px 0 6px; }
+.stepper-row label { font-weight: 600; color: var(--muted); }
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
@@ -1789,14 +1802,20 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
         <div class="group-title">Course</div>
         <select id="d-course" aria-label="Course"></select>
         <div class="field"><input type="text" id="d-topic" placeholder=" " maxlength="120"><label for="d-topic">Topic</label></div>
-        <div class="field"><input type="number" id="d-max" placeholder=" " min="0" max="50" value="1"><label for="d-max">Max cases per student</label></div>
-        <p class="hint">How many cases one student may dibs in this table. Use 0 for no limit.</p>        
+        <div class="stepper-row">
+    <label for="d-max">Max cases per student</label>
+    <div class="stepper"><input type="number" id="d-max" min="0" max="50" value="1" inputmode="numeric"></div>
+</div>
+<p class="hint">How many cases one student may dibs in this table. Use 0 for no limit.</p>   
         <div class="field"><textarea id="d-text" placeholder=" " maxlength="30000"></textarea><label for="d-text">Paste the list of cases here</label></div>
         <p class="hint" id="d-count">One case per line. Numbering such as "1." is removed automatically.</p>
         <button type="submit" class="btn" id="d-send">Create table</button>
         <div class="msg" id="d-message"></div>
     </form>
-    <div class="group-title">Existing tables</div>
+    <div class="dsys-bar">
+    <div class="group-title" id="dsys-title">Existing tables</div>
+    <button type="button" class="btn sm ghost archive-btn" id="dsys-archive-toggle">Archive</button>
+</div>
     <div id="dsys-list"></div>
 </section>
         
@@ -1915,8 +1934,13 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
         <h3 id="dibs-e-heading">Edit case</h3>
         <form id="dibs-edit-form" novalidate>
             <div class="field"><input type="text" id="dibs-e-title" placeholder=" " maxlength="150"><label for="dibs-e-title">Case title</label></div>
-            <div class="field"><input type="number" id="dibs-e-max" placeholder=" " min="0" max="50"><label for="dibs-e-max">Max cases per student (whole table)</label></div>
-            <p class="hint">Use 0 for no limit.</p>
+
+<div class="stepper-row">
+    <label for="dibs-e-max">Max cases per student</label>
+    <div class="stepper"><input type="number" id="dibs-e-max" min="0" max="50" inputmode="numeric"></div>
+</div>
+<p class="hint">Use 0 for no limit.</p>
+            
             <div id="dibs-e-assign">
                 <div class="group-title">Taken by</div>
                 <select id="dibs-e-by" class="dibs-select" aria-label="Taken by"></select>
@@ -2216,7 +2240,7 @@ const ADMIN_SECTIONS = ["bin", "directory", "addcourse", "hiddencourses", "dibss
         resetProfileState();
         resetRequestForm();
         annList = []; annShowArchive = false; annShowPinned = false; openAnnId = ""; annFilter = ""; annSearchTerm = ""; carIdx = 0; dlSel = todayIso(); mentionUsers = []; mentionSel = []; repoPhotos = {}; resetBinForm();
-        dibsList = [];
+        dibsList = []; dsysArchive = false;
         courseList = []; courseOpen = ""; courseSearchTerm = ""; $("course-search").value = ""; closeCourseModal(); resetCourseForm();
         isAdmin = false;
         adminPending = false;
@@ -4447,31 +4471,74 @@ function attachFullNameMention(inputId) {
 ["c-beadle", "c-officer"].forEach(attachFullNameMention);
 
 /* ===== DIBS ===== */
-let dibsList = [], dibsEditing = null;
+let dibsList = [], dibsEditing = null, dsysArchive = false;
+const dibsPending = {}, dibsChain = {};
 
+function dibsMerge(r) {
+    if (r.partial) {
+        if (dibsPending[r.id]) return;
+        const i = dibsList.findIndex(t => t.id === r.id), t = (r.tables || [])[0];
+        if (t) { if (i >= 0) dibsList[i] = t; else dibsList.unshift(t); }
+        else if (i >= 0) dibsList.splice(i, 1);
+    } else {
+        const old = dibsList;
+        dibsList = (r.tables || []).map(t => dibsPending[t.id] ? (old.find(x => x.id === t.id) || t) : t);
+    }
+    renderDibs();
+}
 async function dibsCall(action, extra) {
     const r = await authCall(action, extra);
-    if (r.status === "success") { dibsList = r.tables || []; renderDibs(); }
+    if (r.status === "success") dibsMerge(r);
     return r;
 }
-async function loadDibs() {
-    setMessage($("dibs-msg"), "", "");
-    if (!dibsList.length) showSkeleton($("dibs-list"), "card-sk", 2);
+async function loadDibs(quiet) {
+    if (!quiet) {
+        setMessage($("dibs-msg"), "", "");
+        if (!dibsList.length) showSkeleton($("dibs-list"), "card-sk", 2);
+    }
     try {
-        const r = await dibsCall("dibs_list");
-        if (r.status !== "success") { $("dibs-list").textContent = ""; setMessage($("dibs-msg"), r.message, ERR); }
+        const r = await authCall("dibs_list");
+        if (r.status === "success") dibsMerge(r);
+        else if (!quiet) { $("dibs-list").textContent = ""; setMessage($("dibs-msg"), r.message, ERR); }
     } catch (err) {
-        if (err.message !== "auth") { $("dibs-list").textContent = ""; setMessage($("dibs-msg"), netError(err), ERR); }
+        if (err.message !== "auth" && !quiet) { $("dibs-list").textContent = ""; setMessage($("dibs-msg"), netError(err), ERR); }
     }
 }
-// Runs an action; if it fails (e.g. someone just took the case) shows why and refreshes
-async function dibsAct(action, payload, btn) {
+
+function dibsOptimistic(action, p) {
+    const t = dibsList.find(x => x.id === p.id); if (!t) return;
+    const k = t.cases.find(c => c.i === p.caseId); if (!k) return;
+    if (action === "dibs_claim") {
+        k.byName = profile.nickname || profile.firstName || currentEmail.split("@")[0];
+        k.mine = true; k.st = "pending"; if (t.canReview) k.by = currentEmail;
+    } else if (action === "dibs_release") {
+        k.byName = ""; k.mine = false; k.st = ""; k.by = "";
+    } else if (action === "dibs_review") {
+        k.st = p.decision === "approve" ? "approved" : "disapproved";
+    }
+    renderDibs();
+}
+
+function dibsAct(action, payload, btn, optimistic) {
+    const id = payload.id;
+    if (optimistic) dibsOptimistic(action, payload);
     if (btn) setLoading(btn, true);
-    try {
-        const r = await dibsCall(action, payload);
-        if (r.status !== "success") { notify(r.message || "Something went wrong."); loadDibs(); }
-    } catch (err) { if (err.message !== "auth") notify(netError(err)); }
-    if (btn) setLoading(btn, false);
+    dibsPending[id] = (dibsPending[id] || 0) + 1;
+    const run = async () => {
+        let ok = true;
+        try {
+            const r = await authCall(action, payload);
+            dibsPending[id]--;
+            if (r.status === "success") dibsMerge(r);
+            else { ok = false; notify(r.message || "Something went wrong."); }
+        } catch (err) {
+            dibsPending[id]--; ok = false;
+            if (err.message !== "auth") notify(netError(err));
+        }
+        if (!ok) loadDibs(true);
+        if (btn) setLoading(btn, false);
+    };
+    return (dibsChain[id] = (dibsChain[id] || Promise.resolve()).then(run));
 }
 const dibsSorted = list => list.slice().sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
 function dibsEmpty(box, title, text) {
@@ -4534,28 +4601,26 @@ function dibsCard(t) {
             cb.disabled = !t.canClaim || full;
             cb.title = !t.canClaim ? "" : (full ? "You reached the limit. Untick one of your cases first." : "Tick to dibs this case");
             cb.setAttribute("aria-label", "Dibs case " + (idx + 1));
-            cb.addEventListener("change", () => { cb.disabled = true; dibsAct("dibs_claim", { id: t.id, caseId: k.i }, null); });
-        } else if (k.mine && k.st !== "approved") {
+            cb.addEventListener("change", () => { cb.disabled = true; dibsAct("dibs_claim", { id: t.id, caseId: k.i }, null, true); });        } else if (k.mine && k.st !== "approved") {
             cb.title = "Untick to release";
             cb.setAttribute("aria-label", "Release case " + (idx + 1));
-            cb.addEventListener("change", () => { cb.disabled = true; dibsAct("dibs_release", { id: t.id, caseId: k.i }, null); });
-        } else {
+            cb.addEventListener("change", () => { cb.disabled = true; dibsAct("dibs_release", { id: t.id, caseId: k.i }, null, true); });        } else {
             cb.disabled = true;
             cb.title = k.mine ? "Approved. Only the approver can release it." : "Already taken";
             cb.setAttribute("aria-label", "Taken");
         }
         acts.appendChild(cb);
 
-        if (t.canReview) {
-            if (k.byName) {
-                if (k.st !== "approved") acts.appendChild(dibsIcon("ok", "Approve", THUMB_UP, b => dibsAct("dibs_review", { id: t.id, caseId: k.i, decision: "approve" }, b)));
-                if (k.st !== "disapproved") acts.appendChild(dibsIcon("no", "Disapprove", THUMB_DOWN, async b => {
-                    if (!(await askConfirm("Disapprove?", k.byName + "'s pick of \"" + k.t + "\" will be marked as disapproved.", "Disapprove"))) return;
-                    dibsAct("dibs_review", { id: t.id, caseId: k.i, decision: "disapprove" }, b);
-                }));
-            }
-            acts.appendChild(dibsIcon("ed", "Edit", PENCIL, () => openDibsEdit(t, k)));
-        }
+       if (t.canReview) {
+    acts.appendChild(dibsIcon("ed", "Edit", PENCIL, () => openDibsEdit(t, k)));
+    if (k.byName) {
+        if (k.st !== "approved") acts.appendChild(dibsIcon("ok", "Approve", THUMB_UP, b => dibsAct("dibs_review", { id: t.id, caseId: k.i, decision: "approve" }, null, true)));
+        if (k.st !== "disapproved") acts.appendChild(dibsIcon("no", "Disapprove", THUMB_DOWN, async b => {
+            if (!(await askConfirm("Disapprove?", k.byName + "'s pick of \"" + k.t + "\" will be marked as disapproved.", "Disapprove"))) return;
+            dibsAct("dibs_review", { id: t.id, caseId: k.i, decision: "disapprove" }, null, true);
+        }));
+    }
+}
         td.appendChild(acts); tr.appendChild(td);
         tbl.appendChild(tr);
     });
@@ -4579,10 +4644,32 @@ function renderDibsPage() {
     list.forEach(t => box.appendChild(dibsCard(t)));
 }
 
+function initStepper(wrap) {
+    const input = wrap.querySelector("input");
+    const btn = (txt, d, label) => {
+        const b = mk("button", "", txt); b.type = "button"; b.setAttribute("aria-label", label);
+        b.addEventListener("click", () => {
+            const v = Math.max(0, Math.min(50, (parseInt(input.value, 10) || 0) + d));
+            input.value = String(v);
+            input.dispatchEvent(new Event("change", { bubbles: true }));
+        });
+        return b;
+    };
+    wrap.prepend(btn("\u2212", -1, "Decrease"));
+    wrap.append(btn("+", 1, "Increase"));
+}
+document.querySelectorAll(".stepper").forEach(initStepper);
+
 function renderDibsSystem() {
     const box = $("dsys-list"); box.textContent = "";
-    const list = dibsSorted(dibsList);
-    if (!list.length) return dibsEmpty(box, "No tables yet", "Tables you create will be listed here.");
+    const nArch = dibsList.filter(t => t.archived).length;
+    $("dsys-archive-toggle").textContent = dsysArchive ? "\u2190 Back to tables" : "Archive (" + nArch + ")";
+    $("dsys-title").textContent = dsysArchive ? "Archived tables" : "Existing tables";
+    const list = dibsSorted(dibsList.filter(t => !!t.archived === dsysArchive));
+    if (!list.length) return dibsEmpty(box,
+        dsysArchive ? "Nothing archived" : "No tables yet",
+        dsysArchive ? "Archived tables will appear here." : "Tables you create will be listed here.");
+
     list.forEach(t => {
         const row = mk("div", "dibs-sys-row" + (t.archived ? " is-archived" : ""));
         const main = mk("div", "dibs-sys-main");
@@ -4590,38 +4677,51 @@ function renderDibsSystem() {
         if (t.courseCode) head.appendChild(mk("span", "link-code", t.courseCode));
         head.appendChild(mk("span", "dibs-course", t.courseTitle));
         if (t.pinned) head.appendChild(mk("span", "badge pinned", "Pinned"));
-        if (t.archived) head.appendChild(mk("span", "chip-soft hidden-chip", "Archived"));
         main.appendChild(head);
         main.appendChild(mk("div", "dibs-topic", t.topic));
         const taken = t.cases.filter(c => c.byName).length, appr = t.cases.filter(c => c.st === "approved").length;
         main.appendChild(mk("div", "dibs-officers", t.cases.length + " cases \u00b7 " + taken + " taken \u00b7 " + appr + " approved"));
-                const limRow = mk("div", "dibs-limit-row");
-        limRow.appendChild(mk("span", "", "Max cases per student (0 = no limit):"));
-        const lim = mk("input", "dibs-limit"); lim.type = "number"; lim.min = "0"; lim.max = "50"; lim.value = String(t.maxPer);
+
+        const limRow = mk("div", "dibs-limit-row");
+        limRow.appendChild(mk("span", "", "Max cases per student (0 = no limit)"));
+        const lim = mk("input"); lim.type = "number"; lim.min = "0"; lim.max = "50"; lim.value = String(t.maxPer);
         lim.setAttribute("aria-label", "Max cases per student");
+        const stp = mk("div", "stepper"); stp.appendChild(lim); initStepper(stp);
+        let limTimer = 0;
         lim.addEventListener("change", () => {
-            const n = lim.value.trim();
-            if (!/^\d+$/.test(n) || Number(n) > 50) { lim.value = String(t.maxPer); return; }
-            dibsAct("dibs_limit", { id: t.id, maxPer: Number(n) }, null);
+            clearTimeout(limTimer);
+            limTimer = setTimeout(() => {
+                const n = lim.value.trim();
+                if (!/^\d+$/.test(n) || Number(n) > 50) { lim.value = String(t.maxPer); return; }
+                t.maxPer = Number(n);
+                dibsAct("dibs_limit", { id: t.id, maxPer: Number(n) }, null);
+            }, 500);
         });
-        limRow.appendChild(lim);
+        limRow.appendChild(stp);
         main.appendChild(limRow);
         row.appendChild(main);
+
         const acts = mk("div", "dibs-actions");
-        const add = (label, cls, fn) => {
-            const b = mk("button", "btn sm" + (cls ? " " + cls : ""), label); b.type = "button";
-            b.addEventListener("click", () => fn(b)); acts.appendChild(b);
-        };
-        add(t.pinned ? "Unpin" : "Pin", "ghost", b => dibsAct("dibs_pin", { id: t.id, pinned: !t.pinned }, b));
-        add(t.archived ? "Unarchive" : "Archive", "ghost", b => dibsAct("dibs_archive", { id: t.id, archived: !t.archived }, b));
-        add("Delete", "", async b => {
+        acts.appendChild(iconBtn("pin", t.pinned, t.pinned ? "Unpin" : "Pin", () => {
+            const v = !t.pinned; t.pinned = v; renderDibs();
+            dibsAct("dibs_pin", { id: t.id, pinned: v }, null);
+        }));
+        acts.appendChild(iconBtn("arch", t.archived, t.archived ? "Unarchive" : "Archive", () => {
+            const v = !t.archived; t.archived = v; renderDibs();
+            dibsAct("dibs_archive", { id: t.id, archived: v }, null);
+        }));
+        const del = mk("button", "btn sm", "Delete"); del.type = "button";
+        del.addEventListener("click", async () => {
             if (!(await askConfirm("Delete table?", "\"" + t.topic + "\" and all picks in it will be permanently deleted."))) return;
-            dibsAct("dibs_delete", { id: t.id }, b);
+            dibsAct("dibs_delete", { id: t.id }, del);
         });
+        acts.appendChild(del);
         row.appendChild(acts);
         box.appendChild(row);
     });
 }
+$("dsys-archive-toggle").addEventListener("click", () => { dsysArchive = !dsysArchive; renderDibsSystem(); });
+
 function renderDibs() { renderDibsPage(); renderDibsSystem(); }
 
 /* ---- Admin: create a table ---- */
@@ -4729,8 +4829,8 @@ $("dibs-e-remove").addEventListener("click", async () => {
 // Keep the page fresh so students see picks made by others
 setInterval(() => {
     if (document.hidden || !currentEmail) return;
-    if (!$("sec-dibs").classList.contains("hidden") || !$("sec-dibssystem").classList.contains("hidden")) loadDibs();
-}, 30000);
+    if (!$("sec-dibs").classList.contains("hidden") || !$("sec-dibssystem").classList.contains("hidden")) loadDibs(true);
+}, 10000);
     
     const drops = [];
     function enhanceSelect(sel) {
