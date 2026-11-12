@@ -3583,13 +3583,6 @@ function courseRow(c, dim) {
     if (c.hidden && isAdmin && dim) tags.appendChild(mk("span", "chip-soft hidden-chip", "Hidden"));
     head.appendChild(tags);
     main.appendChild(head);
-    const cl = safeUrl(c.casesLink), dg = safeUrl(c.digestsLink);
-    if (cl || dg) {
-        const links = mk("div", "course-links");
-        if (cl) links.appendChild(linkBtn("Cases", cl));
-        if (dg) links.appendChild(linkBtn("Digests", dg));
-        main.appendChild(links);
-    }
     row.appendChild(main);
     if (isAdmin) row.appendChild(eyeBtn(c, "course-eye"));
     row.onclick = () => openCourseModal(c);
