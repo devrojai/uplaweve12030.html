@@ -1241,6 +1241,25 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
 .file-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; }
 .file-row .hint { margin: 0; }
 #req-form .file-upload-area, #bin-form .file-upload-area { margin-bottom: 24px; }
+
+/* ===== User profile popup: refined detail cards ===== */
+.um-body { gap: 14px; padding: 20px 24px 22px; }
+.um-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; }
+.um-card-title { padding: 9px 16px; font-size: .7rem; font-weight: 800; letter-spacing: 1.3px; text-transform: uppercase; color: var(--accent-text); background: var(--surface2); border-bottom: 1px solid var(--line); }
+.um-row { display: grid; grid-template-columns: 140px minmax(0, 1fr); align-items: baseline; gap: 12px; padding: 11px 16px; border-top: 1px solid var(--line); }
+.um-card-title + .um-row { border-top: none; }
+.um-k { font-size: var(--fs-n1); font-weight: 600; color: var(--muted); }
+.um-v { font-size: .95rem; font-weight: 600; color: var(--ink); word-break: break-word; }
+.um-v.um-none { font-weight: 400; font-style: italic; color: var(--muted); opacity: .75; }
+.um-v a { color: var(--accent-text); text-decoration: none; border-bottom: 1px solid var(--badge-line); }
+.um-v a:hover { border-bottom-color: var(--accent-text); }
+.um-row:hover { background: var(--surface2); }
+.um-nick { font-size: var(--fs-n1); font-weight: 600; }
+.um-actions { padding-top: 14px; }
+@media (max-width: 520px) {
+    .um-body { padding: 16px 16px 18px; }
+    .um-row { grid-template-columns: 1fr; gap: 2px; padding: 10px 14px; }
+}        
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
@@ -2295,8 +2314,7 @@ if (courseAdminShown !== isAdmin) { courseAdminShown = isAdmin; renderCourses();
     }
 
     const CLOCK_SVG = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>';
-    const EYE_SVG = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
-    function setEdited(el, text) {
+    const EYE_SVG = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px;color:var(--accent-text)"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';    function setEdited(el, text) {
     el.textContent = "";
     if (!text) return;
     el.insertAdjacentHTML("afterbegin", CLOCK_SVG);
@@ -2313,7 +2331,7 @@ if (courseAdminShown !== isAdmin) { courseAdminShown = isAdmin; renderCourses();
         const a = (u.firstName || "").trim()[0] || "", b = (u.lastName || "").trim()[0] || "";
         return (a + b).toUpperCase() || (u.email || "?")[0].toUpperCase();
     }
-    function roleOf(u) { return u.admin ? "Admin" : "Regular"; }
+    function roleOf(u) { return u.admin ? "Admin" : "User"; }
     function avatarInto(box, u, photo) {
         box.textContent = "";
         if (photo && /^data:image\//.test(photo)) {
@@ -2357,10 +2375,9 @@ if (courseAdminShown !== isAdmin) { courseAdminShown = isAdmin; renderCourses();
         avatarInto(ph, u, photo);
         hero.appendChild(ph);
         hero.appendChild(mk("div", "um-name", nameOf(u)));
-        if (u.nickname) hero.appendChild(mk("div", "um-nick", "\u201c" + u.nickname + "\u201d"));
+        if (u.nickname) hero.appendChild(mk("div", "um-nick", u.nickname));
         const badges = mk("div", "um-badges");
         badges.appendChild(mk("span", "um-pill" + (u.admin ? " solid" : ""), roleOf(u)));
-        badges.appendChild(mk("span", "um-pill", u.verified ? "Email verified" : "Email not verified"));
         hero.appendChild(badges);
         box.appendChild(hero);
 
@@ -2377,32 +2394,30 @@ if (courseAdminShown !== isAdmin) { courseAdminShown = isAdmin; renderCourses();
         if (fbUrl) acts.appendChild(linkBtn("Facebook", fbUrl));
         if (acts.children.length) box.appendChild(acts);
 
-        // Details, grouped into tiles
+        // Details, grouped into cards of label / value rows
         const body = mk("div", "um-body");
         const section = (title, items) => {
-            const s = mk("div", "cm-sec");
-            s.appendChild(mk("div", "cm-sec-title", title));
-            const g = mk("div", "cm-tiles");
-            items.forEach(([k, v, wide, isLink]) => {
-                const t = mk("div", "cm-tile" + (wide ? " wide" : ""));
-                t.appendChild(mk("div", "cm-tile-k", k));
-                const val = mk("div", "cm-tile-v");
+            const card = mk("section", "um-card");
+            card.appendChild(mk("div", "um-card-title", title));
+            items.forEach(([k, v, isLink]) => {
+                const row = mk("div", "um-row");
+                row.appendChild(mk("div", "um-k", k));
+                const val = mk("div", "um-v");
                 const href = isLink ? safeUrl(v) : "";
-                if (!v) { val.textContent = "\u2014"; val.style.opacity = ".5"; }
+                if (!v) { val.textContent = "Not provided"; val.classList.add("um-none"); }
                 else if (href) {
-                    const a = mk("a", "", v);
+                    const a = mk("a", "", v.replace(/^https?:\/\/(www\.)?/i, "").replace(/\/$/, ""));
                     a.href = href; a.target = "_blank"; a.rel = "noopener noreferrer";
                     val.appendChild(a);
                 } else val.textContent = v;
-                t.appendChild(val);
-                g.appendChild(t);
+                row.appendChild(val);
+                card.appendChild(row);
             });
-            s.appendChild(g);
-            body.appendChild(s);
+            body.appendChild(card);
         };
-        section("Name", [["First name", u.firstName], ["Middle name", u.middleName], ["Last name", u.lastName], ["Nickname", u.nickname]]);
-        section("Contact", [["Contact no.", u.contact], ["Telegram handle", u.tg], ["UP student email", u.upEmail, true], ["Facebook URL", u.fb, true, true]]);
-        section("Account", [["Account email", u.email, true], ["Account created", u.created], ["Profile updated", u.updated]]);
+        section("Personal information", [["First name", u.firstName], ["Middle name", u.middleName], ["Last name", u.lastName], ["Nickname", u.nickname]]);
+        section("Contact", [["Contact no.", u.contact], ["Telegram", u.tg], ["UP student email", u.upEmail], ["Facebook", u.fb, true]]);
+        section("Account", [["Account email", u.email], ["Account created", u.created], ["Profile updated", u.updated]]);
         box.appendChild(body);
     }
 
