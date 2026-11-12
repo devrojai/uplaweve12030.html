@@ -1031,10 +1031,11 @@ html[data-theme="night"] .archive-btn:hover:not(:disabled), html[data-theme="nig
 
 .cm-extra { display: flex; flex-direction: column; gap: 24px; }
 .cm-extra:empty, #course-modal-anns:empty { display: none; }
-.cm-sec-title { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; font-size: .75rem; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--accent-text); }
+
+.cm-sec-title { display: flex; align-items: center; gap: 14px; margin: 0 0 12px; font-size: .75rem; line-height: 1; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--accent-text); }
 .cm-sec-title::after { content: ""; flex: 1; height: 1px; background: var(--line-strong); }
-.cm-count { order: 1; padding: 1px 8px; font-size: .7rem; letter-spacing: 0; border-radius: 999px; background: var(--accent); color: var(--on-accent); }
-.cm-sec-title::after { order: 2; }
+.cm-count { display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 7px; font-size: .7rem; line-height: 1; letter-spacing: 0; border-radius: 999px; background: var(--accent); color: var(--on-accent); }
+
 .cm-sec .attach-list { gap: 10px; }
 .cm-list { display: flex; flex-direction: column; gap: 8px; }
 .cm-list .course-ann { margin: 0; }
@@ -1057,6 +1058,20 @@ html[data-theme="night"] .archive-btn:hover:not(:disabled), html[data-theme="nig
 .ann-card .ann-titlewrap { flex: 1; min-width: 0; display: flex; align-items: flex-start; gap: 10px; padding-top: 4px; }
 .ann-card .ann-titlewrap .ann-title { flex: 0 1 auto; min-width: 0; padding-top: 0; }
 .new-tag { flex: none; margin-top: 2px; padding: 2px 8px; font-size: .7rem; font-weight: 800; line-height: 1.4; letter-spacing: .8px; color: #ffffff; background: #c62828; border-radius: var(--r-sm); }
+
+/* Course popup: centered announcement title, remove button pinned right */
+.course-ann-card { position: relative; justify-content: center; padding: 8px 46px; }
+.course-ann-card .ann-title { flex: 0 1 auto; text-align: center; }
+.course-ann-foot { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); }
+.cm-list .course-ann.course-ann-card { margin: 0; }
+
+/* Courses page cards */
+.course-row { padding: 18px 20px; gap: 18px; }
+.course-main { display: flex; flex-direction: column; gap: 6px; }
+.course-title { font-size: 1.1rem; white-space: nowrap !important; overflow: hidden; text-overflow: ellipsis; }
+.course-code { font-size: .8rem; font-weight: 700; letter-spacing: .8px; color: var(--accent-text); }
+.course-main .course-tags { margin-top: 6px; gap: 8px; flex-wrap: wrap; }
+.course-main .course-links { margin-top: 2px; gap: 10px; }
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
@@ -1469,10 +1484,9 @@ html[data-theme="night"] .archive-btn:hover:not(:disabled), html[data-theme="nig
     <div class="modal hidden" id="course-modal" role="dialog" aria-modal="true">
         <div class="modal-card course-card">
             <div class="cm-head">
-                <div class="cm-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
                 <div class="cm-head-main">
-                    <span id="course-modal-badge" class="badge"></span>
                     <h3 id="course-modal-title" class="cm-title"></h3>
+                    <span id="course-modal-badge" class="badge"></span>
                 </div>
             </div>
             <div class="cm-body">
@@ -3303,7 +3317,7 @@ function renderCourses() {
         const ico = mk("div", "course-ico"); ico.innerHTML = BOOK_SVG;
         const main = mk("div", "course-main");
         main.appendChild(mk("div", "course-title", c.title));
-        main.appendChild(mk("div", "course-sub", c.professor ? "Prof. " + c.professor : ""));
+        main.appendChild(mk("div", "course-code", c.code));
         const tags = mk("div", "course-tags");
         [c.semester ? c.semester + " Sem" : "", c.ay].filter(Boolean).forEach(t => tags.appendChild(mk("span", "chip-soft", t)));
         const nf = (c.syllabus || []).length + (c.documents || []).length;
@@ -3316,7 +3330,7 @@ function renderCourses() {
             if (dg) links.appendChild(linkBtn("Digests", dg));
             main.appendChild(links);
         }
-        row.append(ico, main, mk("span", "badge", c.code));
+        row.append(ico, main);
         row.insertAdjacentHTML("beforeend", ARROW_SVG);
         row.onclick = () => openCourseModal(c);
         row.addEventListener("keydown", e => {
