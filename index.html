@@ -1310,6 +1310,42 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
 .dibs-sys-main { flex: 1 1 260px; min-width: 0; }
 .dibs-select { width: 100%; margin: 8px 0 14px; padding: 10px 12px; color: var(--ink); background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-md); }
 #dibs-modal { z-index: 80; }
+/* ===== Dibs table: compact layout, dots, icon buttons ===== */
+#dibs-list .skeleton { display: block; margin-bottom: 16px; }
+#dibs-list .skeleton.card-sk { height: 200px; }
+
+.dibs-table { min-width: 0; table-layout: fixed; font-size: .8rem; }
+.dibs-table th { padding: 7px 8px; font-size: .65rem; letter-spacing: 1px; }
+.dibs-table td { padding: 7px 8px; }
+.dibs-table th.c-num { width: 34px; }
+.dibs-table th.c-take { width: 86px; }
+.dibs-table th.c-st { width: 46px; text-align: center; }
+.dibs-table th.c-act { width: 56px; }
+.dibs-table th.c-act.wide { width: 134px; }
+.dibs-table td.dibs-title { font-weight: 600; line-height: 1.35; }
+.dibs-table td.dibs-by { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dibs-table td.dibs-stc { text-align: center; }
+.dibs-table .dibs-actions { flex-wrap: nowrap; align-items: center; gap: 6px; }
+
+.dibs-dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; vertical-align: middle; }
+.dibs-dot.approved { background: #2e7d32; }
+.dibs-dot.disapproved { background: #c62828; }
+.dibs-dot.pending { background: #f9a825; }
+.dibs-dot.open { background: transparent; border: 2px solid var(--line-strong); }
+
+.dibs-check { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); cursor: pointer; flex: none; }
+.dibs-check:disabled { cursor: not-allowed; opacity: .6; }
+
+.dibs-ic { width: 26px; height: 26px; padding: 0; flex: none; display: grid; place-items: center; color: #fff; border: 0; border-radius: var(--r-md); cursor: pointer; }
+.dibs-ic svg { width: 15px; height: 15px; }
+.dibs-ic.ok { background: #2e7d32; }
+.dibs-ic.no { background: #c62828; }
+.dibs-ic.ed { background: #555555; }
+.dibs-ic:hover:not(:disabled) { filter: brightness(1.15); }
+.dibs-ic:disabled { opacity: .5; cursor: not-allowed; }
+
+.dibs-limit-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: var(--fs-n1); color: var(--muted); }
+.dibs-limit { width: 64px; padding: 4px 6px; color: var(--ink); background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-md); }
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
@@ -1753,6 +1789,8 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
         <div class="group-title">Course</div>
         <select id="d-course" aria-label="Course"></select>
         <div class="field"><input type="text" id="d-topic" placeholder=" " maxlength="120"><label for="d-topic">Topic</label></div>
+        <div class="field"><input type="number" id="d-max" placeholder=" " min="0" max="50" value="1"><label for="d-max">Max cases per student</label></div>
+        <p class="hint">How many cases one student may dibs in this table. Use 0 for no limit.</p>        
         <div class="field"><textarea id="d-text" placeholder=" " maxlength="30000"></textarea><label for="d-text">Paste the list of cases here</label></div>
         <p class="hint" id="d-count">One case per line. Numbering such as "1." is removed automatically.</p>
         <button type="submit" class="btn" id="d-send">Create table</button>
@@ -1877,6 +1915,8 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
         <h3 id="dibs-e-heading">Edit case</h3>
         <form id="dibs-edit-form" novalidate>
             <div class="field"><input type="text" id="dibs-e-title" placeholder=" " maxlength="150"><label for="dibs-e-title">Case title</label></div>
+            <div class="field"><input type="number" id="dibs-e-max" placeholder=" " min="0" max="50"><label for="dibs-e-max">Max cases per student (whole table)</label></div>
+            <p class="hint">Use 0 for no limit.</p>
             <div id="dibs-e-assign">
                 <div class="group-title">Taken by</div>
                 <select id="dibs-e-by" class="dibs-select" aria-label="Taken by"></select>
@@ -4440,9 +4480,22 @@ function dibsEmpty(box, title, text) {
     e.appendChild(mk("p", "", text));
     box.appendChild(e);
 }
+const THUMB_UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg>';
+const THUMB_DOWN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"/></svg>';
+const PENCIL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>';
+
+function dibsIcon(cls, label, svg, fn) {
+    const b = mk("button", "dibs-ic " + cls); b.type = "button";
+    b.title = label; b.setAttribute("aria-label", label); b.innerHTML = svg;
+    b.addEventListener("click", () => fn(b));
+    return b;
+}
 function dibsStatus(k) {
-    if (!k.byName) return mk("span", "dibs-st open", "Open");
-    return k.st === "approved" ? mk("span", "dibs-st approved", "Approved") : mk("span", "dibs-st pending", "Pending approval");
+    const st = !k.byName ? "open" : (k.st === "approved" ? "approved" : (k.st === "disapproved" ? "disapproved" : "pending"));
+    const label = { open: "Open", approved: "Approved", disapproved: "Disapproved", pending: "Pending approval" }[st];
+    const d = mk("span", "dibs-dot " + st);
+    d.title = label; d.setAttribute("role", "img"); d.setAttribute("aria-label", label);
+    return d;
 }
 
 function dibsCard(t) {
@@ -4453,45 +4506,57 @@ function dibsCard(t) {
     if (t.pinned) head.appendChild(mk("span", "badge pinned", "Pinned"));
     card.appendChild(head);
     card.appendChild(mk("h3", "dibs-topic", t.topic));
-    if (t.officers.length) card.appendChild(mk("div", "dibs-officers", "Approvers: " + t.officers.join(", ")));
 
-    const hasActions = t.canClaim || t.canReview;
-    const mineCount = t.cases.filter(c => c.mine).length;
+    const info = [];
+    if (t.officers.length) info.push("Approvers: " + t.officers.join(", "));
+    info.push(t.maxPer > 0 ? "Limit: " + t.maxPer + (t.maxPer === 1 ? " case" : " cases") + " per student" : "No limit per student");
+    card.appendChild(mk("div", "dibs-officers", info.join(" \u00b7 ")));
+
+    const mineCount = t.cases.filter(c => c.mine && c.st !== "disapproved").length;
     const full = t.maxPer > 0 && mineCount >= t.maxPer;
 
     const wrap = mk("div", "dibs-wrap"), tbl = mk("table", "dibs-table");
     const hr = mk("tr");
-    ["#", "Case", "Taken by", "Status"].concat(hasActions ? ["Action"] : []).forEach(h => hr.appendChild(mk("th", "", h)));
+    [["#", "c-num"], ["Case", "c-case"], ["Taken by", "c-take"], ["Status", "c-st"], ["Action", "c-act" + (t.canReview ? " wide" : "")]]
+        .forEach(([h, cls]) => hr.appendChild(mk("th", cls, h)));
     tbl.appendChild(hr);
 
     t.cases.forEach((k, idx) => {
         const tr = mk("tr");
         tr.appendChild(mk("td", "num", String(idx + 1)));
         tr.appendChild(mk("td", "dibs-title", k.t));
-        tr.appendChild(mk("td", "", k.byName || "\u2014"));
-        const st = mk("td"); st.appendChild(dibsStatus(k)); tr.appendChild(st);
-        if (hasActions) {
-            const td = mk("td"), acts = mk("div", "dibs-actions");
-            const add = (label, cls, fn) => {
-                const b = mk("button", "btn sm" + (cls ? " " + cls : ""), label); b.type = "button";
-                b.addEventListener("click", () => fn(b));
-                acts.appendChild(b); return b;
-            };
-            if (t.canClaim && !k.byName) {
-                const b = add("Dibs", "", bb => dibsAct("dibs_claim", { id: t.id, caseId: k.i }, bb));
-                if (full) { b.disabled = true; b.title = "You already picked a case. Release it first."; }
-            }
-            if (k.mine && k.st !== "approved") add("Release", "ghost", bb => dibsAct("dibs_release", { id: t.id, caseId: k.i }, bb));
-            if (t.canReview && k.byName) {
-                if (k.st !== "approved") add("Approve", "", bb => dibsAct("dibs_review", { id: t.id, caseId: k.i, decision: "approve" }, bb));
-                add("Disapprove", "ghost", async bb => {
-                    if (!(await askConfirm("Disapprove?", k.byName + "'s pick of \"" + k.t + "\" will be released so others can pick it.", "Disapprove"))) return;
-                    dibsAct("dibs_review", { id: t.id, caseId: k.i, decision: "disapprove" }, bb);
-                });
-            }
-            if (t.canReview) add("Edit", "ghost", () => openDibsEdit(t, k));
-            td.appendChild(acts); tr.appendChild(td);
+        tr.appendChild(mk("td", "dibs-by", k.byName || "\u2014"));
+        const st = mk("td", "dibs-stc"); st.appendChild(dibsStatus(k)); tr.appendChild(st);
+
+        const td = mk("td", "dibs-act"), acts = mk("div", "dibs-actions");
+        const cb = mk("input", "dibs-check"); cb.type = "checkbox"; cb.checked = !!k.byName;
+        if (!k.byName) {
+            cb.disabled = !t.canClaim || full;
+            cb.title = !t.canClaim ? "" : (full ? "You reached the limit. Untick one of your cases first." : "Tick to dibs this case");
+            cb.setAttribute("aria-label", "Dibs case " + (idx + 1));
+            cb.addEventListener("change", () => { cb.disabled = true; dibsAct("dibs_claim", { id: t.id, caseId: k.i }, null); });
+        } else if (k.mine && k.st !== "approved") {
+            cb.title = "Untick to release";
+            cb.setAttribute("aria-label", "Release case " + (idx + 1));
+            cb.addEventListener("change", () => { cb.disabled = true; dibsAct("dibs_release", { id: t.id, caseId: k.i }, null); });
+        } else {
+            cb.disabled = true;
+            cb.title = k.mine ? "Approved. Only the approver can release it." : "Already taken";
+            cb.setAttribute("aria-label", "Taken");
         }
+        acts.appendChild(cb);
+
+        if (t.canReview) {
+            if (k.byName) {
+                if (k.st !== "approved") acts.appendChild(dibsIcon("ok", "Approve", THUMB_UP, b => dibsAct("dibs_review", { id: t.id, caseId: k.i, decision: "approve" }, b)));
+                if (k.st !== "disapproved") acts.appendChild(dibsIcon("no", "Disapprove", THUMB_DOWN, async b => {
+                    if (!(await askConfirm("Disapprove?", k.byName + "'s pick of \"" + k.t + "\" will be marked as disapproved.", "Disapprove"))) return;
+                    dibsAct("dibs_review", { id: t.id, caseId: k.i, decision: "disapprove" }, b);
+                }));
+            }
+            acts.appendChild(dibsIcon("ed", "Edit", PENCIL, () => openDibsEdit(t, k)));
+        }
+        td.appendChild(acts); tr.appendChild(td);
         tbl.appendChild(tr);
     });
     wrap.appendChild(tbl);
@@ -4530,6 +4595,17 @@ function renderDibsSystem() {
         main.appendChild(mk("div", "dibs-topic", t.topic));
         const taken = t.cases.filter(c => c.byName).length, appr = t.cases.filter(c => c.st === "approved").length;
         main.appendChild(mk("div", "dibs-officers", t.cases.length + " cases \u00b7 " + taken + " taken \u00b7 " + appr + " approved"));
+                const limRow = mk("div", "dibs-limit-row");
+        limRow.appendChild(mk("span", "", "Max cases per student (0 = no limit):"));
+        const lim = mk("input", "dibs-limit"); lim.type = "number"; lim.min = "0"; lim.max = "50"; lim.value = String(t.maxPer);
+        lim.setAttribute("aria-label", "Max cases per student");
+        lim.addEventListener("change", () => {
+            const n = lim.value.trim();
+            if (!/^\d+$/.test(n) || Number(n) > 50) { lim.value = String(t.maxPer); return; }
+            dibsAct("dibs_limit", { id: t.id, maxPer: Number(n) }, null);
+        });
+        limRow.appendChild(lim);
+        main.appendChild(limRow);
         row.appendChild(main);
         const acts = mk("div", "dibs-actions");
         const add = (label, cls, fn) => {
@@ -4580,10 +4656,12 @@ $("d-form").addEventListener("submit", async e => {
     if (!topic) { fieldError("d-topic", "Required"); bad = true; }
     if (!text.trim()) { fieldError("d-text", "Required"); bad = true; }
     if (!courseId) { setMessage(m, "Choose a course.", ERR); bad = true; }
+    const maxPer = $("d-max").value.trim();
+    if (maxPer !== "" && (!/^\d+$/.test(maxPer) || Number(maxPer) > 50)) { setMessage(m, "Max cases per student must be a whole number from 0 to 50.", ERR); bad = true; }
     if (bad) return;
     setLoading(btn, true);
     try {
-        const r = await dibsCall("dibs_create", { courseId, topic, text });
+        const r = await dibsCall("dibs_create", { courseId, topic, text, maxPer });
         if (r.status === "success") {
             $("d-topic").value = ""; $("d-text").value = ""; $("d-text").dispatchEvent(new Event("input")); syncFields();
             setMessage(m, "Table created.", OK);
@@ -4596,7 +4674,7 @@ $("d-form").addEventListener("submit", async e => {
 function openDibsEdit(t, k) {
     dibsEditing = { t, k };
     $("dibs-e-heading").textContent = k ? "Edit case" : "Add case";
-    $("dibs-e-title").value = k ? k.t : "";
+    $("dibs-e-max").value = String(t.maxPer);
     $("dibs-e-assign").classList.toggle("hidden", !k);
     $("dibs-e-remove").classList.toggle("hidden", !k);
     if (k) {
@@ -4624,7 +4702,10 @@ $("dibs-edit-form").addEventListener("submit", async e => {
     const { t, k } = dibsEditing, btn = $("dibs-e-save"), m = $("dibs-e-msg");
     const title = $("dibs-e-title").value.replace(/\s+/g, " ").trim();
     if (!title) return setMessage(m, "Enter the case title.", ERR);
+    const mx = $("dibs-e-max").value.trim();
+    if (mx !== "" && (!/^\d+$/.test(mx) || Number(mx) > 50)) return setMessage(m, "Max cases per student must be a whole number from 0 to 50.", ERR);
     const payload = k ? { id: t.id, caseId: k.i, title, by: $("dibs-e-by").value } : { id: t.id, op: "add", title };
+    if (mx !== "") payload.maxPer = Number(mx);
     setLoading(btn, true);
     try {
         const r = await dibsCall("dibs_edit", payload);
