@@ -1403,6 +1403,17 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
 .p-card-head svg { width: 16px; height: 16px; flex: none; }
 .p-card-body { padding: 8px 16px 14px; }
 .p-card-body .hint { margin: -6px 2px 4px; }
+
+/* Save Changes button shines when the profile has unsaved changes */
+#p-save.shine:not(:disabled) { box-shadow: 0 0 0 3px var(--accent-soft), 0 4px 14px rgba(118,9,12,.35); }
+#p-save.shine:not(:disabled)::after {
+    content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 40%;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,.55), transparent);
+    transform: skewX(-20deg);
+    animation: btnShine 1.8s ease-in-out infinite;
+    pointer-events: none;
+}
+@keyframes btnShine { 0% { left: -60%; } 55%, 100% { left: 130%; } }
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
@@ -2421,11 +2432,13 @@ document.addEventListener("input", (e) => {
         $("p-fb").value = profile.fb;
         pendingPhoto = profile.photo;
         photoChanged = false;
+        $("p-save").classList.remove("shine");
         renderAvatars();
         syncFields();
     }
     function profileDirty() {
         const b = $("p-save");
+        b.classList.add("shine");
         if (b.classList.contains("submitted")) {
             b.classList.remove("submitted"); b.disabled = false; b.textContent = "Save Changes";
         }
@@ -5015,7 +5028,6 @@ $("logout-btn").addEventListener("click", leaveApp);    $("delete-open").addEven
             photoChanged = true;
             renderAvatar($("photo-inner"), pendingPhoto);
             profileDirty();
-            setMessage($("p-message"), "Photo ready — press Save Changes.", OK);
         } catch (err) {
             setMessage($("p-message"), err.message, ERR);
         }
@@ -5025,7 +5037,6 @@ $("logout-btn").addEventListener("click", leaveApp);    $("delete-open").addEven
         photoChanged = true;
         renderAvatar($("photo-inner"), "");
         profileDirty();
-        setMessage($("p-message"), "Photo removed — press Save Changes.", OK);
     });
 
     function fmtFire(ta) { ta.focus(); ta.dispatchEvent(new Event("input", { bubbles: true })); }
