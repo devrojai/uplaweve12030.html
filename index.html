@@ -1134,21 +1134,22 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
 /* Course popup: one-line titles that slide when too long */
 .cm-body { overflow-x: hidden; }
 .course-ann-card .ann-marq { flex: 0 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; }
-.course-ann-card .ann-marq .ann-title { display: inline-block; white-space: nowrap; word-break: normal; }
-.course-ann-card .ann-marq.run {
-    -webkit-mask-image: linear-gradient(90deg, transparent, #000 12px, #000 calc(100% - 12px), transparent);
-    mask-image: linear-gradient(90deg, transparent, #000 12px, #000 calc(100% - 12px), transparent);
-}
-        
-.course-ann-card .ann-marq.run .ann-title { animation: annMarq var(--mdur, 8s) linear infinite; }
-@keyframes annMarq {
-    from { transform: translateX(var(--mfrom)); }
-    to   { transform: translateX(var(--mto)); }
-}
         
 @media (prefers-reduced-motion: reduce) {
-    .course-ann-card .ann-marq.run .ann-title { animation: none !important; }
-    .course-ann-card .ann-marq.run { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
+    .course-ann-card .ann-marq.run .ann-marq-track { animation: none !important; }
+}
+
+.course-ann-card .ann-marq-track { display: inline-flex; white-space: nowrap; will-change: transform; }
+.course-ann-card .ann-marq .ann-title { display: inline-block; flex: none; white-space: nowrap; word-break: normal; }
+.course-ann-card .ann-marq-track .ann-title.dup { margin-left: var(--mgap, 40px); }
+.course-ann-card .ann-marq.run {
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 14px), transparent);
+    mask-image: linear-gradient(90deg, #000 calc(100% - 14px), transparent);
+}
+.course-ann-card .ann-marq.run .ann-marq-track { animation: annMarq var(--mdur, 8s) linear infinite; }
+@keyframes annMarq {
+    from { transform: translateX(0); }
+    to   { transform: translateX(var(--mto)); }
 }
 
 /* Sort button: never wraps, and shrinks a little on phones so it fits */
@@ -1163,6 +1164,8 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
 .add-course-circle svg { width: 20px; height: 20px; }
 .add-course-circle:hover { background: var(--accent-hover); transform: scale(1.06); }
 .add-course-circle:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+.add-course-circle { margin-right: auto; }
+#ann-modal-actions { flex-wrap: wrap; align-items: center; }
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
@@ -2966,7 +2969,9 @@ pre.className = "file-text";
         el.appendChild(mk("div", "ann-posted", posted));
     }
     
-    function openAnnModal(a) {
+    let annModalFromCourse = false;
+    function openAnnModal(a, fromCourse) {
+        annModalFromCourse = !!fromCourse;
         $("ann-modal-title").textContent = a.title;
         $("ann-modal-badge").textContent = a.course;
        
@@ -3001,7 +3006,14 @@ pre.className = "file-text";
 setEdited(edited, a.edited ? "Edited by the author on " + longDate(a.edited) : "");        
         const actions = $("ann-modal-actions");
         actions.textContent = "";
-        if (isAdmin) {
+        
+         if (isAdmin) {
+            const lb = mk("button", "add-course-circle"); lb.type = "button";
+            lb.title = "Add to course"; lb.setAttribute("aria-label", "Add to course");
+            lb.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>';
+            lb.addEventListener("click", () => openLinkModal(a));
+            actions.appendChild(lb);
+
             if (a.mine) {
                 const eb = mk("button", "btn sm ghost", "Edit"); eb.type = "button";
                 eb.addEventListener("click", () => { closeAnnModal(); startEdit(a); });
@@ -3009,11 +3021,6 @@ setEdited(edited, a.edited ? "Edited by the author on " + longDate(a.edited) : "
             }
             const db = mk("button", "btn sm", "Delete"); db.type = "button";
             db.addEventListener("click", () => deleteAnnouncement(a, db));
-            const lb = mk("button", "add-course-circle"); lb.type = "button";
-            lb.title = "Add to course"; lb.setAttribute("aria-label", "Add to course");
-            lb.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>';
-            lb.addEventListener("click", () => openLinkModal(a));
-            actions.appendChild(lb);
             actions.appendChild(db);
         }
                const cb = mk("button", "btn ghost sm", "Close"); cb.type = "button";
@@ -3087,7 +3094,7 @@ setEdited(edited, a.edited ? "Edited by the author on " + longDate(a.edited) : "
         return b;
     }
 
-    function annFooter(a, full) {
+    function annFooter(a, full, noIcons) {
         const wrap = mk("div", "ann-status");
         const foot = mk("div", "ann-foot");
 
@@ -3102,11 +3109,13 @@ setEdited(edited, a.edited ? "Edited by the author on " + longDate(a.edited) : "
         }
 
         const right = mk("div", "ann-icons");
-        if (full) right.appendChild(iconBtn("pin", pins.has(a.id), pins.has(a.id) ? "Unpin" : "Pin", () => togglePin(a)));
-        right.appendChild(iconBtn("arch", !!a.myArchived, a.myArchived ? "Unarchive" : "Archive", () => {
-            setAnnStatus(a, { archived: !a.myArchived });
-            if (full) closeAnnModal();
-        }));
+        if (!noIcons) {
+            if (full) right.appendChild(iconBtn("pin", pins.has(a.id), pins.has(a.id) ? "Unpin" : "Pin", () => togglePin(a)));
+            right.appendChild(iconBtn("arch", !!a.myArchived, a.myArchived ? "Unarchive" : "Archive", () => {
+                setAnnStatus(a, { archived: !a.myArchived });
+                if (full) closeAnnModal();
+            }));
+        }
 
         foot.append(left, right);
         wrap.appendChild(foot);
@@ -3117,7 +3126,7 @@ setEdited(edited, a.edited ? "Edited by the author on " + longDate(a.edited) : "
     function renderAnnModalStatus(a) {
         const b = $("ann-modal-status");
         b.textContent = "";
-        b.appendChild(annFooter(a, true));
+        b.appendChild(annFooter(a, true, annModalFromCourse));
     }
 
 // True if the announcement was posted within the last 72 hours
@@ -3718,17 +3727,19 @@ function openCourseModal(c) {
                     const g = list.querySelector('[data-id="' + a.id + '"] .grip'); if (g) g.focus();
                 });
                 item.appendChild(grip);
-            }
-
+            }            
+            
             const tw = mk("div", "ann-titlewrap");
             const mq = mk("div", "ann-marq");
-            mq.appendChild(mk("h3", "ann-title", a.title));
+            const track = mk("div", "ann-marq-track");
+            track.appendChild(mk("h3", "ann-title", a.title));
+            mq.appendChild(track);
             tw.appendChild(mq);
-            if (isNewAnn(a)) tw.appendChild(mk("span", "new-tag", "NEW"));
             item.appendChild(tw);
-            item.addEventListener("click", () => openAnnModal(a));
+            if (isNewAnn(a)) item.appendChild(mk("span", "new-tag", "NEW"));
+                        item.addEventListener("click", () => openAnnModal(a, true));
             item.addEventListener("keydown", e => {
-                if (e.target === item && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openAnnModal(a); }
+                if (e.target === item && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openAnnModal(a, true); }
             });
 
             if (isAdmin) {
@@ -3736,8 +3747,9 @@ function openCourseModal(c) {
                 const rb = mk("button", "icon-btn"); rb.type = "button";
                 rb.title = "Remove from course"; rb.setAttribute("aria-label", "Remove from course");
                 rb.innerHTML = MINUS_SVG;
-                rb.addEventListener("click", ev => {
+                rb.addEventListener("click", async ev => {
                     ev.stopPropagation();
+                    if (!(await askConfirm("Remove from course?", '"' + a.title + '" will be removed from this course. The announcement itself will not be deleted.', "Remove"))) return;
                     c.announcementIds = (c.announcementIds || []).filter(x => x !== a.id);
                     renderItems(); queueSave(c);
                 });
@@ -3779,22 +3791,29 @@ function openCourseModal(c) {
 }
 
 // Titles that don't fit on one line slide right-to-left so the whole title can be read
+
 function marqueeAll() {
-    const SPEED = 40; // px per second, same for every title
+    const SPEED = 40;   // px per second
+    const GAP = 40;     // space between the end of the title and its restart
     document.querySelectorAll("#course-modal .ann-marq").forEach(mq => {
-        const t = mq.firstElementChild;
+        const track = mq.firstElementChild;
+        const t = track && track.firstElementChild;
         if (!t) return;
         mq.classList.remove("run");
+        track.querySelectorAll(".dup").forEach(x => x.remove());
         const box = mq.clientWidth, text = t.offsetWidth;
         if (text - box > 2) {
-            mq.style.setProperty("--mfrom", box + "px");      // starts off the right edge
-            mq.style.setProperty("--mto", "-" + text + "px"); // exits fully past the left edge
-            mq.style.setProperty("--mdur", ((box + text) / SPEED) + "s");
+            const dup = t.cloneNode(true);
+            dup.classList.add("dup");
+            dup.setAttribute("aria-hidden", "true");
+            track.appendChild(dup);
+            mq.style.setProperty("--mgap", GAP + "px");
+            mq.style.setProperty("--mto", "-" + (text + GAP) + "px");
+            mq.style.setProperty("--mdur", ((text + GAP) / SPEED) + "s");
             mq.classList.add("run");
         }
     });
-}
-    
+}    
 window.addEventListener("resize", marqueeAll);
     
 function closeCourseModal() { $("course-modal").classList.add("hidden"); }
