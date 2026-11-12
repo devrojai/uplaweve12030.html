@@ -3930,8 +3930,8 @@ function renderHiddenCourses() {
     list.forEach(c => box.appendChild(courseRow(c, false)));
 }
 
-fillDibsCourses();
     function renderCourses() {
+    fillDibsCourses();
     renderHiddenCourses();
     const box = $("course-list"); box.textContent = "";
     const list = courseVisible(), total = courseList.filter(c => !c.hidden).length;
@@ -4554,11 +4554,13 @@ function fillDibsCourses() {
     const cur = s.value;
     s.textContent = "";
     const o0 = mk("option", "", "Select course"); o0.value = ""; s.appendChild(o0);
-    courseList.slice().sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: "base" }))
+    courseList.filter(c => !c.hidden)
+        .sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: "base" }))
         .forEach(c => { const o = mk("option", "", c.code + " \u2014 " + c.title); o.value = c.id; s.appendChild(o); });
-    if (cur && courseList.some(c => c.id === cur)) s.value = cur;
+    if (cur && courseList.some(c => c.id === cur && !c.hidden)) s.value = cur;
     if (s._sync) s._sync();
 }
+    
 function parseCaseLines(text) {
     return String(text || "").replace(/\r\n?/g, "\n").split("\n")
         .map(l => l.replace(/\s+/g, " ").trim().replace(/^(\d+[.)]|[-\u2022*\u25AA\u25E6])\s+/, ""))
