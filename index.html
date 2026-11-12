@@ -1708,8 +1708,8 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
             <h2>ANNOUNCEMENT BIN</h2>
             <form class="req-form" id="bin-form" novalidate>
                 <div class="edit-banner hidden" id="b-edit-banner">You're editing an announcement. Saving will mark it as edited by you.</div>
-                <div class="field"><input type="text" id="b-title" placeholder=" " maxlength="120"><label for="b-title">Title</label></div>
-                <div class="field"><input type="text" id="b-course" placeholder=" " maxlength="30"><label for="b-course">Topic</label></div>
+                <div class="field"><input type="text" id="b-title" placeholder=" " maxlength="120"><label for="b-title">Topic</label></div>
+<div class="field"><input type="text" id="b-course" placeholder=" " maxlength="30"><label for="b-course">Course Title</label></div>
                 <div class="field has-peek">
                     <input type="text" id="b-deadline" placeholder=" " readonly><label for="b-deadline">Deadline (optional)</label>
                     <button type="button" class="peek" id="b-deadline-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></button>
@@ -2987,9 +2987,9 @@ function closeUser() {
     const toStart = Math.round((day(a.periodStart) - t) / 86400000);
     const toEnd = Math.round((day(a.periodEnd) - t) / 86400000);
     const n = k => k + (k === 1 ? " day" : " days");
-    if (toStart > 0) return { text: "Beginning in " + n(toStart), cls: "period-badge" };
-    if (toEnd > 0) return { text: "Ending in " + n(toEnd), cls: "period-badge" };
-    return { text: "Ended on " + prettyDate(a.periodEnd), cls: "period-badge period-ended" };
+    if (toStart > 0) return { text: "Starts in " + n(toStart), cls: "period-badge" };
+    if (toEnd > 0) return { text: "Ends in " + n(toEnd), cls: "period-badge" };
+    return { text: "Ended", cls: "period-badge period-ended" };
 }
     
     function fillYears(sel, y, extra) {
