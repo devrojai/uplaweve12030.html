@@ -1359,6 +1359,16 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
 .stepper button:hover { background: var(--accent); color: var(--on-accent); }
 .stepper-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 14px 0 6px; }
 .stepper-row label { font-weight: 600; color: var(--muted); }
+
+/* "Taken by" styled dropdown */
+#dibs-modal .modal-card.modal-wide { overflow: visible; }
+#dibs-e-assign .sdrop { margin: 8px 0 14px; }
+.sdrop.has-ava .sdrop-label,
+.sdrop.has-ava .sdrop-item { display: flex; align-items: center; gap: 10px; }
+.sdrop-ava { flex: none; width: 28px; height: 28px; display: grid; place-items: center; font-size: .7rem; font-weight: 800; letter-spacing: .3px; color: var(--on-accent); background: var(--accent); border-radius: 50%; }
+.sdrop-ava.none { color: var(--muted); background: var(--hover); border: 1px solid var(--line-strong); }
+.sdrop-item.sel .sdrop-ava { color: var(--accent); background: var(--on-accent); }
+.sdrop.has-ava .sdrop-btn { padding: 7px 14px; }
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
@@ -1943,7 +1953,7 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
             
             <div id="dibs-e-assign">
                 <div class="group-title">Taken by</div>
-                <select id="dibs-e-by" class="dibs-select" aria-label="Taken by"></select>
+                <select id="dibs-e-by" class="dibs-select" aria-label="Taken by" data-avatar="1"></select>
             </div>
             <div class="msg" id="dibs-e-msg"></div>
             <div class="modal-actions modal-actions-end">
@@ -4793,6 +4803,7 @@ function openDibsEdit(t, k) {
         opts.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
         opts.forEach(x => { const o = mk("option", "", x.name); o.value = x.email; sel.appendChild(o); });
         sel.value = k.by || "";
+        if (sel._sync) sel._sync();
     }
     setMessage($("dibs-e-msg"), "", "");
     syncFields();
@@ -4853,14 +4864,22 @@ setInterval(() => {
         const list = mk("div", "sdrop-list hidden");
         wrap.append(btn, list);
 
-        const sync = () => { const o = sel.options[sel.selectedIndex]; label.textContent = o ? o.textContent : ""; };
+        if (sel.dataset.avatar) wrap.classList.add("has-ava");
+        const ini = t => { const p = String(t).trim().split(/\s+/).filter(Boolean); return (((p[0] || "")[0] || "") + (p.length > 1 ? p[p.length - 1][0] : "")).toUpperCase(); };
+        const fill = (el, o) => {
+            el.textContent = "";
+            if (sel.dataset.avatar) el.appendChild(mk("span", "sdrop-ava" + (o && o.value ? "" : " none"), o && o.value ? ini(o.textContent) : "\u2013"));
+            el.appendChild(document.createTextNode(o ? o.textContent : ""));
+        };
+        const sync = () => fill(label, sel.options[sel.selectedIndex]);
         const close = () => { list.classList.add("hidden"); wrap.classList.remove("open"); };
         function open() {
             drops.forEach(d => { if (d.wrap !== wrap) d.close(); });
             list.textContent = "";
             Array.from(sel.options).forEach(o => {
-                const it = mk("button", "sdrop-item" + (o.value === sel.value ? " sel" : ""), o.textContent);
+                const it = mk("button", "sdrop-item" + (o.value === sel.value ? " sel" : ""));
                 it.type = "button";
+                fill(it, o);
                 it.onclick = () => { sel.value = o.value; sync(); close(); sel.dispatchEvent(new Event("change", { bubbles: true })); };
                 list.appendChild(it);
             });
@@ -4872,7 +4891,7 @@ setInterval(() => {
         sync();
     }
     document.addEventListener("click", e => drops.forEach(d => { if (!d.wrap.contains(e.target)) d.close(); }));
-["dl-month", "dl-year", "ann-filter", "c-sem", "c-ay", "d-course"].forEach(id => enhanceSelect($(id)));
+["dl-month", "dl-year", "ann-filter", "c-sem", "c-ay", "d-course", "dibs-e-by"].forEach(id => enhanceSelect($(id)));
         function applyTheme(t) {
         if (t !== "classic" && t !== "night") t = "light";
         if (t === "light") document.documentElement.removeAttribute("data-theme");
