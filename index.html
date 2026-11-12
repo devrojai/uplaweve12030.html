@@ -1108,7 +1108,24 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
     background: var(--accent); border: 2px solid var(--accent); border-radius: var(--r-md);
 }
 .fmt-bar .btn.add-course-btn:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); color: var(--on-accent); }
-
+.fmt-bar .btn.add-course-btn .ac-plus { display: none; width: 20px; height: 20px; }
+.fmt-bar .btn.add-course-btn { position: relative; }
+@media (max-width: 520px) {
+    .fmt-bar .btn.add-course-btn {
+        width: 36px; height: 36px; padding: 0; border-radius: 50%;
+    }
+    .fmt-bar .btn.add-course-btn .ac-label { display: none; }
+    .fmt-bar .btn.add-course-btn .ac-plus { display: block; }
+    .fmt-bar .btn.add-course-btn[data-count]:not([data-count=""])::after {
+        content: attr(data-count);
+        position: absolute; top: -6px; right: -6px;
+        min-width: 18px; height: 18px; padding: 0 4px;
+        display: grid; place-items: center;
+        font-size: .65rem; font-weight: 800; line-height: 1;
+        color: var(--accent); background: var(--surface);
+        border: 2px solid var(--accent); border-radius: 999px;
+    }
+}
 /* Sort button sits on the right of the "ANNOUNCEMENTS" heading line, same type as the heading */
 .cm-sec-title .cm-sort {
     order: 2;                       /* after the ::after rule line, so the line stays in the middle */
@@ -1474,7 +1491,7 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
         </button>
         <div class="fmt-swatches hidden" id="fmt-hl-list"></div>
     </div>
-    <button type="button" class="btn add-course-btn" id="b-addcourse">Add to Course</button>
+        <button type="button" class="btn add-course-btn" id="b-addcourse" title="Add to Course" aria-label="Add to Course"><svg class="ac-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><span class="ac-label">Add to Course</span></button>
 </div>
                 
                 <div class="field">
@@ -2545,8 +2562,14 @@ function closeUser() {
     let binDeadline = "", binStart = "", binEnd = "", editingId = "", binCourseIds = [];
     function updateBinCourseBtn() {
         const b = $("b-addcourse");
-        if (b) b.textContent = binCourseIds.length ? "Add to Course (" + binCourseIds.length + ")" : "Add to Course";
+        if (!b) return;
+        const n = binCourseIds.length;
+        const lab = b.querySelector(".ac-label");
+        if (lab) lab.textContent = n ? "Add to Course (" + n + ")" : "Add to Course";
+        b.dataset.count = n ? String(n) : "";
+        b.title = b.ariaLabel = n ? "Add to Course (" + n + ")" : "Add to Course";
     }
+    
     const pickers = [];
     const CHEV = {
         l: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>',
