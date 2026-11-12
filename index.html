@@ -967,6 +967,27 @@ html[data-theme="night"] .archive-btn:hover:not(:disabled), html[data-theme="nig
 
 /* "No announcements" / "Nothing archived" boxes use the full width */
 .ann-list > .empty { flex: 0 0 100%; min-width: 100%; }
+
+/* ---------- Pin / archive icons, spacing ---------- */
+.icon-btn { flex: none; width: 36px; height: 36px; padding: 0; display: grid; place-items: center; color: var(--accent-text); background: transparent; border: none; border-radius: var(--r-md); cursor: pointer; }
+.icon-btn svg { width: 22px; height: 22px; }
+.icon-btn:hover { background: var(--accent-soft); }
+.icon-btn.on .arch-slot { stroke: var(--surface); }
+.ann-card .ann-top { margin-bottom: 12px; align-items: flex-start; }
+.ann-card .ann-title { flex: 1; min-width: 0; padding-top: 4px; }
+.ann-tags { margin: 0 0 16px; }
+.ann-foot { align-items: center; }
+.ann-foot .ann-readby { margin-top: 0; flex: 1; min-width: 0; }
+.ann-icons { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+#ann-modal-meta { margin-bottom: 24px; }
+
+/* ---------- Toolbar icons ---------- */
+.fmt-bar button svg { width: 18px; height: 18px; display: block; }
+.fmt-bar button[data-fmt], .fmt-bar .fmt-ico { width: 34px; height: 34px; min-width: 0; padding: 0; display: grid; place-items: center; }
+.fmt-pop { position: relative; }
+.fmt-swatches { position: absolute; top: calc(100% + 6px); left: 0; z-index: 30; display: grid; grid-template-columns: repeat(3, 28px); gap: 6px; padding: 8px; background: var(--surface); border: 1px solid var(--line-strong); border-top: 3px solid var(--accent); border-radius: var(--r-lg); box-shadow: 0 12px 30px rgba(0,0,0,.25); }
+.fmt-bar .fmt-sw { width: 28px; height: 28px; min-width: 0; padding: 0; border: 2px solid var(--surface); border-radius: var(--r-md); box-shadow: 0 0 0 1px var(--line-strong); }
+.fmt-bar .fmt-sw:hover { transform: scale(1.1); }
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
@@ -1171,6 +1192,7 @@ html[data-theme="night"] .archive-btn:hover:not(:disabled), html[data-theme="nig
                         <span class="car-count" id="car-count"></span>
                         <button type="button" class="dp-nav" id="car-next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
                     </div>
+                    <button type="button" class="btn sm ghost archive-btn" id="ann-pinned-toggle">Pinned</button>
                     <button type="button" class="btn sm ghost archive-btn" id="ann-archive-toggle">Archive</button>
                 </div>
             </div>
@@ -1247,28 +1269,28 @@ html[data-theme="night"] .archive-btn:hover:not(:disabled), html[data-theme="nig
                 <p class="hint">If you set a period, both the beginning and end dates are needed.</p>
                 
                 <div class="fmt-bar" id="fmt-bar">
-                    <button type="button" data-fmt="b" title="Bold"><b>B</b></button>
-                    <button type="button" data-fmt="i" title="Italic"><i>I</i></button>
-                    <button type="button" data-fmt="u" title="Underline"><u>U</u></button>
-                    <button type="button" data-fmt="bullet" title="Bullets">• List</button>
-                    <button type="button" data-fmt="link" title="Hyperlink">Link</button>
-                    <select id="fmt-color" aria-label="Text color">
-                        <option value="">Text color</option>
-                        <option value="#c62828">Red</option>
-                        <option value="#1565c0">Blue</option>
-                        <option value="#2e7d32">Green</option>
-                        <option value="#ef6c00">Orange</option>
-                        <option value="#6a1b9a">Purple</option>
-                        <option value="#757575">Gray</option>
-                    </select>
-                    <select id="fmt-hl" aria-label="Highlight">
-                        <option value="">Highlight</option>
-                        <option value="#fff176">Yellow</option>
-                        <option value="#a5d6a7">Green</option>
-                        <option value="#f8bbd0">Pink</option>
-                        <option value="#90caf9">Blue</option>
-                    </select>
-                </div>
+    <button type="button" data-fmt="b" title="Bold"><b>B</b></button>
+    <button type="button" data-fmt="i" title="Italic"><i>I</i></button>
+    <button type="button" data-fmt="u" title="Underline"><u>U</u></button>
+    <button type="button" data-fmt="bullet" title="Bulleted list" aria-label="Bulleted list">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="4.5" cy="6" r="1.3" fill="currentColor"/><circle cx="4.5" cy="12" r="1.3" fill="currentColor"/><circle cx="4.5" cy="18" r="1.3" fill="currentColor"/><path d="M10 6h11M10 12h11M10 18h11"/></svg>
+    </button>
+    <button type="button" data-fmt="link" title="Hyperlink" aria-label="Hyperlink">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+    </button>
+    <div class="fmt-pop">
+        <button type="button" class="fmt-ico" id="fmt-color-btn" title="Text color" aria-label="Text color">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16 12 3l6 13"/><path d="M8.3 11.5h7.4"/><rect id="fmt-color-bar" x="3" y="18.5" width="18" height="3.5" rx="1" fill="#c62828" stroke="none"/></svg>
+        </button>
+        <div class="fmt-swatches hidden" id="fmt-color-list"></div>
+    </div>
+    <div class="fmt-pop">
+        <button type="button" class="fmt-ico" id="fmt-hl-btn" title="Highlight color" aria-label="Highlight color">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#1b1b1b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect id="fmt-hl-bg" x="2" y="2" width="20" height="20" rx="3" fill="#fff176" stroke="none"/><path d="M6.5 18 12 5l5.5 13"/><path d="M8.6 13.5h6.8"/></svg>
+        </button>
+        <div class="fmt-swatches hidden" id="fmt-hl-list"></div>
+    </div>
+</div>
                 
                 <div class="field">
                     <textarea id="b-text" placeholder=" " maxlength="2000"></textarea><label for="b-text">Announcement</label>
@@ -1695,7 +1717,7 @@ const ADMIN_SECTIONS = ["bin", "directory", "addcourse"];
         pending = null;
         resetProfileState();
         resetRequestForm();
-        annList = []; annShowArchive = false; openAnnId = ""; annFilter = ""; annSearchTerm = ""; carIdx = 0; dlSel = todayIso(); mentionUsers = []; mentionSel = []; repoPhotos = {}; resetBinForm();
+        annList = []; annShowArchive = false; annShowPinned = false; openAnnId = ""; annFilter = ""; annSearchTerm = ""; carIdx = 0; dlSel = todayIso(); mentionUsers = []; mentionSel = []; repoPhotos = {}; resetBinForm();
         courseList = []; courseOpen = ""; courseSearchTerm = ""; $("course-search").value = ""; closeCourseModal(); resetCourseForm();
         isAdmin = false;
         adminPending = false;
@@ -2826,26 +2848,39 @@ setEdited(edited, a.edited ? "Edited by the author on " + longDate(a.edited) : "
         }
     }
 
+       const PIN_PATH = '<path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/>';
+    const ARCH_PATH = '<rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path class="arch-slot" d="M10 12h4"/>';
+    function iconBtn(kind, on, label, handler) {
+        const b = mk("button", "icon-btn " + kind + "-ico" + (on ? " on" : "")); b.type = "button";
+        b.title = label; b.setAttribute("aria-label", label); b.setAttribute("aria-pressed", String(on));
+        b.innerHTML = '<svg viewBox="0 0 24 24" fill="' + (on ? "currentColor" : "none") + '" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + (kind === "pin" ? PIN_PATH : ARCH_PATH) + '</svg>';
+        b.addEventListener("click", e => { e.stopPropagation(); handler(); });
+        return b;
+    }
+
     function annFooter(a, full) {
         const wrap = mk("div", "ann-status");
         const foot = mk("div", "ann-foot");
-        const pb = mk("button", "btn sm ghost pin-btn", pins.has(a.id) ? "Unpin" : "Pin"); pb.type = "button";
-        pb.addEventListener("click", () => togglePin(a));
-        const ab = mk("button", "btn sm ghost archive-btn", a.myArchived ? "Unarchive" : "Archive"); ab.type = "button";        ab.addEventListener("click", () => { setAnnStatus(a, { archived: !a.myArchived }); if (full) closeAnnModal(); });
-        foot.append(pb, ab);
-        wrap.appendChild(foot);
 
+        const left = mk("div", "ann-readby");
         const rb = (a.readBy || []).slice().sort((x, y) => (y.mine ? 1 : 0) - (x.mine ? 1 : 0));
         if (rb.length) {
             const names = rb.map(n => n.mine ? "You" : n.name);
             let txt = (full ? names : names.slice(0, 4)).join(", ");
             if (!full && names.length > 4) txt += " and " + (names.length - 4) + " more";
-            const ro = mk("div", "ann-readby");
-            ro.appendChild(mk("b", "", "Read by (" + names.length + "): "));
-            ro.appendChild(document.createTextNode(txt));
-            wrap.appendChild(ro);
+            left.appendChild(mk("b", "", "Read by (" + names.length + "): "));
+            left.appendChild(document.createTextNode(txt));
         }
-        // clicks and keys in this area must not open the announcement
+
+        const right = mk("div", "ann-icons");
+        if (full) right.appendChild(iconBtn("pin", pins.has(a.id), pins.has(a.id) ? "Unpin" : "Pin", () => togglePin(a)));
+        right.appendChild(iconBtn("arch", !!a.myArchived, a.myArchived ? "Unarchive" : "Archive", () => {
+            setAnnStatus(a, { archived: !a.myArchived });
+            if (full) closeAnnModal();
+        }));
+
+        foot.append(left, right);
+        wrap.appendChild(foot);
         wrap.addEventListener("click", e => e.stopPropagation());
         wrap.addEventListener("keydown", e => e.stopPropagation());
         return wrap;
@@ -2864,12 +2899,13 @@ setEdited(edited, a.edited ? "Edited by the author on " + longDate(a.edited) : "
         
         const top = mk("div", "ann-top");
         top.appendChild(mk("h3", "ann-title", a.title));
+        top.appendChild(iconBtn("pin", pins.has(a.id), pins.has(a.id) ? "Unpin" : "Pin", () => togglePin(a)));
         c.appendChild(top);
 
         const tags = mk("div", "ann-tags");
+        tags.appendChild(mk("span", "badge", a.course));
         const due = dueLabel(a);
-        if (pins.has(a.id)) tags.appendChild(mk("span", "badge pinned", "📌 Pinned"));
-        if (due) tags.appendChild(mk("span", "badge " + due.cls, due.text));        tags.appendChild(mk("span", "badge", a.course));
+        if (due) tags.appendChild(mk("span", "badge " + due.cls, due.text));
         c.appendChild(tags);
 
         const body = mk("div", "ann-body");
@@ -2889,9 +2925,10 @@ setEdited(edited, a.edited ? "Edited by the author on " + longDate(a.edited) : "
         return c;
     }
 
-let annFilter = "", carIdx = 0, annShowArchive = false, openAnnId = "";    const annVisible = () => {
-        return annList.slice().sort((x, y) => (pins.has(y.id) ? 1 : 0) - (pins.has(x.id) ? 1 : 0)).filter(a => {            if (!!a.myArchived !== annShowArchive) return false;
-            const matchesTopic = annFilter ? a.course === annFilter : true;
+let annFilter = "", carIdx = 0, annShowArchive = false, annShowPinned = false, openAnnId = "";    const annVisible = () => {
+        return annList.slice().sort((x, y) => (pins.has(y.id) ? 1 : 0) - (pins.has(x.id) ? 1 : 0)).filter(a => {            
+            if (!!a.myArchived !== annShowArchive) return false;
+            if (annShowPinned && !pins.has(a.id)) return false;            const matchesTopic = annFilter ? a.course === annFilter : true;
             if (!matchesTopic) return false;
             if (!annSearchTerm) return true;
             const searchText = [a.title, a.course, a.message, a.author].join(" ");
@@ -2929,6 +2966,9 @@ let annFilter = "", carIdx = 0, annShowArchive = false, openAnnId = "";    const
         $("ann-archive-toggle").textContent = annShowArchive
             ? "\u2190 Back to announcements"
             : "Archive (" + annList.filter(a => a.myArchived).length + ")";
+        $("ann-pinned-toggle").textContent = annShowPinned
+            ? "\u2190 Back to announcements"
+            : "Pinned (" + annList.filter(a => pins.has(a.id) && !a.myArchived).length + ")";
         
         const topics = Array.from(new Set(annList.map(a => a.course).filter(Boolean)))
             .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base", numeric: true }));
@@ -2941,9 +2981,8 @@ let annFilter = "", carIdx = 0, annShowArchive = false, openAnnId = "";    const
         const list = annVisible();
         if (!list.length) {
             const e = mk("div", "empty");
-            e.appendChild(mk("b", "", annSearchTerm ? "No matching announcements" : (annShowArchive ? "Nothing archived" : "No announcements yet")));
-            e.appendChild(mk("p", "", annSearchTerm ? "Try adjusting your search query." : (annShowArchive ? "Archived announcements will appear here." : "Announcements will be posted here.")));
-            box.appendChild(e); carIdx = 0; carUpdate(); return;
+            e.appendChild(mk("b", "", annSearchTerm ? "No matching announcements" : (annShowArchive ? "Nothing archived" : (annShowPinned ? "Nothing pinned" : "No announcements yet"))));
+            e.appendChild(mk("p", "", annSearchTerm ? "Try adjusting your search query." : (annShowArchive ? "Archived announcements will appear here." : (annShowPinned ? "Pinned announcements will appear here." : "Announcements will be posted here."))));            box.appendChild(e); carIdx = 0; carUpdate(); return;
         }
 
         const pageSize = 10;
@@ -3470,15 +3509,40 @@ $("logout-btn").addEventListener("click", leaveApp);    $("delete-open").addEven
         ta.selectionStart = s + open.length; ta.selectionEnd = s + open.length + sel.length;
         fmtFire(ta);
     }
+        const BUL = ["•", "◦", "▪"], IND = "    ";
+    const BUL_RE = /^( *)([•◦▪]) /;
+    const bulletFor = (indent) => BUL[Math.min(Math.floor(indent.length / 4), 2)];
+    function lineBounds(ta) {
+        const v = ta.value, pos = ta.selectionStart;
+        const s = pos === 0 ? 0 : v.lastIndexOf("\n", pos - 1) + 1;
+        let e = v.indexOf("\n", pos); if (e < 0) e = v.length;
+        return { s, e, line: v.slice(s, e) };
+    }
+    function setLine(ta, s, e, text, caret) {
+        ta.value = ta.value.slice(0, s) + text + ta.value.slice(e);
+        ta.selectionStart = ta.selectionEnd = s + caret;
+        ta.dispatchEvent(new Event("input", { bubbles: true }));
+    }
     function fmtBullets() {
-        const ta = $("b-text"), v = ta.value, s = ta.selectionStart, e = ta.selectionEnd;
-        const ls = s === 0 ? 0 : v.lastIndexOf("\n", s - 1) + 1;
-        let le = v.indexOf("\n", e); if (le < 0) le = v.length;
-        const block = v.slice(ls, le).split("\n").map(l => l.startsWith("• ") ? l.slice(2) : "• " + l).join("\n");
+        const ta = $("b-text"), v = ta.value, s0 = ta.selectionStart, e0 = ta.selectionEnd;
+        const ls = s0 === 0 ? 0 : v.lastIndexOf("\n", s0 - 1) + 1;
+        let le = v.indexOf("\n", e0); if (le < 0) le = v.length;
+        const lines = v.slice(ls, le).split("\n");
+        const single = lines.length === 1;
+        const target = single ? lines : lines.filter(l => l.trim());
+        const allBul = target.every(l => BUL_RE.test(l));
+        const block = lines.map(l => {
+            if (!single && !l.trim()) return l;
+            if (allBul) return l.replace(BUL_RE, "");
+            if (BUL_RE.test(l)) return l;
+            const m = /^( *)(.*)$/.exec(l);
+            return m[1] + bulletFor(m[1]) + " " + m[2];
+        }).join("\n");
         ta.value = v.slice(0, ls) + block + v.slice(le);
         ta.selectionStart = ls; ta.selectionEnd = ls + block.length;
         fmtFire(ta);
     }
+
     function fmtLink() {
         const u = prompt("Link address (e.g. https://example.com)");
         if (!u) return;
@@ -3494,8 +3558,75 @@ $("logout-btn").addEventListener("click", leaveApp);    $("delete-open").addEven
         else if (f === "bullet") fmtBullets();
         else if (f === "link") fmtLink();
     });
-    $("fmt-color").addEventListener("change", e => { if (e.target.value) fmtWrap("[color=" + e.target.value + "]", "[/color]"); e.target.value = ""; });
-    $("fmt-hl").addEventListener("change", e => { if (e.target.value) fmtWrap("[hl=" + e.target.value + "]", "[/hl]"); e.target.value = ""; });
+    const TEXT_COLORS = [["#c62828","Red"],["#1565c0","Blue"],["#2e7d32","Green"],["#ef6c00","Orange"],["#6a1b9a","Purple"],["#757575","Gray"]];
+    const HL_COLORS = [["#fff176","Yellow"],["#a5d6a7","Green"],["#f8bbd0","Pink"],["#90caf9","Blue"]];
+    function closeSwatches() { document.querySelectorAll(".fmt-swatches").forEach(l => l.classList.add("hidden")); }
+    function swatchMenu(btnId, listId, colors, onPick) {
+        const btn = $(btnId), list = $(listId);
+        colors.forEach(([hex, name]) => {
+            const b = mk("button", "fmt-sw"); b.type = "button";
+            b.title = name; b.setAttribute("aria-label", name); b.style.background = hex;
+            b.addEventListener("click", () => { onPick(hex); closeSwatches(); });
+            list.appendChild(b);
+        });
+        btn.addEventListener("click", ev => {
+            ev.stopPropagation();
+            const wasHidden = list.classList.contains("hidden");
+            closeSwatches();
+            if (wasHidden) list.classList.remove("hidden");
+        });
+        list.addEventListener("click", ev => ev.stopPropagation());
+    }
+    swatchMenu("fmt-color-btn", "fmt-color-list", TEXT_COLORS, hex => { $("fmt-color-bar").setAttribute("fill", hex); fmtWrap("[color=" + hex + "]", "[/color]"); });
+    swatchMenu("fmt-hl-btn", "fmt-hl-list", HL_COLORS, hex => { $("fmt-hl-bg").setAttribute("fill", hex); fmtWrap("[hl=" + hex + "]", "[/hl]"); });
+    document.addEventListener("click", closeSwatches);
+
+    // Typing "- " (or "* ") at the start of a line turns it into a bullet
+    $("b-text").addEventListener("input", e => {
+        if (e.inputType !== "insertText" || e.data !== " ") return;
+        const ta = e.target, pos = ta.selectionStart, { s } = lineBounds(ta);
+        const m = /^( *)[-*] $/.exec(ta.value.slice(s, pos));
+        if (!m) return;
+        const ins = m[1] + bulletFor(m[1]) + " ";
+        ta.value = ta.value.slice(0, s) + ins + ta.value.slice(pos);
+        ta.selectionStart = ta.selectionEnd = s + ins.length;
+    });
+
+    // Sub-bullets: Tab / Shift+Tab. Enter continues the list. Backspace removes the bullet.
+    $("b-text").addEventListener("keydown", e => {
+        if (e.defaultPrevented || !$("mention-list").classList.contains("hidden")) return;
+        const ta = e.target;
+        if (ta.selectionStart !== ta.selectionEnd && e.key !== "Tab") return;
+        const { s, e: en, line } = lineBounds(ta), m = BUL_RE.exec(line);
+        if (!m) return;
+        const content = line.slice(m[0].length), pos = ta.selectionStart;
+
+        if (e.key === "Tab") {
+            if (e.shiftKey && !m[1]) return;
+            e.preventDefault();
+            const ind = e.shiftKey ? m[1].slice(4) : (m[1].length >= 8 ? m[1] : m[1] + IND);
+            const prefix = ind + bulletFor(ind) + " ";
+            setLine(ta, s, en, prefix + content, Math.max(prefix.length, pos - s + prefix.length - m[0].length));
+        } else if (e.key === "Enter" && !e.shiftKey) {
+            if (pos < s + m[0].length) return;
+            e.preventDefault();
+            if (!content.trim()) {
+                const ind = m[1].slice(4);
+                const prefix = m[1] ? ind + bulletFor(ind) + " " : "";
+                setLine(ta, s, en, prefix, prefix.length);
+            } else {
+                const ins = "\n" + m[1] + m[2] + " ";
+                ta.value = ta.value.slice(0, pos) + ins + ta.value.slice(ta.selectionEnd);
+                ta.selectionStart = ta.selectionEnd = pos + ins.length;
+                ta.dispatchEvent(new Event("input", { bubbles: true }));
+            }
+        } else if (e.key === "Backspace" && pos === s + m[0].length) {
+            e.preventDefault();
+            const ind = m[1].slice(4);
+            const prefix = m[1] ? ind + bulletFor(ind) + " " : "";
+            setLine(ta, s, en, prefix + content, prefix.length);
+        }
+    });
     
     $("bin-form").addEventListener("submit", postAnnouncement);
     $("bin-form").addEventListener("input", binDirty);
@@ -3518,8 +3649,10 @@ $("logout-btn").addEventListener("click", leaveApp);    $("delete-open").addEven
     $("dl-next").addEventListener("click", () => shiftMonth(1));
     $("dl-month").addEventListener("change", () => { dlM = Number($("dl-month").value); renderCalendar(); });
     $("dl-year").addEventListener("change", () => { dlY = Number($("dl-year").value); renderCalendar(); });
-    $("dl-today").addEventListener("click", () => { const t = new Date(); dlY = t.getFullYear(); dlM = t.getMonth(); dlSel = todayIso(); renderCalendar(); $("dl-detail").scrollIntoView({ behavior: SMOOTH, block: "start" }); });    
-        $("ann-archive-toggle").addEventListener("click", () => { annShowArchive = !annShowArchive; carIdx = 0; renderAnnouncements(); });
+    $("dl-today").addEventListener("click", () => { const t = new Date(); dlY = t.getFullYear(); dlM = t.getMonth(); dlSel = todayIso(); renderCalendar(); 
+    $("dl-detail").scrollIntoView({ behavior: SMOOTH, block: "start" }); });    
+    $("ann-archive-toggle").addEventListener("click", () => { annShowArchive = !annShowArchive; annShowPinned = false; carIdx = 0; renderAnnouncements(); });
+    $("ann-pinned-toggle").addEventListener("click", () => { annShowPinned = !annShowPinned; annShowArchive = false; carIdx = 0; renderAnnouncements(); });    
     $("ann-filter").addEventListener("change", () => { annFilter = $("ann-filter").value; carIdx = 0; renderAnnouncements(); });
     $("car-prev").addEventListener("click", () => carGo(carIdx - 1));
     $("car-next").addEventListener("click", () => carGo(carIdx + 1));
