@@ -805,6 +805,9 @@ html[data-theme="night"] .bg { --sheen: transparent; --wave-a: transparent; --wa
     .bg::before, .bg::after { animation: none; }
 }
 
+.modal-head .ann-titlewrap { display: flex; align-items: center; gap: 10px; }
+.modal-head .ann-titlewrap .st-btn { margin-top: 0; }
+
 /* ---------- Site background ---------- */
 .app {
     background:
@@ -1418,12 +1421,11 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
 @keyframes btnShine { 0% { left: -60%; } 55%, 100% { left: 130%; } }
 
 /* ===== Status: Online / Onsite / Suspended ===== */
-.st-glow.online    { --g: #10b981; --ic: #ffffff; }
-.st-glow.onsite    { --g: #ff8a3d; --ic: #ffffff; }
-.st-glow.suspended { --g: #cfd2d8; --ic: #4b4f56; }
+.st-glow.online    { --g: #10b981; --ic: #ffffff; }   /* emerald */
+.st-glow.onsite    { --g: #f97316; --ic: #ffffff; }   /* orange */
+.st-glow.suspended { --g: #d1d5db; --ic: #4b4f56; }   /* light grey */
 
-.st-btn { flex: none; width: 24px; height: 24px; margin-top: 3px; display: inline-grid; place-items: center; color: var(--ic); background: var(--g); border-radius: 50%; box-shadow: 0 0 6px 1px var(--g), 0 0 14px 3px var(--g); animation: stGlow 2.4s ease-in-out infinite; }
-.st-btn svg { width: 14px; height: 14px; }
+.st-btn { flex: none; width: 16px; height: 16px; margin-top: 3px; display: inline-grid; place-items: center; color: var(--ic); background: var(--g); border-radius: 50%; box-shadow: 0 0 6px 1px var(--g), 0 0 14px 3px var(--g); animation: stGlow 2.4s ease-in-out infinite; }
 @keyframes stGlow { 50% { box-shadow: 0 0 4px 0 var(--g), 0 0 9px 1px var(--g); } }
 
 .fmt-bar .st-group { display: flex; align-items: center; gap: 10px; margin-left: auto; }
@@ -1435,12 +1437,12 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
 
 .cal-marks { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
 .cal-cell .cal-chip { display: inline-grid; place-items: center; width: 18px; height: 18px; padding: 0; font-size: 0; line-height: 0; border-radius: var(--r-sm); }
-.cal-st { display: block; width: 9px; height: 9px; border-radius: 50%; background: var(--g); box-shadow: 0 0 5px 1px var(--g), 0 0 10px 2px var(--g); animation: stGlow 2.4s ease-in-out infinite; }
+.cal-st { display: block; width: 12px; height: 12px; border-radius: 50%; background: var(--g); box-shadow: 0 0 5px 1px var(--g), 0 0 10px 2px var(--g); animation: stGlow 2.4s ease-in-out infinite; }
 .cal-legend .k.st { border-radius: 50%; background: var(--g); box-shadow: 0 0 6px 1px var(--g); }
 @media (max-width: 520px) {
     .cal-marks { justify-content: center; gap: 3px; }
     .cal-cell .cal-chip { width: 12px; height: 12px; border-radius: 50%; }
-    .cal-st { width: 6px; height: 6px; animation: none; box-shadow: 0 0 4px 1px var(--g); }
+    .cal-st { width: 8px; height: 8px; animation: none; box-shadow: 0 0 4px 1px var(--g); }
 }
 
 .dibs-table th.c-tick { width: 52px; text-align: center; }
@@ -1934,7 +1936,10 @@ html[data-theme="night"] .dibs-ic.ok:disabled, html[data-theme="night"] .dibs-ic
     <div class="modal hidden" id="ann-modal" role="dialog" aria-modal="true">
 <div class="modal-card modal-wide">
     <div class="ann-top modal-head">
-                <h3 id="ann-modal-title" class="ann-title"></h3>
+                <div class="ann-titlewrap">
+    <h3 id="ann-modal-title" class="ann-title"></h3>
+    <span id="ann-modal-st"></span>
+</div>
                 <span id="ann-modal-badge" class="badge"></span>
             </div>
             <div id="ann-modal-meta" class="ann-meta modal-gap"></div>
@@ -3058,7 +3063,6 @@ function stBadge(mode) {
     if (!ST_META[mode]) return null;
     const s = mk("span", "st-btn st-glow " + mode);
     s.title = ST_META[mode].label; s.setAttribute("role", "img"); s.setAttribute("aria-label", ST_META[mode].label);
-    s.innerHTML = stSvg(mode);
     return s;
 }
 function renderBinStatus() {
@@ -3516,6 +3520,9 @@ pre.className = "file-text";
     function openAnnModal(a, fromCourse) {
         annModalFromCourse = !!fromCourse;
         $("ann-modal-title").textContent = a.title;
+        const stw = $("ann-modal-st"); stw.textContent = "";
+        const sb = stBadge(a.mode);
+        if (sb) stw.appendChild(sb);
         $("ann-modal-badge").textContent = a.course;
        
         fillAnnMeta($("ann-modal-meta"), a, false);
@@ -3863,11 +3870,17 @@ let annFilter = "", carIdx = 0, annShowArchive = false, annShowPinned = false, o
             cell.appendChild(mk("span", "cal-num", String(d)));
             if (list.length) {
     const marks = mk("span", "cal-marks");
-    list.slice(0, 8).forEach(e => {
-        const m = mk("span", "cal-chip " + e.kind); m.setAttribute("aria-hidden", "true");
-        if (ST_META[e.a.mode]) m.appendChild(mk("i", "cal-st st-glow " + e.a.mode));
-        marks.appendChild(m);
-    });
+                
+list.slice(0, 8).forEach(e => {
+    const m = mk("span", "cal-chip " + e.kind); m.setAttribute("aria-hidden", "true");
+    marks.appendChild(m);
+    if (ST_META[e.a.mode]) {
+        const d = mk("i", "cal-st st-glow " + e.a.mode);
+        d.title = ST_META[e.a.mode].label;
+        marks.appendChild(d);
+    }
+});
+                
     cell.appendChild(marks);
 }
 cell.setAttribute("aria-label", d + " " + MONTHS[dlM] + (list.length ? ", " + list.length + (list.length === 1 ? " announcement" : " announcements") : ""));
