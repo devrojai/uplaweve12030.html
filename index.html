@@ -1091,6 +1091,21 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
 .course-head { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .course-head .course-code { flex: none; padding: 2px 10px; font-size: .8rem; font-weight: 700; letter-spacing: .8px; color: var(--on-accent); background: var(--accent); border-radius: var(--r-sm); }
 .course-head .course-title { flex: 1 1 auto; min-width: 0; }
+
+/* Eye (hide/unhide) buttons */
+.eye-btn:disabled { opacity: .4; cursor: not-allowed; }
+.course-eye { margin-left: 12px; align-self: center; }
+.cm-head { position: relative; padding-right: 64px; }
+.cm-eye { position: absolute; top: 14px; right: 14px; }
+
+/* Announcement Bin: Add to Course button (maroon-filled, right end of the toolbar) */
+.fmt-bar .btn.add-course-btn {
+    width: auto; min-width: 0; height: 34px; margin: 0 0 0 auto; padding: 0 14px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: var(--fs-n1); font-weight: 700; color: var(--on-accent);
+    background: var(--accent); border: 2px solid var(--accent); border-radius: var(--r-md);
+}
+.fmt-bar .btn.add-course-btn:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); color: var(--on-accent); }
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
@@ -1216,7 +1231,12 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
     Add Course
 </button>
-            
+
+            <button type="button" data-section="hiddencourses" data-admin class="hidden">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C5 20 1 12 1 12a18.5 18.5 0 0 1 5.06-5.94"/><path d="M9.9 4.24A10.9 10.9 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                Hidden Courses
+            </button>
+                    
         </nav>
         <div class="drawer-foot">
 
@@ -1372,6 +1392,7 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
                 <p class="hint">If you set a period, both the beginning and end dates are needed.</p>
                 
                 <div class="fmt-bar" id="fmt-bar">
+                    
     <button type="button" data-fmt="b" title="Bold"><b>B</b></button>
     <button type="button" data-fmt="i" title="Italic"><i>I</i></button>
     <button type="button" data-fmt="u" title="Underline"><u>U</u></button>
@@ -1393,6 +1414,7 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
         </button>
         <div class="fmt-swatches hidden" id="fmt-hl-list"></div>
     </div>
+    <button type="button" class="btn add-course-btn" id="b-addcourse">Add to Course</button>
 </div>
                 
                 <div class="field">
@@ -1437,6 +1459,13 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
     <div class="course-bar"><span class="repo-count" id="course-count"></span></div>
     <div class="course-grid" id="course-list"></div>
     <div class="msg" id="course-msg"></div>
+</section>
+
+<!-- Hidden Courses Section (admins only) -->
+<section class="section hidden" id="sec-hiddencourses">
+    <h2>HIDDEN COURSES</h2>
+    <div class="course-bar"><span class="repo-count" id="hcourse-count"></span></div>
+    <div class="course-grid" id="hcourse-list"></div>
 </section>
 
 <!-- Add Course Section -->
@@ -1808,8 +1837,8 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
         }
     }
 
-    const titles = { announcements: "Announcements", calendar: "Calendar", requests: "Requests", bin: "Announcement Bin", directory: "Directory", courses: "Courses", addcourse: "Add Course" };
-const ADMIN_SECTIONS = ["bin", "directory", "addcourse"];
+    const titles = { announcements: "Announcements", calendar: "Calendar", requests: "Requests", bin: "Announcement Bin", directory: "Directory", courses: "Courses", addcourse: "Add Course", hiddencourses: "Hidden Courses" };
+const ADMIN_SECTIONS = ["bin", "directory", "addcourse", "hiddencourses"];
 
     function enterApp(email, tok, admin) {
         currentEmail = email;
@@ -1871,9 +1900,9 @@ const ADMIN_SECTIONS = ["bin", "directory", "addcourse"];
         document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("active", b.dataset.section === name));
         $("page-title").textContent = titles[name];
         if (name === "directory") { closeUser(); loadRepo(); }
-        if (name === "announcements" || name === "calendar") loadAnnouncements();
+        if (name === "announcements" || name === "calendar" || name === "courses" || name === "hiddencourses") loadAnnouncements();
         if (name === "bin") loadMentionUsers();
-        if (name === "courses") loadCourses();
+        if (name === "courses" || name === "hiddencourses") loadCourses();
     }
 
     function syncFields() {
@@ -2453,7 +2482,11 @@ function closeUser() {
         sel.value = String(y);
     }
 
-    let binDeadline = "", binStart = "", binEnd = "", editingId = "";
+    let binDeadline = "", binStart = "", binEnd = "", editingId = "", binCourseIds = [];
+    function updateBinCourseBtn() {
+        const b = $("b-addcourse");
+        if (b) b.textContent = binCourseIds.length ? "Add to Course (" + binCourseIds.length + ")" : "Add to Course";
+    }
     const pickers = [];
     const CHEV = {
         l: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>',
@@ -2616,8 +2649,7 @@ function mentionHandle(u) {
     function binDirty() { if ($("b-send").classList.contains("submitted")) binMode(); }
     function resetBinForm() {
         ["b-title", "b-course", "b-text"].forEach(id => { $(id).value = ""; });
-        binDeadline = binStart = binEnd = ""; editingId = ""; mentionSel = []; binFiles = [];
-        renderFileList("b-file-list", binFiles, (idx) => { binFiles.splice(idx, 1); resetBinFormFileRender(); });
+        binDeadline = binStart = binEnd = ""; editingId = ""; mentionSel = []; binFiles = []; binCourseIds = []; updateBinCourseBtn();        renderFileList("b-file-list", binFiles, (idx) => { binFiles.splice(idx, 1); resetBinFormFileRender(); });
         pkDeadline.show(); pkStart.show(); pkEnd.show();
         pickers.forEach(p => p.close());
         hideMention(); binMode(); setMessage($("b-message"), "", ""); syncFields();
@@ -2634,6 +2666,7 @@ function mentionHandle(u) {
         renderFileList("b-file-list", binFiles, (idx) => { binFiles.splice(idx, 1); resetBinFormFileRender(); binDirty(); });
         pkDeadline.show(); pkStart.show(); pkEnd.show();
         mentionSel = (a.mentions || []).filter(m => m.email).map(m => ({ email: m.email, name: m.name }));
+        binCourseIds = courseList.filter(c => (c.announcementIds || []).includes(a.id)).map(c => c.id); updateBinCourseBtn();
         binMode(); syncFields();
         showSection("bin");
         window.scrollTo(0, 0);
@@ -2666,9 +2699,14 @@ function mentionHandle(u) {
             if (wasEdit) payload.id = editingId;
             const r = await authCall(wasEdit ? "edit_announcement" : "post_announcement", payload);
             if (r.status === "success") {
+                const sel = binCourseIds.slice(), annId = wasEdit ? editingId : r.id;
+                let linkFail = false;
+                try { await syncBinCourses(annId, sel); }
+                catch (e2) { if (e2.message === "auth") throw e2; linkFail = true; }
                 resetBinForm();
                 if (wasEdit) showSection("announcements");
                 else posted = true;
+                if (linkFail) notify("The announcement was saved, but it couldn't be added to some courses. Use \"Add to course\" on the announcement to retry.");
             } else setMessage(bm, r.message, ERR);
         } catch (err) {
             if (err.message !== "auth") setMessage(bm, netError(err), ERR);
@@ -3227,8 +3265,31 @@ let annFilter = "", carIdx = 0, annShowArchive = false, annShowPinned = false, o
 
 /* ===== COURSES ===== */
 
-let linkFor = null;
-function courseEditPayload(c, over) {
+let linkFor = null, linkForm = false;
+async function syncBinCourses(annId, sel) {
+    if (!annId) return;
+    for (const c of courseList) {
+        const cur = c.announcementIds || [], has = cur.includes(annId), want = sel.includes(c.id);
+        if (has === want) continue;
+        const known = annList.some(a => a.id === annId);
+        const ids = want ? (known ? insertByRecency(cur, annId) : [annId].concat(cur)) : cur.filter(x => x !== annId);
+        if (!(await saveCourseLinks(c, ids))) throw new Error("link");
+    }
+}
+function openBinCourses() {
+    linkForm = true; linkFor = null;
+    const box = $("link-modal-list"); box.textContent = "";
+    if (!courseList.length) box.appendChild(mk("p", "repo-count", "No courses yet."));
+    courseList.forEach(c => {
+        const lab = mk("label", "link-row");
+        const cb = mk("input"); cb.type = "checkbox"; cb.value = c.id;
+        cb.checked = binCourseIds.includes(c.id);
+        lab.append(cb, document.createTextNode(c.title + " (" + c.code + ")" + (c.hidden ? " \u2014 hidden" : "")));
+        box.appendChild(lab);
+    });
+    setMessage($("link-modal-msg"), "", "");
+    $("link-modal").classList.remove("hidden");
+}function courseEditPayload(c, over) {
     const keep = f => ({ id: f.id, name: f.name, type: f.type, size: f.size });
     return Object.assign({
         id: c.id, title: c.title, code: c.code, semester: c.semester, ay: c.ay, professor: c.professor,
@@ -3254,15 +3315,33 @@ async function toggleCourseHidden(c, btn) {
     setLoading(btn, true);
     try {
         const r = await authCall("edit_course", courseEditPayload(c, { hidden: !c.hidden }));
-        if (r.status === "success") { c.hidden = !c.hidden; renderCourses(); openCourseModal(c); return; }
+        if (r.status === "success") {
+            c.hidden = !c.hidden;
+            closeCourseModal();
+            renderCourses();
+            return;
+        }
         notify(r.message || "Couldn't update the course.");
     } catch (err) { if (err.message !== "auth") notify(netError(err)); }
     setLoading(btn, false);
 }
+function eyeSvg(off) {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + (off
+        ? '<path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C5 20 1 12 1 12a18.5 18.5 0 0 1 5.06-5.94"/><path d="M9.9 4.24A10.9 10.9 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'
+        : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>') + '</svg>';
+}
+function eyeBtn(c, cls) {
+    const b = mk("button", "icon-btn eye-btn " + (cls || "")); b.type = "button";
+    const label = c.hidden ? "Unhide course" : "Hide course";
+    b.title = label; b.setAttribute("aria-label", label);
+    b.innerHTML = eyeSvg(!!c.hidden);
+    b.addEventListener("click", ev => { ev.stopPropagation(); toggleCourseHidden(c, b); });
+    return b;
+}
     
 function openLinkModal(a) {
-    linkFor = a;
-    const box = $("link-modal-list"); box.textContent = "";
+    linkFor = a; 
+    linkForm = false;    const box = $("link-modal-list"); box.textContent = "";
     if (!courseList.length) box.appendChild(mk("p", "repo-count", "No courses yet."));
     courseList.forEach(c => {
         const lab = mk("label", "link-row");
@@ -3274,9 +3353,16 @@ function openLinkModal(a) {
     setMessage($("link-modal-msg"), "", "");
     $("link-modal").classList.remove("hidden");
 }
-function closeLinkModal() { $("link-modal").classList.add("hidden"); linkFor = null; }
+    
+function closeLinkModal() { $("link-modal").classList.add("hidden"); linkFor = null; linkForm = false; }
 async function saveLinks() {
+    if (linkForm) {
+        binCourseIds = Array.from($("link-modal-list").querySelectorAll("input")).filter(cb => cb.checked).map(cb => cb.value);
+        updateBinCourseBtn(); binDirty(); closeLinkModal();
+        return;
+    }
     if (!linkFor) return;
+    
     const btn = $("link-save"), msg = $("link-modal-msg"), id = linkFor.id;
     setLoading(btn, true);
     try {
@@ -3333,60 +3419,80 @@ function linkBtn(label, url) {
 function courseVisible() {
     const term = courseSearchTerm.trim();
     return courseList.filter(c => {
-        if (!term) return isAdmin || !c.hidden;   // a search reveals hidden courses for everyone
+        if (!term) return !c.hidden;   // hidden courses live on the Hidden Courses page; a search still reveals them
         const hay = [c.title, c.code, (c.code || "").replace(/[\s\-]/g, ""), c.professor,
             c.semester ? c.semester + " semester" : "", c.ay || "", (c.ay || "").replace("AY ", "")].join(" ");
         return isFuzzyMatch(hay, term);
     });
 }
 
+function courseRow(c, dim) {
+    const row = mk("div", "course-row");
+    if (c.hidden && dim) row.classList.add("is-hidden");
+    row.setAttribute("role", "button"); row.tabIndex = 0;
+    const main = mk("div", "course-main");
+    const head = mk("div", "course-head");
+    head.appendChild(mk("div", "course-code", c.code));
+    head.appendChild(mk("div", "course-title", c.title));
+    main.appendChild(head);
+    const tags = mk("div", "course-tags");
+    [c.semester ? c.semester + " Sem" : "", c.ay].filter(Boolean).forEach(t => tags.appendChild(mk("span", "chip-soft", t)));
+    if (c.hidden && isAdmin && dim) tags.appendChild(mk("span", "chip-soft hidden-chip", "Hidden"));
+    const nf = (c.syllabus || []).length + (c.documents || []).length;
+    if (nf) tags.appendChild(mk("span", "chip-soft", "\uD83D\uDCCE " + nf + (nf === 1 ? " file" : " files")));
+    main.appendChild(tags);
+    const cl = safeUrl(c.casesLink), dg = safeUrl(c.digestsLink);
+    if (cl || dg) {
+        const links = mk("div", "course-links");
+        if (cl) links.appendChild(linkBtn("Cases", cl));
+        if (dg) links.appendChild(linkBtn("Digests", dg));
+        main.appendChild(links);
+    }
+    row.appendChild(main);
+    if (isAdmin) row.appendChild(eyeBtn(c, "course-eye"));
+    row.onclick = () => openCourseModal(c);
+    row.addEventListener("keydown", e => {
+        if (e.target === row && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openCourseModal(c); }
+    });
+    return row;
+}
+
+function renderHiddenCourses() {
+    const box = $("hcourse-list"); if (!box) return;
+    box.textContent = "";
+    const list = courseList.filter(c => c.hidden);
+    $("hcourse-count").textContent = list.length ? list.length + (list.length === 1 ? " hidden course" : " hidden courses") : "";
+    if (!list.length) {
+        const e = mk("div", "empty");
+        e.appendChild(mk("b", "", "No hidden courses"));
+        e.appendChild(mk("p", "", "Courses you hide will be listed here."));
+        box.appendChild(e); return;
+    }
+    list.forEach(c => box.appendChild(courseRow(c, false)));
+}
+
 function renderCourses() {
+    renderHiddenCourses();
     const box = $("course-list"); box.textContent = "";
-    
-        const list = courseVisible(), total = courseList.filter(c => isAdmin || !c.hidden).length;
+    const list = courseVisible(), total = courseList.filter(c => !c.hidden).length;
     $("course-count").textContent = courseSearchTerm.trim()
         ? list.length + (list.length === 1 ? " result" : " results")
-        : (total ? total + (total === 1 ? " course" : " courses") : "");    
+        : (total ? total + (total === 1 ? " course" : " courses") : "");
     if (!list.length) {
         const e = mk("div", "empty");
         e.appendChild(mk("b", "", courseSearchTerm ? "No matching courses" : "No courses yet"));
         e.appendChild(mk("p", "", courseSearchTerm ? "Try a different spelling, code or professor." : "Courses will be listed here once an admin adds them."));
         box.appendChild(e); return;
     }
-            list.forEach(c => {
-        const row = mk("div", "course-row");
-        if (c.hidden) row.classList.add("is-hidden");
-        row.setAttribute("role", "button"); row.tabIndex = 0;
-        const main = mk("div", "course-main");
-        const head = mk("div", "course-head");
-        head.appendChild(mk("div", "course-code", c.code));
-        head.appendChild(mk("div", "course-title", c.title));
-        main.appendChild(head);
-        const tags = mk("div", "course-tags");
-        [c.semester ? c.semester + " Sem" : "", c.ay].filter(Boolean).forEach(t => tags.appendChild(mk("span", "chip-soft", t)));
-        if (c.hidden && isAdmin) tags.appendChild(mk("span", "chip-soft hidden-chip", "Hidden"));
-        const nf = (c.syllabus || []).length + (c.documents || []).length;
-        if (nf) tags.appendChild(mk("span", "chip-soft", "\uD83D\uDCCE " + nf + (nf === 1 ? " file" : " files")));
-        main.appendChild(tags);
-        const cl = safeUrl(c.casesLink), dg = safeUrl(c.digestsLink);
-        if (cl || dg) {
-            const links = mk("div", "course-links");
-            if (cl) links.appendChild(linkBtn("Cases", cl));
-            if (dg) links.appendChild(linkBtn("Digests", dg));
-            main.appendChild(links);
-        }
-        row.appendChild(main);
-        row.onclick = () => openCourseModal(c);
-        row.addEventListener("keydown", e => {
-            if (e.target === row && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openCourseModal(c); }
-        });
-        box.appendChild(row);
-    });
+    list.forEach(c => box.appendChild(courseRow(c, true)));
 }
 
 function openCourseModal(c) {
     $("course-modal-title").textContent = c.title;
     $("course-modal-badge").textContent = c.code;
+    const headEl = document.querySelector("#course-modal .cm-head");
+    headEl.querySelectorAll(".cm-eye").forEach(x => x.remove());
+    if (isAdmin) headEl.appendChild(eyeBtn(c, "cm-eye"));
 
     // Info tiles
     const tiles = $("course-modal-grid"); tiles.textContent = "";
@@ -3493,14 +3599,12 @@ function openCourseModal(c) {
     setEdited($("course-modal-edited"), c.edited ? "Last edited on " + c.edited : "");
     const actions = $("course-modal-actions"); actions.textContent = "";
 
-    if (isAdmin) {
-        const hb = mk("button", "btn sm ghost", c.hidden ? "Unhide" : "Hide"); hb.type = "button";
-        hb.onclick = () => toggleCourseHidden(c, hb);
+     if (isAdmin) {
         const eb = mk("button", "btn sm ghost", "Edit"); eb.type = "button";
         eb.onclick = () => { closeCourseModal(); startCourseEdit(c); };
         const db = mk("button", "btn sm", "Delete"); db.type = "button";
         db.onclick = () => deleteCourse(c, db);
-        actions.append(hb, eb, db);
+        actions.append(eb, db);
     }
     
     const cb = mk("button", "btn ghost sm", "Close"); cb.type = "button";
@@ -3891,6 +3995,7 @@ $("b-text").addEventListener("keydown", e => {
     
     $("bin-form").addEventListener("submit", postAnnouncement);
     $("bin-form").addEventListener("input", binDirty);
+    $("b-addcourse").addEventListener("click", openBinCourses);
     $("b-cancel").addEventListener("click", () => { resetBinForm(); showSection("announcements"); });
     $("b-text").addEventListener("input", mentionCheck);
     $("b-text").addEventListener("click", mentionCheck);
