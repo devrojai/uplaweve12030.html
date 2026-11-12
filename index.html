@@ -4647,10 +4647,8 @@ function dibsCard(t) {
     card.appendChild(head);
     card.appendChild(mk("h3", "dibs-topic", t.topic));
 
-    const info = [];
-    if (t.officers.length) info.push("Approvers: " + t.officers.join(", "));
-    info.push(t.maxPer > 0 ? "Limit: " + t.maxPer + (t.maxPer === 1 ? " case" : " cases") + " per student" : "No limit per student");
-    card.appendChild(mk("div", "dibs-officers", info.join(" \u00b7 ")));
+    if (t.officers.length) card.appendChild(mk("div", "dibs-officers", "Approvers: " + t.officers.join(", ")));
+    card.appendChild(mk("div", "dibs-officers", t.maxPer > 0 ? "Limit: " + t.maxPer + (t.maxPer === 1 ? " case" : " cases") + " per student" : "No limit per student"));
 
     const mineCount = t.cases.filter(c => c.mine && c.st !== "disapproved").length;
     const full = t.maxPer > 0 && mineCount >= t.maxPer;
