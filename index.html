@@ -4529,7 +4529,12 @@ function dibsAct(action, payload, btn, optimistic) {
     const run = async () => {
         let ok = true;
         try {
-            const r = await authCall(action, payload);
+            let r = await authCall(action, payload);
+            if (r.status !== "success" && /lock/i.test(String(r.message || ""))) {
+                // The server was busy. Wait a moment and try once more.
+                await new Promise(res => setTimeout(res, 800 + Math.random() * 1200));
+                r = await authCall(action, payload);
+            }
             dibsPending[id]--;
             if (r.status === "success") dibsMerge(r);
             else { ok = false; notify(r.message || "Something went wrong."); }
