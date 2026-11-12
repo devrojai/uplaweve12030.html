@@ -1012,6 +1012,51 @@ html[data-theme="night"] .archive-btn:hover:not(:disabled), html[data-theme="nig
 .course-ann-card .icon-btn svg { width: 18px; height: 18px; }
 .course-ann-card .icon-btn:hover { background: #a31f1f; }
 .course-ann-card .icon-btn:focus-visible { outline: 2px solid #c62828; outline-offset: 2px; }
+
+/* ===== Course popup ===== */
+#course-modal .course-card { width: 640px; max-width: 95vw; max-height: 90vh; padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+.cm-head { display: flex; align-items: center; gap: 16px; padding: 24px 28px 20px; background: linear-gradient(135deg, var(--accent-soft), transparent 70%); border-bottom: 1px solid var(--line); }
+.cm-ico { flex: none; width: 52px; height: 52px; display: grid; place-items: center; border-radius: var(--r-xl); background: var(--accent); color: var(--on-accent); }
+.cm-ico svg { width: 26px; height: 26px; }
+.cm-head-main { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.cm-title { margin: 0; font-size: 1.4rem; line-height: 1.25; font-weight: 700; color: var(--accent-text); word-break: break-word; }
+
+.cm-body { flex: 1; min-height: 0; overflow-y: auto; padding: 22px 28px 24px; display: flex; flex-direction: column; gap: 24px; }
+.cm-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; }
+#course-modal-grid { margin-top: 0; }
+.cm-tile { min-width: 0; padding: 12px 14px; background: var(--surface2); border: 1px solid var(--line); border-radius: var(--r-lg); }
+.cm-tile.wide { grid-column: 1 / -1; }
+.cm-tile-k { margin-bottom: 4px; font-size: .7rem; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--accent-text); }
+.cm-tile-v { font-weight: 600; color: var(--ink); word-break: break-word; }
+
+.cm-extra { display: flex; flex-direction: column; gap: 24px; }
+.cm-extra:empty, #course-modal-anns:empty { display: none; }
+.cm-sec-title { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; font-size: .75rem; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--accent-text); }
+.cm-sec-title::after { content: ""; flex: 1; height: 1px; background: var(--line-strong); }
+.cm-count { order: 1; padding: 1px 8px; font-size: .7rem; letter-spacing: 0; border-radius: 999px; background: var(--accent); color: var(--on-accent); }
+.cm-sec-title::after { order: 2; }
+.cm-sec .attach-list { gap: 10px; }
+.cm-list { display: flex; flex-direction: column; gap: 8px; }
+.cm-list .course-ann { margin: 0; }
+
+.cm-foot { display: flex; flex-direction: column; gap: 12px; padding: 14px 28px 20px; background: var(--surface); border-top: 1px solid var(--line); }
+.cm-foot .ann-edited { margin: 0; color: var(--muted); font-weight: 600; }
+.cm-foot .ann-edited:empty { display: none; }
+.cm-foot .ann-actions { margin: 0; }
+
+@media (max-width: 520px) {
+    .cm-head { padding: 20px 18px 16px; gap: 12px; }
+    .cm-ico { width: 44px; height: 44px; }
+    .cm-title { font-size: 1.2rem; }
+    .cm-body { padding: 18px 18px 20px; gap: 20px; }
+    .cm-tiles { grid-template-columns: 1fr; }
+    .cm-foot { padding: 12px 18px 16px; }
+}
+
+/* NEW tag on announcement cards */
+.ann-card .ann-titlewrap { flex: 1; min-width: 0; display: flex; align-items: flex-start; gap: 10px; padding-top: 4px; }
+.ann-card .ann-titlewrap .ann-title { flex: 0 1 auto; min-width: 0; padding-top: 0; }
+.new-tag { flex: none; margin-top: 2px; padding: 2px 8px; font-size: .7rem; font-weight: 800; line-height: 1.4; letter-spacing: .8px; color: #ffffff; background: #c62828; border-radius: var(--r-sm); }
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
@@ -1423,16 +1468,22 @@ html[data-theme="night"] .archive-btn:hover:not(:disabled), html[data-theme="nig
     <!-- Course Details Modal -->
     <div class="modal hidden" id="course-modal" role="dialog" aria-modal="true">
         <div class="modal-card course-card">
-            <div class="ann-top modal-head">
-                <h3 id="course-modal-title" class="ann-title"></h3>
-                <span id="course-modal-badge" class="badge"></span>
+            <div class="cm-head">
+                <div class="cm-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+                <div class="cm-head-main">
+                    <span id="course-modal-badge" class="badge"></span>
+                    <h3 id="course-modal-title" class="cm-title"></h3>
+                </div>
             </div>
-            <div class="detail-grid" id="course-modal-grid"></div> 
-
-            <div id="course-modal-anns"></div>
-            
-            <div id="course-modal-edited" class="ann-edited"></div>
-            <div id="course-modal-actions" class="ann-actions modal-actions-end"></div>
+            <div class="cm-body">
+                <div class="cm-tiles" id="course-modal-grid"></div>
+                <div class="cm-extra" id="course-modal-extra"></div>
+                <div id="course-modal-anns"></div>
+            </div>
+            <div class="cm-foot">
+                <div id="course-modal-edited" class="ann-edited"></div>
+                <div id="course-modal-actions" class="ann-actions modal-actions-end"></div>
+            </div>
         </div>
     </div>
 
@@ -2938,6 +2989,14 @@ setEdited(edited, a.edited ? "Edited by the author on " + longDate(a.edited) : "
         b.textContent = "";
         b.appendChild(annFooter(a, true));
     }
+
+// True if the announcement was posted within the last 72 hours
+function isNewAnn(a) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/.exec(String(a.created || ""));
+    if (!m) return false;
+    const posted = new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]).getTime();
+    return Date.now() - posted <= 72 * 60 * 60 * 1000;
+}
     
     function annCard(a) {
         const ref = a.deadline || a.periodEnd || "";
@@ -2946,9 +3005,11 @@ setEdited(edited, a.edited ? "Edited by the author on " + longDate(a.edited) : "
         c.setAttribute("tabindex", "0");
         
         const top = mk("div", "ann-top");
-        top.appendChild(mk("h3", "ann-title", a.title));
-        top.appendChild(iconBtn("pin", pins.has(a.id), pins.has(a.id) ? "Unpin" : "Pin", () => togglePin(a)));
-        c.appendChild(top);
+        const titleWrap = mk("div", "ann-titlewrap");
+        titleWrap.appendChild(mk("h3", "ann-title", a.title));
+        if (isNewAnn(a)) titleWrap.appendChild(mk("span", "new-tag", "NEW"));
+        top.appendChild(titleWrap);
+        top.appendChild(iconBtn("pin", pins.has(a.id), pins.has(a.id) ? "Unpin" : "Pin", () => togglePin(a)));        c.appendChild(top);
 
         const tags = mk("div", "ann-tags");
         tags.appendChild(mk("span", "badge", a.course));
@@ -3268,35 +3329,50 @@ function renderCourses() {
 function openCourseModal(c) {
     $("course-modal-title").textContent = c.title;
     $("course-modal-badge").textContent = c.code;
-    const grid = $("course-modal-grid"); grid.textContent = "";
-    const addRow = (k, node) => {
-        const row = mk("div", "drow"); row.appendChild(mk("div", "dk", k));
-        const v = mk("div", "dv");
-        if (typeof node === "string") v.textContent = node || "—"; else v.appendChild(node);
-        row.appendChild(v); grid.appendChild(row);
+
+    // Info tiles
+    const tiles = $("course-modal-grid"); tiles.textContent = "";
+    const tile = (k, v, wide) => {
+        const t = mk("div", "cm-tile" + (wide ? " wide" : ""));
+        t.appendChild(mk("div", "cm-tile-k", k));
+        t.appendChild(mk("div", "cm-tile-v", v || "—"));
+        tiles.appendChild(t);
     };
-    addRow("Course code", c.code);
-    addRow("Semester", c.semester ? c.semester + " Semester" : "");
-    addRow("Academic year", c.ay);
-    addRow("Professor", c.professor);
-        const mcl = safeUrl(c.casesLink), mdg = safeUrl(c.digestsLink);
+    tile("Professor", c.professor, true);
+    tile("Semester", c.semester ? c.semester + " Semester" : "");
+    tile("Academic year", c.ay);
+
+    // Links and files
+    const extra = $("course-modal-extra"); extra.textContent = "";
+    const section = (title, node) => {
+        const s = mk("div", "cm-sec");
+        s.appendChild(mk("div", "cm-sec-title", title));
+        s.appendChild(node);
+        extra.appendChild(s);
+    };
+    const mcl = safeUrl(c.casesLink), mdg = safeUrl(c.digestsLink);
     if (mcl || mdg) {
         const l = mk("div", "attach-list");
         if (mcl) l.appendChild(linkBtn("Cases", mcl));
         if (mdg) l.appendChild(linkBtn("Digests", mdg));
-        addRow("Links", l);
+        section("Links", l);
     }
     [["Syllabus", c.syllabus], ["Other documents", c.documents]].forEach(([label, files]) => {
         if (!files || !files.length) return;
         const list = mk("div", "attach-list");
         files.forEach(f => list.appendChild(courseFileBtn(f)));
-        addRow(label, list);
+        section(label, list);
     });
 
+    // Linked announcements
     const annBox = $("course-modal-anns"); annBox.textContent = "";
     const linked = (c.announcementIds || []).map(id => annList.find(a => a.id === id)).filter(Boolean);
     if (linked.length) {
-        annBox.appendChild(mk("div", "attach-title course-anns", "Announcements"));
+        const sec = mk("div", "cm-sec");
+        const head = mk("div", "cm-sec-title", "Announcements");
+        head.appendChild(mk("span", "cm-count", String(linked.length)));
+        sec.appendChild(head);
+        const list = mk("div", "cm-list");
         linked.forEach(a => {
             const item = mk("article", "course-ann course-ann-card");
             item.setAttribute("role", "button"); item.tabIndex = 0;
@@ -3309,7 +3385,8 @@ function openCourseModal(c) {
                 const foot = mk("div", "course-ann-foot");
                 const rb = mk("button", "icon-btn"); rb.type = "button";
                 rb.title = "Remove from course"; rb.setAttribute("aria-label", "Remove from course");
-                rb.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>';                rb.addEventListener("click", async (ev) => {
+                rb.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>';
+                rb.addEventListener("click", async (ev) => {
                     ev.stopPropagation();
                     rb.disabled = true;
                     try {
@@ -3321,22 +3398,28 @@ function openCourseModal(c) {
                 foot.appendChild(rb);
                 item.appendChild(foot);
             }
-            annBox.appendChild(item);
+            list.appendChild(item);
         });
+        sec.appendChild(list);
+        annBox.appendChild(sec);
     }
 
+    // Footer
     setEdited($("course-modal-edited"), c.edited ? "Last edited on " + c.edited : "");
-    
     const actions = $("course-modal-actions"); actions.textContent = "";
     if (isAdmin) {
-        const eb = mk("button", "btn sm ghost", "Edit"); eb.type = "button";        eb.onclick = () => { closeCourseModal(); startCourseEdit(c); };
-        const db = mk("button", "btn sm", "Delete"); db.type = "button";        db.onclick = () => deleteCourse(c, db);
+        const eb = mk("button", "btn sm ghost", "Edit"); eb.type = "button";
+        eb.onclick = () => { closeCourseModal(); startCourseEdit(c); };
+        const db = mk("button", "btn sm", "Delete"); db.type = "button";
+        db.onclick = () => deleteCourse(c, db);
         actions.append(eb, db);
     }
-    const cb = mk("button", "btn ghost sm", "Close"); cb.type = "button";    cb.onclick = closeCourseModal;
+    const cb = mk("button", "btn ghost sm", "Close"); cb.type = "button";
+    cb.onclick = closeCourseModal;
     actions.appendChild(cb);
     $("course-modal").classList.remove("hidden");
 }
+    
 function closeCourseModal() { $("course-modal").classList.add("hidden"); }
 
 async function loadCourses() {
