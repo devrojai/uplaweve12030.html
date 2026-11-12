@@ -1285,6 +1285,31 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
 .btn.um-delete:hover:not(:disabled) { background: var(--err); border-color: var(--err); color: var(--surface); }
 .btn.um-delete.loading::before { border-color: var(--line-strong); border-top-color: var(--err); }
 .cm-names { display: flex; flex-direction: column; gap: 2px; max-height: 180px; overflow-y: auto; }
+
+/* ===== Dibs ===== */
+.dibs-card { background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: var(--r-lg); padding: 16px 18px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+.dibs-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.dibs-course { font-size: var(--fs-n1); font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--muted); }
+.dibs-topic { margin-top: 6px; font-size: 1.2rem; font-weight: 700; line-height: 1.25; color: var(--accent-text); word-break: break-word; }
+.dibs-officers { margin-top: 4px; font-size: var(--fs-n1); color: var(--muted); }
+.dibs-wrap { margin-top: 14px; overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r-md); }
+.dibs-table { width: 100%; min-width: 520px; border-collapse: collapse; }
+.dibs-table th { padding: 9px 12px; text-align: left; font-size: .7rem; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--accent-text); background: var(--surface2); }
+.dibs-table td { padding: 10px 12px; border-top: 1px solid var(--line); vertical-align: middle; }
+.dibs-table td.num { width: 44px; font-weight: 700; color: var(--muted); }
+.dibs-table td.dibs-title { font-weight: 600; word-break: break-word; }
+.dibs-table tr:hover td { background: var(--surface2); }
+.dibs-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.dibs-st { display: inline-block; padding: 2px 10px; font-size: var(--fs-n1); font-weight: 700; white-space: nowrap; border-radius: 999px; }
+.dibs-st.open { color: var(--muted); border: 1px solid var(--line-strong); }
+.dibs-st.pending { color: var(--badge-ink); background: var(--badge-bg); border: 1px solid var(--badge-line); }
+.dibs-st.approved { color: var(--on-accent); background: var(--accent); border: 1px solid var(--accent); }
+.dibs-foot { margin-top: 12px; }
+.dibs-sys-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 16px; padding: 14px 16px; margin-bottom: 10px; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: var(--r-lg); }
+.dibs-sys-row.is-archived { opacity: .6; border-left-color: var(--period); }
+.dibs-sys-main { flex: 1 1 260px; min-width: 0; }
+.dibs-select { width: 100%; margin: 8px 0 14px; padding: 10px 12px; color: var(--ink); background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-md); }
+#dibs-modal { z-index: 80; }
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
@@ -1396,6 +1421,11 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
                 Courses
             </button>
 
+                        <button type="button" data-section="dibs">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
+                Dibs Cases
+            </button>
+
             <div class="nav-label hidden" data-admin>Admin tools</div>
             <button type="button" data-section="bin" data-admin class="hidden">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
@@ -1414,6 +1444,11 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
             <button type="button" data-section="hiddencourses" data-admin class="hidden">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C5 20 1 12 1 12a18.5 18.5 0 0 1 5.06-5.94"/><path d="M9.9 4.24A10.9 10.9 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                 Hidden Courses
+            </button>
+
+                    <button type="button" data-section="dibssystem" data-admin class="hidden">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+                Dibs System
             </button>
                     
         </nav>
@@ -1702,6 +1737,30 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
         <div class="msg" id="c-message"></div>
     </form>
 </section>
+
+    <!-- Dibs Cases (everyone) -->
+<section class="section hidden" id="sec-dibs">
+    <h2>DIBS CASES</h2>
+    <div class="course-bar"><span class="repo-count" id="dibs-count"></span></div>
+    <div id="dibs-list"></div>
+    <div class="msg" id="dibs-msg"></div>
+</section>
+
+<!-- Dibs System (admins) -->
+<section class="section hidden" id="sec-dibssystem">
+    <h2>DIBS SYSTEM</h2>
+    <form class="req-form" id="d-form" novalidate>
+        <div class="group-title">Course</div>
+        <select id="d-course" aria-label="Course"></select>
+        <div class="field"><input type="text" id="d-topic" placeholder=" " maxlength="120"><label for="d-topic">Topic</label></div>
+        <div class="field"><textarea id="d-text" placeholder=" " maxlength="30000"></textarea><label for="d-text">Paste the list of cases here</label></div>
+        <p class="hint" id="d-count">One case per line. Numbering such as "1." is removed automatically.</p>
+        <button type="submit" class="btn" id="d-send">Create table</button>
+        <div class="msg" id="d-message"></div>
+    </form>
+    <div class="group-title">Existing tables</div>
+    <div id="dsys-list"></div>
+</section>
         
     </main>
 
@@ -1810,6 +1869,25 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
             <button type="button" class="btn ghost sm" id="members-cancel">Cancel</button>
             <button type="button" class="btn sm" id="members-save">Done</button>
         </div>
+    </div>
+</div>
+
+<div class="modal hidden" id="dibs-modal" role="dialog" aria-modal="true">
+    <div class="modal-card modal-wide">
+        <h3 id="dibs-e-heading">Edit case</h3>
+        <form id="dibs-edit-form" novalidate>
+            <div class="field"><input type="text" id="dibs-e-title" placeholder=" " maxlength="150"><label for="dibs-e-title">Case title</label></div>
+            <div id="dibs-e-assign">
+                <div class="group-title">Taken by</div>
+                <select id="dibs-e-by" class="dibs-select" aria-label="Taken by"></select>
+            </div>
+            <div class="msg" id="dibs-e-msg"></div>
+            <div class="modal-actions modal-actions-end">
+                <button type="button" class="btn ghost sm" id="dibs-e-remove">Remove case</button>
+                <button type="button" class="btn ghost sm" id="dibs-e-cancel">Cancel</button>
+                <button type="submit" class="btn sm" id="dibs-e-save">Save</button>
+            </div>
+        </form>
     </div>
 </div>
     
@@ -2066,9 +2144,8 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
         }
     }
 
-    const titles = { announcements: "Announcements", calendar: "Calendar", requests: "Requests", bin: "Announcement Bin", directory: "Directory", courses: "Courses", addcourse: "Add Course", hiddencourses: "Hidden Courses" };
-const ADMIN_SECTIONS = ["bin", "directory", "addcourse", "hiddencourses"];
-
+    const titles = { announcements: "Announcements", calendar: "Calendar", requests: "Requests", bin: "Announcement Bin", directory: "Directory", courses: "Courses", addcourse: "Add Course", hiddencourses: "Hidden Courses", dibs: "Dibs Cases", dibssystem: "Dibs System" };
+const ADMIN_SECTIONS = ["bin", "directory", "addcourse", "hiddencourses", "dibssystem"];
     function enterApp(email, tok, admin) {
         currentEmail = email;
         token = tok || null;
@@ -2099,6 +2176,7 @@ const ADMIN_SECTIONS = ["bin", "directory", "addcourse", "hiddencourses"];
         resetProfileState();
         resetRequestForm();
         annList = []; annShowArchive = false; annShowPinned = false; openAnnId = ""; annFilter = ""; annSearchTerm = ""; carIdx = 0; dlSel = todayIso(); mentionUsers = []; mentionSel = []; repoPhotos = {}; resetBinForm();
+        dibsList = [];
         courseList = []; courseOpen = ""; courseSearchTerm = ""; $("course-search").value = ""; closeCourseModal(); resetCourseForm();
         isAdmin = false;
         adminPending = false;
@@ -2131,6 +2209,7 @@ const ADMIN_SECTIONS = ["bin", "directory", "addcourse", "hiddencourses"];
         if (name === "directory") { closeUser(); loadRepo(); }
         if (name === "announcements" || name === "calendar" || name === "courses" || name === "hiddencourses") loadAnnouncements();
         if (name === "bin" || name === "addcourse") loadMentionUsers();
+        if (name === "dibs" || name === "dibssystem") { loadDibs(); if (name === "dibssystem") loadCourses(); }
         if (name === "courses" || name === "hiddencourses") loadCourses();
     }
 
@@ -3851,7 +3930,8 @@ function renderHiddenCourses() {
     list.forEach(c => box.appendChild(courseRow(c, false)));
 }
 
-function renderCourses() {
+fillDibsCourses();
+    function renderCourses() {
     renderHiddenCourses();
     const box = $("course-list"); box.textContent = "";
     const list = courseVisible(), total = courseList.filter(c => !c.hidden).length;
@@ -4325,6 +4405,249 @@ function attachFullNameMention(inputId) {
     });
 }
 ["c-beadle", "c-officer"].forEach(attachFullNameMention);
+
+/* ===== DIBS ===== */
+let dibsList = [], dibsEditing = null;
+
+async function dibsCall(action, extra) {
+    const r = await authCall(action, extra);
+    if (r.status === "success") { dibsList = r.tables || []; renderDibs(); }
+    return r;
+}
+async function loadDibs() {
+    setMessage($("dibs-msg"), "", "");
+    if (!dibsList.length) showSkeleton($("dibs-list"), "card-sk", 2);
+    try {
+        const r = await dibsCall("dibs_list");
+        if (r.status !== "success") { $("dibs-list").textContent = ""; setMessage($("dibs-msg"), r.message, ERR); }
+    } catch (err) {
+        if (err.message !== "auth") { $("dibs-list").textContent = ""; setMessage($("dibs-msg"), netError(err), ERR); }
+    }
+}
+// Runs an action; if it fails (e.g. someone just took the case) shows why and refreshes
+async function dibsAct(action, payload, btn) {
+    if (btn) setLoading(btn, true);
+    try {
+        const r = await dibsCall(action, payload);
+        if (r.status !== "success") { notify(r.message || "Something went wrong."); loadDibs(); }
+    } catch (err) { if (err.message !== "auth") notify(netError(err)); }
+    if (btn) setLoading(btn, false);
+}
+const dibsSorted = list => list.slice().sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+function dibsEmpty(box, title, text) {
+    const e = mk("div", "empty");
+    e.appendChild(mk("b", "", title));
+    e.appendChild(mk("p", "", text));
+    box.appendChild(e);
+}
+function dibsStatus(k) {
+    if (!k.byName) return mk("span", "dibs-st open", "Open");
+    return k.st === "approved" ? mk("span", "dibs-st approved", "Approved") : mk("span", "dibs-st pending", "Pending approval");
+}
+
+function dibsCard(t) {
+    const card = mk("article", "dibs-card");
+    const head = mk("div", "dibs-head");
+    if (t.courseCode) head.appendChild(mk("span", "link-code", t.courseCode));
+    head.appendChild(mk("span", "dibs-course", t.courseTitle));
+    if (t.pinned) head.appendChild(mk("span", "badge pinned", "Pinned"));
+    card.appendChild(head);
+    card.appendChild(mk("h3", "dibs-topic", t.topic));
+    if (t.officers.length) card.appendChild(mk("div", "dibs-officers", "Approvers: " + t.officers.join(", ")));
+
+    const hasActions = t.canClaim || t.canReview;
+    const mineCount = t.cases.filter(c => c.mine).length;
+    const full = t.maxPer > 0 && mineCount >= t.maxPer;
+
+    const wrap = mk("div", "dibs-wrap"), tbl = mk("table", "dibs-table");
+    const hr = mk("tr");
+    ["#", "Case", "Taken by", "Status"].concat(hasActions ? ["Action"] : []).forEach(h => hr.appendChild(mk("th", "", h)));
+    tbl.appendChild(hr);
+
+    t.cases.forEach((k, idx) => {
+        const tr = mk("tr");
+        tr.appendChild(mk("td", "num", String(idx + 1)));
+        tr.appendChild(mk("td", "dibs-title", k.t));
+        tr.appendChild(mk("td", "", k.byName || "\u2014"));
+        const st = mk("td"); st.appendChild(dibsStatus(k)); tr.appendChild(st);
+        if (hasActions) {
+            const td = mk("td"), acts = mk("div", "dibs-actions");
+            const add = (label, cls, fn) => {
+                const b = mk("button", "btn sm" + (cls ? " " + cls : ""), label); b.type = "button";
+                b.addEventListener("click", () => fn(b));
+                acts.appendChild(b); return b;
+            };
+            if (t.canClaim && !k.byName) {
+                const b = add("Dibs", "", bb => dibsAct("dibs_claim", { id: t.id, caseId: k.i }, bb));
+                if (full) { b.disabled = true; b.title = "You already picked a case. Release it first."; }
+            }
+            if (k.mine && k.st !== "approved") add("Release", "ghost", bb => dibsAct("dibs_release", { id: t.id, caseId: k.i }, bb));
+            if (t.canReview && k.byName) {
+                if (k.st !== "approved") add("Approve", "", bb => dibsAct("dibs_review", { id: t.id, caseId: k.i, decision: "approve" }, bb));
+                add("Disapprove", "ghost", async bb => {
+                    if (!(await askConfirm("Disapprove?", k.byName + "'s pick of \"" + k.t + "\" will be released so others can pick it.", "Disapprove"))) return;
+                    dibsAct("dibs_review", { id: t.id, caseId: k.i, decision: "disapprove" }, bb);
+                });
+            }
+            if (t.canReview) add("Edit", "ghost", () => openDibsEdit(t, k));
+            td.appendChild(acts); tr.appendChild(td);
+        }
+        tbl.appendChild(tr);
+    });
+    wrap.appendChild(tbl);
+    card.appendChild(wrap);
+
+    if (t.canReview) {
+        const foot = mk("div", "dibs-foot");
+        const ab = mk("button", "btn sm ghost", "Add case"); ab.type = "button";
+        ab.addEventListener("click", () => openDibsEdit(t, null));
+        foot.appendChild(ab); card.appendChild(foot);
+    }
+    return card;
+}
+
+function renderDibsPage() {
+    const box = $("dibs-list"); box.textContent = "";
+    const list = dibsSorted(dibsList.filter(t => !t.archived));
+    $("dibs-count").textContent = list.length ? list.length + (list.length === 1 ? " table" : " tables") : "";
+    if (!list.length) return dibsEmpty(box, "No dibs tables yet", "Tables for your courses will appear here once an admin adds them.");
+    list.forEach(t => box.appendChild(dibsCard(t)));
+}
+
+function renderDibsSystem() {
+    const box = $("dsys-list"); box.textContent = "";
+    const list = dibsSorted(dibsList);
+    if (!list.length) return dibsEmpty(box, "No tables yet", "Tables you create will be listed here.");
+    list.forEach(t => {
+        const row = mk("div", "dibs-sys-row" + (t.archived ? " is-archived" : ""));
+        const main = mk("div", "dibs-sys-main");
+        const head = mk("div", "dibs-head");
+        if (t.courseCode) head.appendChild(mk("span", "link-code", t.courseCode));
+        head.appendChild(mk("span", "dibs-course", t.courseTitle));
+        if (t.pinned) head.appendChild(mk("span", "badge pinned", "Pinned"));
+        if (t.archived) head.appendChild(mk("span", "chip-soft hidden-chip", "Archived"));
+        main.appendChild(head);
+        main.appendChild(mk("div", "dibs-topic", t.topic));
+        const taken = t.cases.filter(c => c.byName).length, appr = t.cases.filter(c => c.st === "approved").length;
+        main.appendChild(mk("div", "dibs-officers", t.cases.length + " cases \u00b7 " + taken + " taken \u00b7 " + appr + " approved"));
+        row.appendChild(main);
+        const acts = mk("div", "dibs-actions");
+        const add = (label, cls, fn) => {
+            const b = mk("button", "btn sm" + (cls ? " " + cls : ""), label); b.type = "button";
+            b.addEventListener("click", () => fn(b)); acts.appendChild(b);
+        };
+        add(t.pinned ? "Unpin" : "Pin", "ghost", b => dibsAct("dibs_pin", { id: t.id, pinned: !t.pinned }, b));
+        add(t.archived ? "Unarchive" : "Archive", "ghost", b => dibsAct("dibs_archive", { id: t.id, archived: !t.archived }, b));
+        add("Delete", "", async b => {
+            if (!(await askConfirm("Delete table?", "\"" + t.topic + "\" and all picks in it will be permanently deleted."))) return;
+            dibsAct("dibs_delete", { id: t.id }, b);
+        });
+        row.appendChild(acts);
+        box.appendChild(row);
+    });
+}
+function renderDibs() { renderDibsPage(); renderDibsSystem(); }
+
+/* ---- Admin: create a table ---- */
+function fillDibsCourses() {
+    const s = $("d-course"); if (!s) return;
+    const cur = s.value;
+    s.textContent = "";
+    const o0 = mk("option", "", "Select course"); o0.value = ""; s.appendChild(o0);
+    courseList.slice().sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: "base" }))
+        .forEach(c => { const o = mk("option", "", c.code + " \u2014 " + c.title); o.value = c.id; s.appendChild(o); });
+    if (cur && courseList.some(c => c.id === cur)) s.value = cur;
+    if (s._sync) s._sync();
+}
+function parseCaseLines(text) {
+    return String(text || "").replace(/\r\n?/g, "\n").split("\n")
+        .map(l => l.replace(/\s+/g, " ").trim().replace(/^(\d+[.)]|[-\u2022*\u25AA\u25E6])\s+/, ""))
+        .filter(Boolean);
+}
+$("d-text").addEventListener("input", () => {
+    const n = parseCaseLines($("d-text").value).length;
+    $("d-count").textContent = n ? n + (n === 1 ? " case" : " cases") + " detected. Numbering such as \"1.\" is removed automatically."
+                                 : "One case per line. Numbering such as \"1.\" is removed automatically.";
+});
+$("d-form").addEventListener("submit", async e => {
+    e.preventDefault();
+    const btn = $("d-send"), m = $("d-message");
+    const courseId = $("d-course").value, topic = $("d-topic").value.replace(/\s+/g, " ").trim(), text = $("d-text").value;
+    clearFieldErrors($("d-form")); setMessage(m, "", "");
+    let bad = false;
+    if (!topic) { fieldError("d-topic", "Required"); bad = true; }
+    if (!text.trim()) { fieldError("d-text", "Required"); bad = true; }
+    if (!courseId) { setMessage(m, "Choose a course.", ERR); bad = true; }
+    if (bad) return;
+    setLoading(btn, true);
+    try {
+        const r = await dibsCall("dibs_create", { courseId, topic, text });
+        if (r.status === "success") {
+            $("d-topic").value = ""; $("d-text").value = ""; $("d-text").dispatchEvent(new Event("input")); syncFields();
+            setMessage(m, "Table created.", OK);
+        } else setMessage(m, r.message, ERR);
+    } catch (err) { if (err.message !== "auth") setMessage(m, netError(err), ERR); }
+    setLoading(btn, false);
+});
+
+/* ---- Beadle / Academic Officer: edit pop-up ---- */
+function openDibsEdit(t, k) {
+    dibsEditing = { t, k };
+    $("dibs-e-heading").textContent = k ? "Edit case" : "Add case";
+    $("dibs-e-title").value = k ? k.t : "";
+    $("dibs-e-assign").classList.toggle("hidden", !k);
+    $("dibs-e-remove").classList.toggle("hidden", !k);
+    if (k) {
+        const sel = $("dibs-e-by"); sel.textContent = "";
+        const o0 = mk("option", "", "Nobody (open)"); o0.value = ""; sel.appendChild(o0);
+        const opts = t.members.slice();
+        if (k.by && !opts.some(x => x.email === k.by)) opts.push({ email: k.by, name: k.byName });
+        opts.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+        opts.forEach(x => { const o = mk("option", "", x.name); o.value = x.email; sel.appendChild(o); });
+        sel.value = k.by || "";
+    }
+    setMessage($("dibs-e-msg"), "", "");
+    syncFields();
+    $("dibs-modal").classList.remove("hidden");
+    $("dibs-e-title").focus();
+}
+function closeDibsEdit() { $("dibs-modal").classList.add("hidden"); dibsEditing = null; }
+$("dibs-e-cancel").addEventListener("click", closeDibsEdit);
+$("dibs-modal").addEventListener("click", e => { if (e.target === e.currentTarget) closeDibsEdit(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && $("confirm-modal").classList.contains("hidden")) closeDibsEdit(); });
+
+$("dibs-edit-form").addEventListener("submit", async e => {
+    e.preventDefault();
+    if (!dibsEditing) return;
+    const { t, k } = dibsEditing, btn = $("dibs-e-save"), m = $("dibs-e-msg");
+    const title = $("dibs-e-title").value.replace(/\s+/g, " ").trim();
+    if (!title) return setMessage(m, "Enter the case title.", ERR);
+    const payload = k ? { id: t.id, caseId: k.i, title, by: $("dibs-e-by").value } : { id: t.id, op: "add", title };
+    setLoading(btn, true);
+    try {
+        const r = await dibsCall("dibs_edit", payload);
+        if (r.status === "success") closeDibsEdit(); else setMessage(m, r.message, ERR);
+    } catch (err) { if (err.message !== "auth") setMessage(m, netError(err), ERR); }
+    setLoading(btn, false);
+});
+$("dibs-e-remove").addEventListener("click", async () => {
+    if (!dibsEditing || !dibsEditing.k) return;
+    const { t, k } = dibsEditing;
+    if (!(await askConfirm("Remove case?", "\"" + k.t + "\" will be removed from this table.", "Remove"))) return;
+    const btn = $("dibs-e-remove");
+    setLoading(btn, true);
+    try {
+        const r = await dibsCall("dibs_edit", { id: t.id, caseId: k.i, op: "remove" });
+        if (r.status === "success") closeDibsEdit(); else setMessage($("dibs-e-msg"), r.message, ERR);
+    } catch (err) { if (err.message !== "auth") setMessage($("dibs-e-msg"), netError(err), ERR); }
+    setLoading(btn, false);
+});
+
+// Keep the page fresh so students see picks made by others
+setInterval(() => {
+    if (document.hidden || !currentEmail) return;
+    if (!$("sec-dibs").classList.contains("hidden") || !$("sec-dibssystem").classList.contains("hidden")) loadDibs();
+}, 30000);
     
     const drops = [];
     function enhanceSelect(sel) {
@@ -4358,8 +4681,7 @@ function attachFullNameMention(inputId) {
         sync();
     }
     document.addEventListener("click", e => drops.forEach(d => { if (!d.wrap.contains(e.target)) d.close(); }));
-["dl-month", "dl-year", "ann-filter", "c-sem", "c-ay"].forEach(id => enhanceSelect($(id)));
-
+["dl-month", "dl-year", "ann-filter", "c-sem", "c-ay", "d-course"].forEach(id => enhanceSelect($(id)));
         function applyTheme(t) {
         if (t !== "classic" && t !== "night") t = "light";
         if (t === "light") document.documentElement.removeAttribute("data-theme");
