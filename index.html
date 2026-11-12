@@ -2969,7 +2969,9 @@ setEdited(edited, a.edited ? "Edited by the author on " + longDate(a.edited) : "
 let annFilter = "", carIdx = 0, annShowArchive = false, annShowPinned = false, openAnnId = "";    const annVisible = () => {
         return annList.slice().sort((x, y) => (pins.has(y.id) ? 1 : 0) - (pins.has(x.id) ? 1 : 0)).filter(a => {            
             if (!!a.myArchived !== annShowArchive) return false;
-            if (annShowPinned && !pins.has(a.id)) return false;            const matchesTopic = annFilter ? a.course === annFilter : true;
+            if (annShowPinned && !pins.has(a.id)) return false;
+            if (!annShowPinned && !annShowArchive && pins.has(a.id)) return false;          
+            const matchesTopic = annFilter ? a.course === annFilter : true;
             if (!matchesTopic) return false;
             if (!annSearchTerm) return true;
             const searchText = [a.title, a.course, a.message, a.author].join(" ");
