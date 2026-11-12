@@ -1205,6 +1205,9 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
 .attach-toggle[aria-expanded="true"] .attach-chev { transform: rotate(180deg); }
 #ann-modal-files { margin-top: 10px; }
 #ann-modal-edited:empty { display: none; }
+#ann-modal-status { margin-bottom: 6px; }
+#ann-modal-status .ann-status { margin-top: 12px; padding-top: 10px; }
+#ann-modal-edited { margin-bottom: 14px; }
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
@@ -3187,7 +3190,7 @@ setEdited(edited, a.edited ? "Edited by the author on " + longDate(a.edited) : "
     function renderAnnModalStatus(a) {
         const b = $("ann-modal-status");
         b.textContent = "";
-        b.appendChild(annFooter(a, true, annModalFromCourse));
+        b.appendChild(annFooter(a, true, true));
     }
 
 // True if the announcement was posted within the last 72 hours
