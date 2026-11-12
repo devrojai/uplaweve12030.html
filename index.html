@@ -1000,11 +1000,18 @@ html[data-theme="night"] .archive-btn:hover:not(:disabled), html[data-theme="nig
 }
 
 /* Course popup: title-only announcement cards */
-.course-ann-card { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: var(--r-lg); cursor: pointer; }
+.course-ann-card { display: flex; flex-direction: row; align-items: center; gap: 10px; padding: 6px 10px 6px 12px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: var(--r-md); cursor: pointer; }
 .course-ann-card:hover { box-shadow: var(--shadow-md); border-color: var(--line-strong); border-left-color: var(--accent); }
-.course-ann-foot { display: flex; justify-content: flex-end; }
-
+.course-ann-card .ann-title { flex: 1; min-width: 0; font-size: .9rem; font-weight: 600; line-height: 1.3; }
+.course-ann-foot { display: flex; align-items: center; flex: none; }
+.course-ann .course-ann-card { margin: 0; }
+.course-ann:has(.course-ann-card) { margin-bottom: 8px; }
 #hl-modal { z-index: 85; }
+
+.course-ann-card .icon-btn { width: 28px; height: 28px; border-radius: var(--r-md); background: #c62828; color: #ffffff; }
+.course-ann-card .icon-btn svg { width: 18px; height: 18px; }
+.course-ann-card .icon-btn:hover { background: #a31f1f; }
+.course-ann-card .icon-btn:focus-visible { outline: 2px solid #c62828; outline-offset: 2px; }
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
@@ -3302,8 +3309,7 @@ function openCourseModal(c) {
                 const foot = mk("div", "course-ann-foot");
                 const rb = mk("button", "icon-btn"); rb.type = "button";
                 rb.title = "Remove from course"; rb.setAttribute("aria-label", "Remove from course");
-                rb.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><path d="M8 12h8"/></svg>';
-                rb.addEventListener("click", async (ev) => {
+                rb.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>';                rb.addEventListener("click", async (ev) => {
                     ev.stopPropagation();
                     rb.disabled = true;
                     try {
