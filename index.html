@@ -1683,18 +1683,20 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
         
         <div class="group-title">Syllabus</div>
         <div class="file-upload-area">
-            <button type="button" class="btn sm ghost" id="c-syl-btn">Upload Syllabus</button>
+            <button type="button" class="btn sm" id="c-syl-btn">Upload Syllabus</button>
             <input type="file" id="c-syl" class="hidden" multiple>
             <div class="file-list" id="c-syl-list"></div>
         </div>
         <div class="group-title">Other Documents</div>
         <div class="file-upload-area">
-            <button type="button" class="btn sm ghost" id="c-doc-btn">Upload Other Documents</button>
+            <div class="file-row">
+                <button type="button" class="btn sm" id="c-doc-btn">Upload Other Documents</button>
+                <span class="hint">Optional. Up to 5 files per upload (max 10 MB across both uploads).</span>
+            </div>
             <input type="file" id="c-doc" class="hidden" multiple>
             <div class="file-list" id="c-doc-list"></div>
         </div>
-        <p class="hint">Optional. Up to 5 files per upload (max 10 MB across both uploads).</p>
-
+        
         <button type="submit" class="btn" id="c-send">Add course</button>
         <button type="button" class="btn ghost hidden" id="c-cancel">Cancel editing</button>
         <div class="msg" id="c-message"></div>
