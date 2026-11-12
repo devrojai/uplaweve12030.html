@@ -1014,6 +1014,7 @@ html[data-theme="night"] .archive-btn:hover:not(:disabled), html[data-theme="nig
 .course-ann .course-ann-card { margin: 0; }
 .course-ann:has(.course-ann-card) { margin-bottom: 8px; }
 #hl-modal { z-index: 85; }
+#members-modal { z-index: 85; }        
 
 .course-ann-card .icon-btn { width: 28px; height: 28px; border-radius: var(--r-md); background: #c62828; color: #ffffff; }
 .course-ann-card .icon-btn svg { width: 18px; height: 18px; }
@@ -1662,7 +1663,15 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
         <div class="group-title">Academic Year</div>
         <select id="c-ay" aria-label="Academic Year"></select>
         <div class="field"><input type="text" id="c-prof" placeholder=" " maxlength="100"><label for="c-prof">Professor</label></div>
-        <div class="group-title">Links</div>
+        <div class="group-title">Officers</div>
+        <div class="field"><input type="text" id="c-beadle" placeholder=" " maxlength="120" autocomplete="off"><label for="c-beadle">Beadle</label><div class="mention-list hidden" id="c-beadle-list"></div></div>
+        <div class="field"><input type="text" id="c-officer" placeholder=" " maxlength="120" autocomplete="off"><label for="c-officer">Academic Officer</label><div class="mention-list hidden" id="c-officer-list"></div></div>
+        <p class="hint">Optional. Type @ and pick a full name, e.g. @Rojons Evangelista.</p>
+        <div class="group-title">Access</div>
+        <div class="file-upload-area">
+            <button type="button" class="btn sm ghost" id="c-members-btn">Add Law Students</button>
+        </div>
+        <p class="hint">Only the students you add (and admins) can see this course and its announcements.</p>        <div class="group-title">Links</div>
         <div class="field"><input type="url" id="c-cases" placeholder=" " maxlength="500"><label for="c-cases">Cases link</label></div>
         <div class="field"><input type="url" id="c-digests" placeholder=" " maxlength="500"><label for="c-digests">Digests link</label></div>
         <p class="hint">Optional. Example: https://drive.google.com/...</p>
@@ -1781,6 +1790,22 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
     </div>
 </div>
 
+<div class="modal hidden" id="members-modal" role="dialog" aria-modal="true">
+    <div class="modal-card modal-wide">
+        <h3>Add Law Students</h3>
+        <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="members-search" placeholder="Search students" autocomplete="off">
+        </div>
+        <div class="link-list" id="members-list"></div>
+        <div class="repo-count" id="members-count"></div>
+        <div class="modal-actions modal-actions-end">
+            <button type="button" class="btn ghost sm" id="members-cancel">Cancel</button>
+            <button type="button" class="btn sm" id="members-save">Done</button>
+        </div>
+    </div>
+</div>
+    
 <div class="modal hidden" id="hl-modal" role="dialog" aria-modal="true">
     <div class="modal-card">
         <h3>Add link</h3>
@@ -2098,7 +2123,7 @@ const ADMIN_SECTIONS = ["bin", "directory", "addcourse", "hiddencourses"];
         $("page-title").textContent = titles[name];
         if (name === "directory") { closeUser(); loadRepo(); }
         if (name === "announcements" || name === "calendar" || name === "courses" || name === "hiddencourses") loadAnnouncements();
-        if (name === "bin") loadMentionUsers();
+        if (name === "bin" || name === "addcourse") loadMentionUsers();
         if (name === "courses" || name === "hiddencourses") loadCourses();
     }
 
@@ -2968,19 +2993,15 @@ function mentionHandleFor(u, q) {
                 await loadMentionUsers();
                 mentions = Array.from(new Set(mentions.concat(mentionUsers.map(u => u.email))));
             }
-            const payload = { title, course, deadline: binDeadline, periodStart: binStart, periodEnd: binEnd, message: text, mentions, everyone };
+            const payload = { title, course, deadline: binDeadline, periodStart: binStart, periodEnd: binEnd, message: text, mentions, everyone, courseIds: binCourseIds.slice() };
             if (binFiles.length) payload.files = binFiles;
             if (wasEdit) payload.id = editingId;
             const r = await authCall(wasEdit ? "edit_announcement" : "post_announcement", payload);
             if (r.status === "success") {
-                const sel = binCourseIds.slice(), annId = wasEdit ? editingId : r.id;
-                let linkFail = false;
-                try { await syncBinCourses(annId, sel); }
-                catch (e2) { if (e2.message === "auth") throw e2; linkFail = true; }
+                loadCourses(); // the server already linked the announcement to the chosen courses
                 resetBinForm();
                 if (wasEdit) showSection("announcements");
                 else posted = true;
-                if (linkFail) notify("The announcement was saved, but it couldn't be added to some courses. Use \"Add to course\" on the announcement to retry.");
             } else setMessage(bm, r.message, ERR);
         } catch (err) {
             if (err.message !== "auth") setMessage(bm, netError(err), ERR);
@@ -3619,7 +3640,8 @@ function openBinCourses() {
         id: c.id, title: c.title, code: c.code, semester: c.semester, ay: c.ay, professor: c.professor,
         casesLink: c.casesLink || "", digestsLink: c.digestsLink || "",
         syllabus: (c.syllabus || []).map(keep), documents: (c.documents || []).map(keep),
-        announcementIds: c.announcementIds || [], hidden: !!c.hidden
+        announcementIds: c.announcementIds || [], hidden: !!c.hidden,
+        beadle: c.beadle || "", officer: c.officer || "", members: c.members || []
     }, over || {});
 }
 async function saveCourseLinks(c, ids) {
@@ -3856,6 +3878,9 @@ function openCourseModal(c) {
     tile("Professor", c.professor, true);
     tile("Semester", c.semester ? c.semester + " Semester" : "");
     tile("Academic year", c.ay);
+    if (c.beadle) tile("Beadle", c.beadle.replace(/@/g, ""));
+    if (c.officer) tile("Academic officer", c.officer.replace(/@/g, ""));
+    if (isAdmin) tile("Law students with access", String((c.members || []).length), true);
 
     // Links and files
     const extra = $("course-modal-extra"); extra.textContent = "";
@@ -4089,7 +4114,8 @@ function courseMode() {
 function courseDirty() { if ($("c-send").classList.contains("submitted")) courseMode(); }
 
 function resetCourseForm() {
-    ["c-title", "c-code", "c-prof", "c-cases", "c-digests"].forEach(id => { $(id).value = ""; });    ["c-sem", "c-ay"].forEach(id => { $(id).value = ""; if ($(id)._sync) $(id)._sync(); });
+    ["c-title", "c-code", "c-prof", "c-cases", "c-digests", "c-beadle", "c-officer"].forEach(id => { $(id).value = ""; });
+    cMembers = []; updateMembersBtn();
     editingCourseId = ""; editingCourseAnn = []; editingCourseHidden = false; cSyl = []; cDocs = []; renderCSyl(); renderCDocs();
     courseMode(); setMessage($("c-message"), "", ""); syncFields();
 }
@@ -4099,6 +4125,8 @@ function startCourseEdit(c) {
     editingCourseId = c.id;
     editingCourseAnn = (c.announcementIds || []).slice();
     editingCourseHidden = !!c.hidden;
+    $("c-beadle").value = c.beadle || ""; $("c-officer").value = c.officer || "";
+    cMembers = (c.members || []).slice(); updateMembersBtn();
     $("c-title").value = c.title; $("c-code").value = c.code; $("c-prof").value = c.professor;
         $("c-cases").value = c.casesLink || ""; $("c-digests").value = c.digestsLink || "";
     const ay = $("c-ay");
@@ -4145,7 +4173,9 @@ async function postCourse(e) {
     setLoading(btn, true); setMessage(cm, "", "");
     let added = false;
     try {
-        const payload = { title, code, semester: sem, ay, professor: prof, casesLink, digestsLink, syllabus: cSyl, documents: cDocs };        
+        const clean2 = v => v.replace(/\s+/g, " ").trim();
+        const payload = { title, code, semester: sem, ay, professor: prof, casesLink, digestsLink, syllabus: cSyl, documents: cDocs,
+            beadle: clean2($("c-beadle").value), officer: clean2($("c-officer").value), members: cMembers };        
         if (wasEdit) { payload.id = editedId; payload.announcementIds = editingCourseAnn; payload.hidden = editingCourseHidden; }
         const r = await authCall(wasEdit ? "edit_course" : "add_course", payload);
         if (r.status === "success") {
@@ -4166,6 +4196,103 @@ $("c-syl-btn").addEventListener("click", () => $("c-syl").click());
 $("c-doc-btn").addEventListener("click", () => $("c-doc").click());
 $("c-syl").addEventListener("change", e => handleFileSelect(e, cSyl, "c-syl-list", "c-message", courseDirty));
 $("c-doc").addEventListener("change", e => handleFileSelect(e, cDocs, "c-doc-list", "c-message", courseDirty));
+/* ===== Course access: students list ===== */
+let cMembers = [], membersDraft = new Set();
+function updateMembersBtn() {
+    $("c-members-btn").textContent = cMembers.length ? "Add Law Students (" + cMembers.length + ")" : "Add Law Students";
+}
+// "Evangelista, Rojons": surname first
+function memberLabel(u) {
+    const l = (u.lastName || "").trim(), f = (u.firstName || "").trim();
+    return l && f ? l + ", " + f : (l || f || u.email);
+}
+function updateMembersCount() {
+    const n = membersDraft.size;
+    $("members-count").textContent = n + (n === 1 ? " student selected" : " students selected");
+}
+function renderMembers() {
+    const box = $("members-list"); box.textContent = "";
+    const q = $("members-search").value.trim().toLowerCase();
+    const list = mentionUsers.slice().sort((a, b) => memberLabel(a).localeCompare(memberLabel(b), undefined, { sensitivity: "base" }));
+    let shown = 0;
+    list.forEach(u => {
+        const label = memberLabel(u);
+        if (q && !(label + " " + nameOf(u) + " " + u.email).toLowerCase().includes(q)) return;
+        shown++;
+        const lab = mk("label", "link-row");
+        const cb = mk("input"); cb.type = "checkbox"; cb.checked = membersDraft.has(u.email);
+        cb.addEventListener("change", () => { if (cb.checked) membersDraft.add(u.email); else membersDraft.delete(u.email); updateMembersCount(); });
+        const t = mk("div", "link-text");
+        t.appendChild(mk("span", "link-title", label));
+        t.appendChild(mk("span", "u-sub", u.email));
+        lab.append(cb, t);
+        box.appendChild(lab);
+    });
+    if (!shown) box.appendChild(mk("p", "repo-count", mentionUsers.length ? "No matching students." : "No users yet."));
+    updateMembersCount();
+}
+async function openMembers() {
+    membersDraft = new Set(cMembers);
+    $("members-search").value = "";
+    $("members-modal").classList.remove("hidden");
+    await loadMentionUsers();
+    renderMembers();
+}
+function closeMembers() { $("members-modal").classList.add("hidden"); }
+$("c-members-btn").addEventListener("click", openMembers);
+$("members-search").addEventListener("input", renderMembers);
+$("members-cancel").addEventListener("click", closeMembers);
+$("members-save").addEventListener("click", () => { cMembers = Array.from(membersDraft); updateMembersBtn(); courseDirty(); closeMembers(); });
+$("members-modal").addEventListener("click", e => { if (e.target === e.currentTarget) closeMembers(); });
+
+/* ===== Beadle / Academic Officer: tag by FULL name only (@First Last) ===== */
+function attachFullNameMention(inputId) {
+    const input = $(inputId), box = $(inputId + "-list");
+    let matches = [], idx = 0, start = 0;
+    const shortName = u => [u.firstName, u.lastName].map(s => (s || "").trim()).filter(Boolean).join(" ");
+    const hide = () => { box.classList.add("hidden"); matches = []; };
+    function render() {
+        box.textContent = "";
+        matches.forEach((u, i) => {
+            const b = mk("button", "m-item" + (i === idx ? " active" : "")); b.type = "button";
+            b.appendChild(mk("b", "", shortName(u)));
+            b.appendChild(mk("small", "", u.email));
+            b.addEventListener("mousedown", ev => { ev.preventDefault(); pick(u); });
+            box.appendChild(b);
+        });
+        box.classList.remove("hidden");
+    }
+    function pick(u) {
+        const pos = input.selectionStart, ins = "@" + shortName(u) + " ";
+        input.value = input.value.slice(0, start) + ins + input.value.slice(pos);
+        input.selectionStart = input.selectionEnd = start + ins.length;
+        hide(); input.focus(); syncFields(); courseDirty();
+    }
+    function check() {
+        const pos = input.selectionStart, m = /(^|\s)@([^@]{0,40})$/.exec(input.value.slice(0, pos));
+        if (!m) return hide();
+        const q = m[2].toLowerCase().trimStart();
+        start = pos - m[2].length - 1;
+        matches = mentionUsers.filter(u => shortName(u))
+            .map(u => ({ u, n: shortName(u).toLowerCase() }))
+            .filter(x => x.n.includes(q))
+            .sort((a, b) => (b.n.startsWith(q) - a.n.startsWith(q)) || a.n.localeCompare(b.n))
+            .map(x => x.u).slice(0, 6);
+        if (!matches.length) return hide();
+        idx = 0; render();
+    }
+    input.addEventListener("input", check);
+    input.addEventListener("click", check);
+    input.addEventListener("blur", () => setTimeout(hide, 150));
+    input.addEventListener("keydown", e => {
+        if (box.classList.contains("hidden") || !matches.length) return;
+        if (e.key === "ArrowDown") { e.preventDefault(); idx = (idx + 1) % matches.length; render(); }
+        else if (e.key === "ArrowUp") { e.preventDefault(); idx = (idx - 1 + matches.length) % matches.length; render(); }
+        else if (e.key === "Enter" || e.key === "Tab") { e.preventDefault(); pick(matches[idx]); }
+        else if (e.key === "Escape") { e.stopPropagation(); hide(); }
+    });
+}
+["c-beadle", "c-officer"].forEach(attachFullNameMention);
     
     const drops = [];
     function enhanceSelect(sel) {
@@ -4233,7 +4360,7 @@ $("c-doc").addEventListener("change", e => handleFileSelect(e, cDocs, "c-doc-lis
     document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
     if (!$("confirm-modal").classList.contains("hidden")) { $("confirm-no").click(); return; }
-    closeMenu(); closeProfile(); closeDelete(); closeLinkModal(); closeLinkDialog(); closeAnnModal(); closeCourseModal(); closeUser(); closeFileModal();});    document.querySelectorAll(".nav button[data-section]").forEach(b => b.addEventListener("click", () => {
+    closeMenu(); closeProfile(); closeDelete(); closeLinkModal(); closeMembers(); closeLinkDialog(); closeAnnModal(); closeCourseModal(); closeUser(); closeFileModal();});    document.querySelectorAll(".nav button[data-section]").forEach(b => b.addEventListener("click", () => {
     if (b.dataset.section === "addcourse" && editingCourseId) resetCourseForm();
     showSection(b.dataset.section); closeMenu();
     closeLinkDialog();
