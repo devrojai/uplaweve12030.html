@@ -942,9 +942,12 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
 .link-list { display: flex; flex-direction: column; gap: 6px; max-height: 50vh; overflow-y: auto; margin: 10px 0; }
 .link-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--r-md); cursor: pointer; font-weight: 600; }
 .link-row input { width: 18px; height: 18px; accent-color: var(--accent); }
-.link-text { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; }
+.link-text { display: flex; flex-direction: row; align-items: center; flex-wrap: wrap; gap: 4px 10px; min-width: 0; }
 .link-title { font-weight: 600; word-break: break-word; }
-.link-code { padding: 2px 8px; font-size: .75rem; font-weight: 700; letter-spacing: .8px; line-height: 1.4; color: var(--on-accent); background: var(--accent); border-radius: var(--r-sm); }
+.link-code { flex: none; padding: 2px 8px; font-size: .75rem; font-weight: 700; letter-spacing: .8px; line-height: 1.4; color: var(--on-accent); background: var(--accent); border-radius: var(--r-sm); }
+@media (max-width: 520px) {
+    .link-text { flex-direction: column; align-items: flex-start; flex-wrap: nowrap; gap: 4px; }
+}
 .badge.pinned { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
 .fmt-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 14px 0 -6px; }
 .fmt-bar button, .fmt-bar select { padding: 5px 10px; min-width: 34px; font-weight: 700; color: var(--accent-text); background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-md); cursor: pointer; }
@@ -1093,7 +1096,13 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
 .course-head { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .course-head .course-code { flex: none; padding: 2px 10px; font-size: .8rem; font-weight: 700; letter-spacing: .8px; color: var(--on-accent); background: var(--accent); border-radius: var(--r-sm); }
 .course-head .course-title { flex: 1 1 auto; min-width: 0; }
-
+.course-head .course-tags { flex: none; margin-top: 0; margin-left: auto; flex-wrap: nowrap; }
+@media (max-width: 520px) {
+    .course-head { flex-wrap: wrap; }
+    .course-head .course-title { flex: 1 1 100%; order: 2; white-space: normal !important; }
+    .course-head .course-tags { order: 3; flex: 1 1 100%; margin-left: 0; margin-top: 2px; flex-wrap: wrap; }
+}
+        
 /* Eye (hide/unhide) buttons */
 .eye-btn:disabled { opacity: .4; cursor: not-allowed; }
 .course-eye { margin-left: 12px; align-self: center; }
@@ -3569,11 +3578,11 @@ function courseRow(c, dim) {
     const head = mk("div", "course-head");
     head.appendChild(mk("div", "course-code", c.code));
     head.appendChild(mk("div", "course-title", c.title));
-    main.appendChild(head);
     const tags = mk("div", "course-tags");
     [c.semester ? c.semester + " Sem" : "", c.ay].filter(Boolean).forEach(t => tags.appendChild(mk("span", "chip-soft", t)));
     if (c.hidden && isAdmin && dim) tags.appendChild(mk("span", "chip-soft hidden-chip", "Hidden"));
-    main.appendChild(tags);
+    head.appendChild(tags);
+    main.appendChild(head);
     const cl = safeUrl(c.casesLink), dg = safeUrl(c.digestsLink);
     if (cl || dg) {
         const links = mk("div", "course-links");
