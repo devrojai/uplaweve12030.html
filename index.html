@@ -800,6 +800,7 @@ html[data-theme="night"] .bg { --sheen: transparent; --wave-a: transparent; --wa
         mask-position: 1200px 100%, -1800px 100%;
     }
 }
+        
 @media (prefers-reduced-motion: reduce) {
     .bg::before, .bg::after { animation: none; }
 }
@@ -1270,6 +1271,18 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
 .readers-more { padding: 0; font: inherit; font-weight: 700; text-indent: 0; color: var(--accent-text); background: none; border: none; cursor: pointer; text-decoration: underline; }
 .readers-more:hover { text-decoration: none; }
 .readers-more:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+
+/* Attached files in the announcement popup: left aligned, one per line */
+#ann-modal-files { flex-direction: column; align-items: flex-start; }
+#ann-modal-files .attach-btn { max-width: 100%; text-align: left; justify-content: flex-start; }
+#ann-modal-files .attach-btn span { min-width: 0; text-align: left; word-break: break-word; }
+
+/* Admin: delete account button at the bottom of the user popup */
+.um-danger-zone { margin-top: 6px; padding-top: 16px; border-top: 1px dashed var(--line-strong); }
+.btn.um-delete { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0; background: transparent; color: var(--err); border: 1px solid var(--err); }
+.btn.um-delete svg { width: 18px; height: 18px; flex: none; }
+.btn.um-delete:hover:not(:disabled) { background: var(--err); border-color: var(--err); color: var(--surface); }
+.btn.um-delete.loading::before { border-color: var(--line-strong); border-top-color: var(--err); }
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
@@ -2439,6 +2452,17 @@ if (courseAdminShown !== isAdmin) { courseAdminShown = isAdmin; renderCourses();
         section("Personal information", [["First name", u.firstName], ["Middle name", u.middleName], ["Last name", u.lastName], ["Nickname", u.nickname]]);
         section("Contact", [["Contact no.", u.contact], ["Telegram", u.tg], ["UP student email", u.upEmail], ["Facebook", u.fb, true]]);
         section("Account", [["Account email", u.email], ["Account created", u.created], ["Profile updated", u.updated]]);
+                
+        // Admin-only: delete this account (not shown on your own profile)
+        if (isAdmin && u.email !== currentEmail) {
+            const zone = mk("div", "um-danger-zone");
+            const del = mk("button", "btn um-delete"); del.type = "button";
+            del.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>';
+            del.appendChild(mk("span", "", "Delete account"));
+            del.addEventListener("click", () => deleteUserAccount(u, del));
+            zone.appendChild(del);
+            body.appendChild(zone);
+        }
         box.appendChild(body);
     }
 
@@ -2457,6 +2481,26 @@ if (courseAdminShown !== isAdmin) { courseAdminShown = isAdmin; renderCourses();
 function closeUser() {
     detailFor = "";
     $("user-modal").classList.add("hidden");
+}
+
+    async function deleteUserAccount(u, btn) {
+    if (!(await askConfirm("Delete this account?", nameOf(u) + " (" + u.email + ") will be permanently deleted. This can't be undone.", "Delete"))) return;
+    setLoading(btn, true);
+    try {
+        const r = await authCall("admin_delete_user", { target: u.email });
+        if (r.status === "success") {
+            repoUsers = repoUsers.filter(x => x.email !== u.email);
+            delete repoPhotos[u.email];
+            mentionUsers = mentionUsers.filter(x => x.email !== u.email);
+            mentionSel = mentionSel.filter(x => x.email !== u.email);
+            closeUser();
+            renderRepoList();
+            setMessage($("repo-msg"), "Account deleted.", OK);
+            return;
+        }
+        notify(r.message || "Couldn't delete the account.");
+    } catch (err) { if (err.message !== "auth") notify(netError(err)); }
+    setLoading(btn, false);
 }
 
     async function loadRepo() {
