@@ -1416,6 +1416,41 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
     pointer-events: none;
 }
 @keyframes btnShine { 0% { left: -60%; } 55%, 100% { left: 130%; } }
+
+/* ===== Status: Online / Onsite / Suspended ===== */
+.st-glow.online    { --g: #10b981; --ic: #ffffff; }
+.st-glow.onsite    { --g: #ff8a3d; --ic: #ffffff; }
+.st-glow.suspended { --g: #cfd2d8; --ic: #4b4f56; }
+
+.st-btn { flex: none; width: 24px; height: 24px; margin-top: 3px; display: inline-grid; place-items: center; color: var(--ic); background: var(--g); border-radius: 50%; box-shadow: 0 0 6px 1px var(--g), 0 0 14px 3px var(--g); animation: stGlow 2.4s ease-in-out infinite; }
+.st-btn svg { width: 14px; height: 14px; }
+@keyframes stGlow { 50% { box-shadow: 0 0 4px 0 var(--g), 0 0 9px 1px var(--g); } }
+
+.fmt-bar .st-group { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.fmt-bar .st-group + .btn.add-course-btn { margin-left: 0; }
+.fmt-bar .st-ico { width: 34px; height: 34px; min-width: 0; padding: 0; display: grid; place-items: center; color: var(--ic); background: var(--g); border: 0; border-radius: 50%; cursor: pointer; opacity: .45; filter: saturate(.7); transition: opacity .2s, box-shadow .2s; }
+.fmt-bar .st-ico:hover { background: var(--g); opacity: .8; }
+.fmt-bar .st-ico svg { width: 18px; height: 18px; }
+.fmt-bar .st-ico.on { opacity: 1; filter: none; box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--g), 0 0 16px 4px var(--g); }
+
+.cal-marks { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+.cal-cell .cal-chip { display: inline-grid; place-items: center; width: 18px; height: 18px; padding: 0; font-size: 0; line-height: 0; border-radius: var(--r-sm); }
+.cal-st { display: block; width: 9px; height: 9px; border-radius: 50%; background: var(--g); box-shadow: 0 0 5px 1px var(--g), 0 0 10px 2px var(--g); animation: stGlow 2.4s ease-in-out infinite; }
+.cal-legend .k.st { border-radius: 50%; background: var(--g); box-shadow: 0 0 6px 1px var(--g); }
+@media (max-width: 520px) {
+    .cal-marks { justify-content: center; gap: 3px; }
+    .cal-cell .cal-chip { width: 12px; height: 12px; border-radius: 50%; }
+    .cal-st { width: 6px; height: 6px; animation: none; box-shadow: 0 0 4px 1px var(--g); }
+}
+
+.dibs-table th.c-tick { width: 52px; text-align: center; }
+.dibs-table td.dibs-tick { text-align: center; }
+.dibs-ic.ok { background: #66bb6a; }
+.dibs-ic.no { background: #e53935; }
+.dibs-ic.ok:disabled, .dibs-ic.no:disabled { background: #d6d2cd; color: #f4f1ee; opacity: 1; cursor: not-allowed; }
+html[data-theme="night"] .dibs-ic.ok:disabled, html[data-theme="night"] .dibs-ic.no:disabled { background: #3a3a3e; color: #77777d; }
+.dibs-ic.ok.done:disabled { background: #66bb6a; color: #fff; }
+.dibs-ic.no.done:disabled { background: #e53935; color: #fff; }
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
@@ -1673,7 +1708,7 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
                 <button type="button" class="dp-nav" id="dl-next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
                 <button type="button" class="btn sm ghost" id="dl-today">Today</button>
             </div>
-            <div class="cal-legend"><span><i class="k dl"></i>Deadline</span><span><i class="k pd"></i>Period</span></div>
+            <div class="cal-legend"><span><i class="k dl"></i>Deadline</span><span><i class="k pd"></i>Period</span><span><i class="k st st-glow online"></i>Online</span><span><i class="k st st-glow onsite"></i>Onsite</span><span><i class="k st st-glow suspended"></i>Suspended</span></div>
             <div class="cal-grid" id="dl-grid"></div>
             <div id="dl-detail"></div>
             <div class="msg" id="dl-msg"></div>
@@ -1753,6 +1788,7 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
         </button>
         <div class="fmt-swatches hidden" id="fmt-hl-list"></div>
     </div>
+        <div class="st-group" id="b-status" role="group" aria-label="Class status"></div> 
         <button type="button" class="btn add-course-btn" id="b-addcourse" title="Add to Course" aria-label="Add to Course"><svg class="ac-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><span class="ac-label">Add to Course</span></button>
 </div>
                 
@@ -3001,7 +3037,7 @@ function closeUser() {
         sel.value = String(y);
     }
 
-    let binDeadline = "", binStart = "", binEnd = "", editingId = "", binCourseIds = [];
+    let binDeadline = "", binStart = "", binEnd = "", editingId = "", binCourseIds = [], binStatus = "";
     function updateBinCourseBtn() {
         const b = $("b-addcourse");
         if (!b) return;
@@ -3011,6 +3047,33 @@ function closeUser() {
         b.dataset.count = n ? String(n) : "";
         b.title = b.ariaLabel = n ? "Add to Course (" + n + ")" : "Add to Course";
     }
+
+    const ST_META = {
+    online:    { label: "Online",    p: '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>' },
+    onsite:    { label: "Onsite",    p: '<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>' },
+    suspended: { label: "Suspended", p: '<path d="M8 5v14M16 5v14" stroke-width="3.2"/>' }
+};
+const stSvg = m => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' + ST_META[m].p + '</svg>';
+function stBadge(mode) {
+    if (!ST_META[mode]) return null;
+    const s = mk("span", "st-btn st-glow " + mode);
+    s.title = ST_META[mode].label; s.setAttribute("role", "img"); s.setAttribute("aria-label", ST_META[mode].label);
+    s.innerHTML = stSvg(mode);
+    return s;
+}
+function renderBinStatus() {
+    document.querySelectorAll("#b-status .st-ico").forEach(b => {
+        const on = b.dataset.status === binStatus;
+        b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on));
+    });
+}
+Object.keys(ST_META).forEach(k => {
+    const b = mk("button", "st-ico st-glow " + k); b.type = "button"; b.dataset.status = k;
+    b.title = ST_META[k].label + " (click again to clear)"; b.setAttribute("aria-label", ST_META[k].label);
+    b.innerHTML = stSvg(k);
+    b.addEventListener("click", () => { binStatus = binStatus === k ? "" : k; renderBinStatus(); binDirty(); });
+    $("b-status").appendChild(b);
+});
     
     const pickers = [];
     const CHEV = {
@@ -3194,7 +3257,7 @@ function mentionHandleFor(u, q) {
     function binDirty() { if ($("b-send").classList.contains("submitted")) binMode(); }
     function resetBinForm() {
         ["b-title", "b-course", "b-text"].forEach(id => { $(id).value = ""; });
-        binDeadline = binStart = binEnd = ""; editingId = ""; mentionSel = []; binFiles = []; binCourseIds = []; updateBinCourseBtn();        renderFileList("b-file-list", binFiles, (idx) => { binFiles.splice(idx, 1); resetBinFormFileRender(); });
+        binDeadline = binStart = binEnd = ""; editingId = ""; binStatus = ""; renderBinStatus(); mentionSel = []; binFiles = []; binCourseIds = []; updateBinCourseBtn();        renderFileList("b-file-list", binFiles, (idx) => { binFiles.splice(idx, 1); resetBinFormFileRender(); });
         pkDeadline.show(); pkStart.show(); pkEnd.show();
         pickers.forEach(p => p.close());
         hideMention(); binMode(); setMessage($("b-message"), "", ""); syncFields();
@@ -3206,7 +3269,7 @@ function mentionHandleFor(u, q) {
         resetBinForm();
         editingId = a.id;
         $("b-title").value = a.title; $("b-course").value = a.course; $("b-text").value = a.message;
-        binDeadline = a.deadline || ""; binStart = a.periodStart || ""; binEnd = a.periodEnd || "";
+        binDeadline = a.deadline || ""; binStart = a.periodStart || ""; binEnd = a.periodEnd || ""; binStatus = a.mode || ""; renderBinStatus();
         binFiles = (a.files || []).map(f => f.id ? { id: f.id, name: f.name, type: f.type, size: f.size } : { name: f.name, type: f.type, size: f.size, data: f.data });
         renderFileList("b-file-list", binFiles, (idx) => { binFiles.splice(idx, 1); resetBinFormFileRender(); binDirty(); });
         pkDeadline.show(); pkStart.show(); pkEnd.show();
@@ -3239,8 +3302,7 @@ function mentionHandleFor(u, q) {
                 await loadMentionUsers();
                 mentions = Array.from(new Set(mentions.concat(mentionUsers.map(u => u.email))));
             }
-            const payload = { title, course, deadline: binDeadline, periodStart: binStart, periodEnd: binEnd, message: text, mentions, everyone, courseIds: binCourseIds.slice() };
-            if (binFiles.length) payload.files = binFiles;
+            const payload = { title, course, deadline: binDeadline, periodStart: binStart, periodEnd: binEnd, message: text, mentions, everyone, courseIds: binCourseIds.slice(), mode: binStatus };            if (binFiles.length) payload.files = binFiles;
             if (wasEdit) payload.id = editingId;
             const r = await authCall(wasEdit ? "edit_announcement" : "post_announcement", payload);
             if (r.status === "success") {
@@ -3661,7 +3723,8 @@ function isNewAnn(a) {
         const top = mk("div", "ann-top");
         const titleWrap = mk("div", "ann-titlewrap");
         titleWrap.appendChild(mk("h3", "ann-title", a.title));
-        if (isNewAnn(a)) titleWrap.appendChild(mk("span", "new-tag", "NEW"));
+        const sb = stBadge(a.mode); if (sb) titleWrap.appendChild(sb);
+if (isNewAnn(a)) titleWrap.appendChild(mk("span", "new-tag", "NEW"));
         top.appendChild(titleWrap);
         top.appendChild(iconBtn("pin", pins.has(a.id), pins.has(a.id) ? "Unpin" : "Pin", () => togglePin(a)));        c.appendChild(top);
 
@@ -3798,12 +3861,16 @@ let annFilter = "", carIdx = 0, annShowArchive = false, annShowPinned = false, o
             const cell = mk("button", "cal-cell" + (iso === t ? " today" : "") + (iso === dlSel ? " sel" : ""));
             cell.type = "button";
             cell.appendChild(mk("span", "cal-num", String(d)));
-            list.slice(0, 2).forEach(e => {
-                const chip = mk("span", "cal-chip " + e.kind, e.a.title);
-                chip.appendChild(mk("small", "cal-course", e.a.course));
-                cell.appendChild(chip);
-            });
-            if (list.length > 2) cell.appendChild(mk("span", "cal-more", "+" + (list.length - 2) + " more"));
+            if (list.length) {
+    const marks = mk("span", "cal-marks");
+    list.slice(0, 8).forEach(e => {
+        const m = mk("span", "cal-chip " + e.kind); m.setAttribute("aria-hidden", "true");
+        if (ST_META[e.a.mode]) m.appendChild(mk("i", "cal-st st-glow " + e.a.mode));
+        marks.appendChild(m);
+    });
+    cell.appendChild(marks);
+}
+cell.setAttribute("aria-label", d + " " + MONTHS[dlM] + (list.length ? ", " + list.length + (list.length === 1 ? " announcement" : " announcements") : ""));
                         cell.onclick = () => {
                 dlSel = iso;
                 renderCalendar();
@@ -4706,46 +4773,61 @@ function dibsCard(t) {
     const wrap = mk("div", "dibs-wrap"), tbl = mk("table", "dibs-table");
     wrap.dataset.id = t.id;
     const hr = mk("tr");
-    [["#", "c-num"], ["Case", "c-case"], ["Taken by", "c-take"], ["Status", "c-st"], ["Action", "c-act" + (t.canReview ? " wide" : "")]]
-        .forEach(([h, cls]) => hr.appendChild(mk("th", cls, h)));
+    const cols = [["#", "c-num"], ["Dibs", "c-tick"], ["Case", "c-case"], ["Taken by", "c-take"], ["Status", "c-st"]];
+    if (t.canReview) cols.push(["Actions", "c-act wide"]);
+    cols.forEach(([h, cls]) => hr.appendChild(mk("th", cls, h)));
     tbl.appendChild(hr);
 
     t.cases.forEach((k, idx) => {
         const tr = mk("tr");
         tr.appendChild(mk("td", "num", String(idx + 1)));
-        tr.appendChild(mk("td", "dibs-title", k.t));
-        tr.appendChild(mk("td", "dibs-by", k.byName || "\u2014"));
-        const st = mk("td", "dibs-stc"); st.appendChild(dibsStatus(k)); tr.appendChild(st);
 
-        const td = mk("td", "dibs-act"), acts = mk("div", "dibs-actions");
+        // Tickbox, to the left of the case
+        const tk = mk("td", "dibs-tick");
         const cb = mk("input", "dibs-check"); cb.type = "checkbox"; cb.checked = !!k.byName;
         if (!k.byName) {
             cb.disabled = !t.canClaim || full;
             cb.title = !t.canClaim ? "" : (full ? "You reached the limit. Untick one of your cases first." : "Tick to dibs this case");
             cb.setAttribute("aria-label", "Dibs case " + (idx + 1));
-            cb.addEventListener("change", () => { cb.disabled = true; dibsAct("dibs_claim", { id: t.id, caseId: k.i }, null, true); });        } else if (k.mine && k.st !== "approved") {
+            cb.addEventListener("change", () => { cb.disabled = true; dibsAct("dibs_claim", { id: t.id, caseId: k.i }, null, true); });
+        } else if (k.mine && k.st !== "approved") {
             cb.title = "Untick to release";
             cb.setAttribute("aria-label", "Release case " + (idx + 1));
-            cb.addEventListener("change", () => { cb.disabled = true; dibsAct("dibs_release", { id: t.id, caseId: k.i }, null, true); });        } else {
+            cb.addEventListener("change", () => { cb.disabled = true; dibsAct("dibs_release", { id: t.id, caseId: k.i }, null, true); });
+        } else {
             cb.disabled = true;
             cb.title = k.mine ? "Approved. Only the approver can release it." : "Already taken";
             cb.setAttribute("aria-label", "Taken");
         }
-        acts.appendChild(cb);
+        tk.appendChild(cb); tr.appendChild(tk);
 
-       if (t.canReview) {
-    acts.appendChild(dibsIcon("ed", "Edit", PENCIL, () => openDibsEdit(t, k)));
-    if (k.byName) {
-        if (k.st !== "approved") acts.appendChild(dibsIcon("ok", "Approve", THUMB_UP, b => dibsAct("dibs_review", { id: t.id, caseId: k.i, decision: "approve" }, null, true)));
-        if (k.st !== "disapproved") acts.appendChild(dibsIcon("no", "Disapprove", THUMB_DOWN, async b => {
-            if (!(await askConfirm("Disapprove?", k.byName + "'s pick of \"" + k.t + "\" will be marked as disapproved.", "Disapprove"))) return;
-            dibsAct("dibs_review", { id: t.id, caseId: k.i, decision: "disapprove" }, null, true);
-        }));
-    }
-}
-        td.appendChild(acts); tr.appendChild(td);
+        tr.appendChild(mk("td", "dibs-title", k.t));
+        tr.appendChild(mk("td", "dibs-by", k.byName || "\u2014"));
+        const st = mk("td", "dibs-stc"); st.appendChild(dibsStatus(k)); tr.appendChild(st);
+
+        // Actions: Edit, Like, Dislike are always shown. Like and Dislike are grey until the case is ticked.
+        if (t.canReview) {
+            const td = mk("td", "dibs-act"), acts = mk("div", "dibs-actions");
+            acts.appendChild(dibsIcon("ed", "Edit", PENCIL, () => openDibsEdit(t, k)));
+
+            const taken = !!k.byName;
+            const likeB = dibsIcon("ok", "Approve", THUMB_UP, () => dibsAct("dibs_review", { id: t.id, caseId: k.i, decision: "approve" }, null, true));
+            likeB.disabled = !taken || k.st === "approved";
+            if (k.st === "approved") likeB.classList.add("done");
+
+            const dislikeB = dibsIcon("no", "Disapprove", THUMB_DOWN, async () => {
+                if (!(await askConfirm("Disapprove?", k.byName + "'s pick of \"" + k.t + "\" will be marked as disapproved.", "Disapprove"))) return;
+                dibsAct("dibs_review", { id: t.id, caseId: k.i, decision: "disapprove" }, null, true);
+            });
+            dislikeB.disabled = !taken || k.st === "disapproved";
+            if (k.st === "disapproved") dislikeB.classList.add("done");
+
+            acts.append(likeB, dislikeB);
+            td.appendChild(acts); tr.appendChild(td);
+        }
         tbl.appendChild(tr);
     });
+
     wrap.appendChild(tbl);
     card.appendChild(wrap);
 
