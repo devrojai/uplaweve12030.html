@@ -2210,7 +2210,7 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
 
     const titles = { announcements: "Announcements", calendar: "Calendar", requests: "Requests", bin: "Announcement Bin", directory: "Directory", courses: "Courses", addcourse: "Add Course", hiddencourses: "Hidden Courses", dibs: "Dibs Cases", dibssystem: "Dibs System" };
 const ADMIN_SECTIONS = ["bin", "directory", "addcourse", "hiddencourses", "dibssystem"];
-    function enterApp(email, tok, admin) {
+    function enterApp(email, tok, admin, startSection) {
         currentEmail = email;
         token = tok || null;
         loadPins();
@@ -2222,7 +2222,7 @@ const ADMIN_SECTIONS = ["bin", "directory", "addcourse", "hiddencourses", "dibss
         isAdmin = !!admin;
         adminPending = false;
         applyAdmin();
-        showSection("announcements");
+        showSection(startSection && titles[startSection] ? startSection : "announcements");
         renderAvatars();
         loadProfile();
         refreshAdmin();
@@ -2233,6 +2233,7 @@ const ADMIN_SECTIONS = ["bin", "directory", "addcourse", "hiddencourses", "dibss
         sessionStorage.removeItem("userEmail");
         sessionStorage.removeItem("token");
         sessionStorage.removeItem("isAdmin");
+        sessionStorage.removeItem("section");
         currentEmail = null;
         pins = new Set();
         token = null;
@@ -2267,6 +2268,7 @@ const ADMIN_SECTIONS = ["bin", "directory", "addcourse", "hiddencourses", "dibss
     }
     function showSection(name) {
         if (ADMIN_SECTIONS.includes(name) && !isAdmin) name = "announcements";
+        try { sessionStorage.setItem("section", name); } catch (e) {}
         Object.keys(titles).forEach(k => $("sec-" + k).classList.toggle("hidden", k !== name));
         document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("active", b.dataset.section === name));
         $("page-title").textContent = titles[name];
@@ -4774,6 +4776,7 @@ $("d-form").addEventListener("submit", async e => {
 function openDibsEdit(t, k) {
     dibsEditing = { t, k };
     $("dibs-e-heading").textContent = k ? "Edit case" : "Add case";
+    $("dibs-e-title").value = k ? k.t : "";
     $("dibs-e-max").value = String(t.maxPer);
     $("dibs-e-assign").classList.toggle("hidden", !k);
     $("dibs-e-remove").classList.toggle("hidden", !k);
@@ -5143,8 +5146,7 @@ $("b-text").addEventListener("keydown", e => {
 
     const saved = sessionStorage.getItem("userEmail");
     const savedToken = sessionStorage.getItem("token");
-    if (saved && savedToken) enterApp(saved, savedToken, sessionStorage.getItem("isAdmin") === "1");
-    else sessionStorage.removeItem("userEmail");
+    if (saved && savedToken) enterApp(saved, savedToken, sessionStorage.getItem("isAdmin") === "1", sessionStorage.getItem("section"));    else sessionStorage.removeItem("userEmail");
 </script>
 
 </body>
