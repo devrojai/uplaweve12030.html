@@ -1192,6 +1192,19 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
 .add-course-circle:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
 .add-course-circle { margin-right: auto; }
 #ann-modal-actions { flex-wrap: wrap; align-items: center; }
+
+/* Collapsible attached files */
+.attach-toggle {
+    width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 4px 0; background: none; border: none; cursor: pointer; text-align: left;
+    font-size: var(--fs-n1); font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--accent-text);
+}
+.attach-toggle:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+.attach-chev { flex: none; width: 18px; height: 18px; transition: transform .25s var(--ease); }
+.attach-toggle[aria-expanded="true"] .attach-chev { transform: rotate(180deg); }
+#ann-modal-files { margin-top: 10px; }
+#ann-modal-edited:empty { display: none; }
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
@@ -1602,12 +1615,17 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
             </div>
             <div id="ann-modal-meta" class="ann-meta modal-gap"></div>
             <div id="ann-modal-body" class="ann-modal-body modal-gap"></div>
+            
             <div id="ann-modal-attach" class="attach-section hidden">
-                <div class="attach-title">Attached Files</div>
-                <div id="ann-modal-files" class="attach-list"></div>
+                <button type="button" class="attach-toggle" id="ann-modal-attach-toggle" aria-expanded="false" aria-controls="ann-modal-files">
+                    <span id="ann-modal-attach-label">Attached Files</span>
+                    <svg class="attach-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                </button>
+                <div id="ann-modal-files" class="attach-list hidden"></div>
             </div>
+            <div id="ann-modal-status" class="modal-gap"></div>
             <div id="ann-modal-edited" class="ann-edited modal-gap"></div>
-    <div id="ann-modal-status" class="modal-gap"></div>
+            
             <div id="ann-modal-actions" class="ann-actions modal-actions-end">
                 <button type="button" class="btn ghost sm" id="ann-modal-close" >Close</button>
             </div>
@@ -3017,9 +3035,12 @@ pre.className = "file-text";
         const filesBox = $("ann-modal-files");
         filesBox.textContent = "";
 
-        if (a.files && a.files.length) {
+               if (a.files && a.files.length) {
             attachSec.classList.remove("hidden");
+            $("ann-modal-attach-label").textContent = "Attached Files (" + a.files.length + ")";
+            setAttachOpen(false);
             a.files.forEach(f => {
+                
                 const btn = mk("button", "attach-btn");
                 btn.type = "button";
                 btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> `;
@@ -3065,6 +3086,14 @@ setEdited(edited, a.edited ? "Edited by the author on " + longDate(a.edited) : "
         if (!a.myRead) setAnnStatus(a, { read: true });
     }
         function closeAnnModal() { $("ann-modal").classList.add("hidden"); openAnnId = ""; }
+        function setAttachOpen(open) {
+        $("ann-modal-files").classList.toggle("hidden", !open);
+        $("ann-modal-attach-toggle").setAttribute("aria-expanded", String(open));
+    }
+    $("ann-modal-attach-toggle").addEventListener("click", () => {
+        setAttachOpen($("ann-modal-files").classList.contains("hidden"));
+    });
+    
     $("ann-modal-close").addEventListener("click", closeAnnModal);
     $("ann-modal").addEventListener("click", e => { if (e.target === e.currentTarget) closeAnnModal(); });
 
