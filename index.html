@@ -1209,6 +1209,32 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
 #ann-modal-status { margin-bottom: 0; }
 #ann-modal-status .ann-status { margin-top: 6px; padding-top: 0; border-top: none; }
 #ann-modal-edited:empty + #ann-modal-status .ann-status { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line-strong); }
+
+/* ===== User profile popup ===== */
+.modal-card.user-card { width: 560px; max-width: 95vw; max-height: 90vh; padding: 0; overflow: hidden; display: flex; flex-direction: column; text-align: left; border-top: none; }
+.um-scroll { flex: 1; min-height: 0; overflow-y: auto; }
+.um-banner {
+    height: 100px;
+    background:
+        radial-gradient(circle, rgba(255,255,255,.16) 1.2px, transparent 1.6px) 0 0 / 18px 18px,
+        linear-gradient(135deg, var(--accent-hover), var(--accent));
+}
+.um-hero { display: flex; flex-direction: column; align-items: center; text-align: center; margin-top: -52px; padding: 0 24px; }
+.um-hero .detail-photo { width: 104px; height: 104px; font-size: 2rem; border: 4px solid var(--surface); box-shadow: 0 8px 20px rgba(0,0,0,.28); }
+.um-name { margin-top: 12px; font-size: 1.45rem; font-weight: 700; line-height: 1.25; color: var(--accent-text); word-break: break-word; }
+.um-nick { margin-top: 2px; font-weight: 600; color: var(--muted); }
+.um-badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 12px; }
+.um-pill { padding: 3px 12px; font-size: var(--fs-n1); font-weight: 700; border-radius: 999px; color: var(--badge-ink); background: var(--badge-bg); border: 1px solid var(--badge-line); }
+.um-pill.solid { color: var(--on-accent); background: var(--accent); border-color: var(--accent); }
+.um-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; padding: 16px 24px 0; }
+.um-actions .attach-btn { padding: 8px 16px; border-radius: 999px; }
+.um-body { display: flex; flex-direction: column; gap: 22px; padding: 22px 24px 20px; }
+.um-body a { color: var(--accent-text); text-decoration: underline; }
+.um-foot { display: flex; justify-content: flex-end; padding: 12px 24px 16px; background: var(--surface); border-top: 1px solid var(--line); }
+@media (max-width: 520px) {
+    .um-body { padding: 18px 18px 16px; }
+    .um-foot { padding: 12px 18px 14px; }
+}
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
@@ -1659,9 +1685,9 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
 
     <!-- User Details Modal -->
 <div class="modal hidden" id="user-modal" role="dialog" aria-modal="true">
-    <div class="modal-card course-card">
-        <div id="user-modal-body"></div>
-        <div class="ann-actions modal-actions-end">
+    <div class="modal-card user-card">
+        <div id="user-modal-body" class="um-scroll"></div>
+        <div class="um-foot">
             <button type="button" class="btn ghost sm" id="user-modal-close">Close</button>
         </div>
     </div>
@@ -2310,40 +2336,63 @@ function setEdited(el, text) {
     }
 
     function renderDetail(u, photo) {
-    const box = $("user-modal-body");   // was $("repo-detail")
-    box.textContent = "";
-        const head = mk("div", "detail-head");
+        const box = $("user-modal-body");
+        box.textContent = "";
+        box.appendChild(mk("div", "um-banner"));
+
+        // Header: avatar, name, nickname, pills
+        const hero = mk("div", "um-hero");
         const ph = mk("div", "detail-photo");
         avatarInto(ph, u, photo);
-        const who = mk("div");
-        who.appendChild(mk("div", "detail-name", nameOf(u)));
-        who.appendChild(mk("div", "u-sub", roleOf(u)));
-        head.appendChild(ph);
-        head.appendChild(who);
-        box.appendChild(head);
+        hero.appendChild(ph);
+        hero.appendChild(mk("div", "um-name", nameOf(u)));
+        if (u.nickname) hero.appendChild(mk("div", "um-nick", "\u201c" + u.nickname + "\u201d"));
+        const badges = mk("div", "um-badges");
+        badges.appendChild(mk("span", "um-pill" + (u.admin ? " solid" : ""), roleOf(u)));
+        badges.appendChild(mk("span", "um-pill", u.verified ? "Email verified" : "Email not verified"));
+        hero.appendChild(badges);
+        box.appendChild(hero);
 
-        const rows = [
-            ["First name", u.firstName], ["Middle name", u.middleName], ["Last name", u.lastName], ["Nickname", u.nickname],
-            ["Contact no.", u.contact], ["UP student email", u.upEmail], ["Telegram handle", u.tg],
-            ["Facebook URL", u.fb, "link"],
-            ["Account email", u.email], ["Role", roleOf(u)], ["Email verified", u.verified ? "Yes" : "No"],
-            ["Account created", u.created], ["Profile updated", u.updated]
-        ];
-        const grid = mk("div", "detail-grid");
-        rows.forEach(r => {
-            const row = mk("div", "drow");
-            row.appendChild(mk("div", "dk", r[0]));
-            const v = mk("div", "dv");
-            if (!r[1]) v.textContent = "—";
-            else if (r[2] === "link" && /^https?:\/\//i.test(r[1])) {
-                const a = mk("a", "", r[1]);
-                a.href = r[1]; a.target = "_blank"; a.rel = "noopener noreferrer";
-                v.appendChild(a);
-            } else v.textContent = r[1];
-            row.appendChild(v);
-            grid.appendChild(row);
-        });
-        box.appendChild(grid);
+        // Quick actions
+        const acts = mk("div", "um-actions");
+        const plain = (label, href) => { const a = mk("a", "attach-btn", label); a.href = href; acts.appendChild(a); };
+        const mail = u.upEmail || u.email;
+        if (mail) plain("Email", "mailto:" + mail);
+        const tel = (u.contact || "").replace(/[^\d+]/g, "");
+        if (tel.length >= 7) plain("Call", "tel:" + tel);
+        const tg = (u.tg || "").replace(/^@/, "");
+        if (/^[A-Za-z0-9_]{3,32}$/.test(tg)) acts.appendChild(linkBtn("Telegram", "https://t.me/" + tg));
+        const fbUrl = safeUrl(u.fb);
+        if (fbUrl) acts.appendChild(linkBtn("Facebook", fbUrl));
+        if (acts.children.length) box.appendChild(acts);
+
+        // Details, grouped into tiles
+        const body = mk("div", "um-body");
+        const section = (title, items) => {
+            const s = mk("div", "cm-sec");
+            s.appendChild(mk("div", "cm-sec-title", title));
+            const g = mk("div", "cm-tiles");
+            items.forEach(([k, v, wide, isLink]) => {
+                const t = mk("div", "cm-tile" + (wide ? " wide" : ""));
+                t.appendChild(mk("div", "cm-tile-k", k));
+                const val = mk("div", "cm-tile-v");
+                const href = isLink ? safeUrl(v) : "";
+                if (!v) { val.textContent = "\u2014"; val.style.opacity = ".5"; }
+                else if (href) {
+                    const a = mk("a", "", v);
+                    a.href = href; a.target = "_blank"; a.rel = "noopener noreferrer";
+                    val.appendChild(a);
+                } else val.textContent = v;
+                t.appendChild(val);
+                g.appendChild(t);
+            });
+            s.appendChild(g);
+            body.appendChild(s);
+        };
+        section("Name", [["First name", u.firstName], ["Middle name", u.middleName], ["Last name", u.lastName], ["Nickname", u.nickname]]);
+        section("Contact", [["Contact no.", u.contact], ["Telegram handle", u.tg], ["UP student email", u.upEmail, true], ["Facebook URL", u.fb, true, true]]);
+        section("Account", [["Account email", u.email, true], ["Account created", u.created], ["Profile updated", u.updated]]);
+        box.appendChild(body);
     }
 
     async function openUser(email) {
