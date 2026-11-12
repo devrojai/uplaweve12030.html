@@ -1127,6 +1127,31 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
     cursor: grabbing; user-select: none; position: relative; z-index: 2;
     background: var(--hover); border-color: var(--accent); box-shadow: var(--shadow-md);
 }
+
+/* Course popup: one-line titles that slide when too long */
+.cm-body { overflow-x: hidden; }
+.course-ann-card .ann-marq { flex: 0 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; }
+.course-ann-card .ann-marq .ann-title { display: inline-block; white-space: nowrap; word-break: normal; }
+.course-ann-card .ann-marq.run {
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 16px), transparent);
+    mask-image: linear-gradient(90deg, #000 calc(100% - 16px), transparent);
+}
+.course-ann-card .ann-marq.run .ann-title { animation: annMarq var(--mdur, 8s) linear infinite alternate; }
+@keyframes annMarq {
+    0%, 15%   { transform: translateX(0); }
+    85%, 100% { transform: translateX(var(--mdist)); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .course-ann-card .ann-marq.run .ann-title { animation: none !important; }
+    .course-ann-card .ann-marq.run { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
+}
+
+/* Sort button: never wraps, and shrinks a little on phones so it fits */
+.cm-sec-title .cm-sort { white-space: nowrap; }
+@media (max-width: 520px) {
+    .cm-sec-title { gap: 8px; }
+    .cm-sec-title .cm-sort { padding: 5px 9px; letter-spacing: .4px; }
+}
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
@@ -3595,7 +3620,7 @@ function openCourseModal(c) {
         head.appendChild(count);
         let sortBtn = null;
         if (isAdmin) {
-            sortBtn = mk("button", "btn sm ghost cm-sort", "Sort newest first"); sortBtn.type = "button";
+            sortBtn = mk("button", "btn sm ghost cm-sort", "Sort newest"); sortBtn.type = "button";
             head.appendChild(sortBtn);
         }
         const list = mk("div", "cm-list");
@@ -3677,7 +3702,9 @@ function openCourseModal(c) {
             }
 
             const tw = mk("div", "ann-titlewrap");
-            tw.appendChild(mk("h3", "ann-title", a.title));
+            const mq = mk("div", "ann-marq");
+            mq.appendChild(mk("h3", "ann-title", a.title));
+            tw.appendChild(mq);
             if (isNewAnn(a)) tw.appendChild(mk("span", "new-tag", "NEW"));
             item.appendChild(tw);
             item.addEventListener("click", () => openAnnModal(a));
@@ -3708,6 +3735,7 @@ function openCourseModal(c) {
             if (sortBtn) sortBtn.classList.toggle("hidden", ids.length < 2);
             sec.classList.toggle("hidden", !ids.length);
             ids.forEach(id => list.appendChild(makeItem(byId(id))));
+            requestAnimationFrame(marqueeAll);
         }
         renderItems();
     }
@@ -3728,7 +3756,24 @@ function openCourseModal(c) {
     cb.onclick = closeCourseModal;
     actions.appendChild(cb);
     $("course-modal").classList.remove("hidden");
+    requestAnimationFrame(marqueeAll);
 }
+
+// Titles that don't fit on one line slide right-to-left so the whole title can be read
+function marqueeAll() {
+    document.querySelectorAll("#course-modal .ann-marq").forEach(mq => {
+        const t = mq.firstElementChild;
+        if (!t) return;
+        mq.classList.remove("run");
+        const d = t.offsetWidth - mq.clientWidth;
+        if (d > 2) {
+            mq.style.setProperty("--mdist", "-" + (d + 6) + "px");
+            mq.style.setProperty("--mdur", Math.max(5, d / 25 + 3) + "s");
+            mq.classList.add("run");
+        }
+    });
+}
+window.addEventListener("resize", marqueeAll);
     
 function closeCourseModal() { $("course-modal").classList.add("hidden"); }
 
