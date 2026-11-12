@@ -942,6 +942,9 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
 .link-list { display: flex; flex-direction: column; gap: 6px; max-height: 50vh; overflow-y: auto; margin: 10px 0; }
 .link-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--r-md); cursor: pointer; font-weight: 600; }
 .link-row input { width: 18px; height: 18px; accent-color: var(--accent); }
+.link-text { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; }
+.link-title { font-weight: 600; word-break: break-word; }
+.link-code { padding: 2px 8px; font-size: .75rem; font-weight: 700; letter-spacing: .8px; line-height: 1.4; color: var(--on-accent); background: var(--accent); border-radius: var(--r-sm); }
 .badge.pinned { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
 .fmt-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 14px 0 -6px; }
 .fmt-bar button, .fmt-bar select { padding: 5px 10px; min-width: 34px; font-weight: 700; color: var(--accent-text); background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-md); cursor: pointer; }
@@ -1133,14 +1136,16 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
 .course-ann-card .ann-marq { flex: 0 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; }
 .course-ann-card .ann-marq .ann-title { display: inline-block; white-space: nowrap; word-break: normal; }
 .course-ann-card .ann-marq.run {
-    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 16px), transparent);
-    mask-image: linear-gradient(90deg, #000 calc(100% - 16px), transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 12px, #000 calc(100% - 12px), transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 12px, #000 calc(100% - 12px), transparent);
 }
-.course-ann-card .ann-marq.run .ann-title { animation: annMarq var(--mdur, 8s) linear infinite alternate; }
+        
+.course-ann-card .ann-marq.run .ann-title { animation: annMarq var(--mdur, 8s) linear infinite; }
 @keyframes annMarq {
-    0%, 15%   { transform: translateX(0); }
-    85%, 100% { transform: translateX(var(--mdist)); }
+    from { transform: translateX(var(--mfrom)); }
+    to   { transform: translateX(var(--mto)); }
 }
+        
 @media (prefers-reduced-motion: reduce) {
     .course-ann-card .ann-marq.run .ann-title { animation: none !important; }
     .course-ann-card .ann-marq.run { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
@@ -1152,6 +1157,12 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
     .cm-sec-title { gap: 8px; }
     .cm-sec-title .cm-sort { padding: 5px 9px; letter-spacing: .4px; }
 }
+
+/* Add to course: plus in a maroon circle */
+.add-course-circle { flex: none; width: 38px; height: 38px; padding: 0; display: inline-grid; place-items: center; color: var(--on-accent); background: var(--accent); border: none; border-radius: 50%; cursor: pointer; transition: background .2s, transform .2s var(--ease); }
+.add-course-circle svg { width: 20px; height: 20px; }
+.add-course-circle:hover { background: var(--accent-hover); transform: scale(1.06); }
+.add-course-circle:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
@@ -2998,7 +3009,9 @@ setEdited(edited, a.edited ? "Edited by the author on " + longDate(a.edited) : "
             }
             const db = mk("button", "btn sm", "Delete"); db.type = "button";
             db.addEventListener("click", () => deleteAnnouncement(a, db));
-            const lb = mk("button", "btn sm ghost", "Add to course"); lb.type = "button";
+            const lb = mk("button", "add-course-circle"); lb.type = "button";
+            lb.title = "Add to course"; lb.setAttribute("aria-label", "Add to course");
+            lb.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>';
             lb.addEventListener("click", () => openLinkModal(a));
             actions.appendChild(lb);
             actions.appendChild(db);
@@ -3322,6 +3335,14 @@ async function syncBinCourses(annId, sel) {
         if (!(await saveCourseLinks(c, ids))) throw new Error("link");
     }
 }
+
+function linkRowText(c) {
+    const box = mk("div", "link-text");
+    box.appendChild(mk("span", "link-title", c.title + (c.hidden ? " \u2014 hidden" : "")));
+    box.appendChild(mk("span", "link-code", c.code));
+    return box;
+}
+    
 function openBinCourses() {
     linkForm = true; linkFor = null;
     const box = $("link-modal-list"); box.textContent = "";
@@ -3330,7 +3351,7 @@ function openBinCourses() {
         const lab = mk("label", "link-row");
         const cb = mk("input"); cb.type = "checkbox"; cb.value = c.id;
         cb.checked = binCourseIds.includes(c.id);
-        lab.append(cb, document.createTextNode(c.title + " (" + c.code + ")" + (c.hidden ? " \u2014 hidden" : "")));
+        lab.append(cb, linkRowText(c));
         box.appendChild(lab);
     });
     setMessage($("link-modal-msg"), "", "");
@@ -3429,7 +3450,7 @@ function openLinkModal(a) {
         const lab = mk("label", "link-row");
         const cb = mk("input"); cb.type = "checkbox"; cb.value = c.id;
         cb.checked = (c.announcementIds || []).includes(a.id);
-        lab.append(cb, document.createTextNode(c.title + " (" + c.code + ")"));
+        lab.append(cb, linkRowText(c));
         box.appendChild(lab);
     });
     setMessage($("link-modal-msg"), "", "");
@@ -3520,8 +3541,6 @@ function courseRow(c, dim) {
     const tags = mk("div", "course-tags");
     [c.semester ? c.semester + " Sem" : "", c.ay].filter(Boolean).forEach(t => tags.appendChild(mk("span", "chip-soft", t)));
     if (c.hidden && isAdmin && dim) tags.appendChild(mk("span", "chip-soft hidden-chip", "Hidden"));
-    const nf = (c.syllabus || []).length + (c.documents || []).length;
-    if (nf) tags.appendChild(mk("span", "chip-soft", "\uD83D\uDCCE " + nf + (nf === 1 ? " file" : " files")));
     main.appendChild(tags);
     const cl = safeUrl(c.casesLink), dg = safeUrl(c.digestsLink);
     if (cl || dg) {
@@ -3761,18 +3780,21 @@ function openCourseModal(c) {
 
 // Titles that don't fit on one line slide right-to-left so the whole title can be read
 function marqueeAll() {
+    const SPEED = 40; // px per second, same for every title
     document.querySelectorAll("#course-modal .ann-marq").forEach(mq => {
         const t = mq.firstElementChild;
         if (!t) return;
         mq.classList.remove("run");
-        const d = t.offsetWidth - mq.clientWidth;
-        if (d > 2) {
-            mq.style.setProperty("--mdist", "-" + (d + 6) + "px");
-            mq.style.setProperty("--mdur", Math.max(5, d / 25 + 3) + "s");
+        const box = mq.clientWidth, text = t.offsetWidth;
+        if (text - box > 2) {
+            mq.style.setProperty("--mfrom", box + "px");      // starts off the right edge
+            mq.style.setProperty("--mto", "-" + text + "px"); // exits fully past the left edge
+            mq.style.setProperty("--mdur", ((box + text) / SPEED) + "s");
             mq.classList.add("run");
         }
     });
 }
+    
 window.addEventListener("resize", marqueeAll);
     
 function closeCourseModal() { $("course-modal").classList.add("hidden"); }
