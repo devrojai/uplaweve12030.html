@@ -1284,6 +1284,7 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
 .btn.um-delete svg { width: 18px; height: 18px; flex: none; }
 .btn.um-delete:hover:not(:disabled) { background: var(--err); border-color: var(--err); color: var(--surface); }
 .btn.um-delete.loading::before { border-color: var(--line-strong); border-top-color: var(--err); }
+.cm-names { display: flex; flex-direction: column; gap: 2px; max-height: 180px; overflow-y: auto; }
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
@@ -1669,9 +1670,13 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
         <p class="hint">Optional. Type @ and pick a full name, e.g. @Rojons Evangelista.</p>
         <div class="group-title">Access</div>
         <div class="file-upload-area">
-            <button type="button" class="btn sm ghost" id="c-members-btn">Add Law Students</button>
+            <div class="file-row">
+                <button type="button" class="btn sm" id="c-members-btn">Add Law Students</button>
+                <span class="hint">Only the students you add (and admins) can see this course and its announcements.</span>
+            </div>
         </div>
-        <p class="hint">Only the students you add (and admins) can see this course and its announcements.</p>        <div class="group-title">Links</div>
+        
+        <div class="group-title">Links</div>
         <div class="field"><input type="url" id="c-cases" placeholder=" " maxlength="500"><label for="c-cases">Cases link</label></div>
         <div class="field"><input type="url" id="c-digests" placeholder=" " maxlength="500"><label for="c-digests">Digests link</label></div>
         <p class="hint">Optional. Example: https://drive.google.com/...</p>
@@ -3878,9 +3883,34 @@ function openCourseModal(c) {
     tile("Professor", c.professor, true);
     tile("Semester", c.semester ? c.semester + " Semester" : "");
     tile("Academic year", c.ay);
-    if (c.beadle) tile("Beadle", c.beadle.replace(/@/g, ""));
-    if (c.officer) tile("Academic officer", c.officer.replace(/@/g, ""));
-    if (isAdmin) tile("Law students with access", String((c.members || []).length), true);
+    // "@Rojons Antiguo Evangelista, @Micah Granada" -> "Rojons Evangelista, Micah Granada"
+    const plainNames = s => String(s || "").split("@").map(x => x.replace(/[,;\s]+$/, "").trim()).filter(Boolean)
+        .map(x => { const p = x.split(/\s+/); return p.length > 2 ? p[0] + " " + p[p.length - 1] : p.join(" "); }).join(", ");
+    if (c.beadle) tile("Beadle", plainNames(c.beadle));
+    if (c.officer) tile("Academic officer", plainNames(c.officer));
+
+    if (isAdmin) {
+        // Admins see the names, surname first
+        const members = c.members || [];
+        const t = mk("div", "cm-tile wide");
+        t.appendChild(mk("div", "cm-tile-k", "Law students with access (" + members.length + ")"));
+        const v = mk("div", "cm-tile-v cm-names");
+        t.appendChild(v);
+        tiles.appendChild(t);
+        if (!members.length) v.textContent = "—";
+        else {
+            v.textContent = "Loading…";
+            loadMentionUsers().then(() => {
+                const names = members.map(em => { const u = mentionUsers.find(x => x.email === em); return u ? memberLabel(u) : em; })
+                    .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+                v.textContent = "";
+                names.forEach(n => v.appendChild(mk("div", "", n)));
+            });
+        }
+    } else {
+        // Students only see how many
+        tile("Law students with access", String(c.memberCount || 0));
+    }
 
     // Links and files
     const extra = $("course-modal-extra"); extra.textContent = "";
