@@ -1205,9 +1205,9 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
 .attach-toggle[aria-expanded="true"] .attach-chev { transform: rotate(180deg); }
 #ann-modal-files { margin-top: 10px; }
 #ann-modal-edited:empty { display: none; }
+#ann-modal-edited { margin-top: 0; margin-bottom: 0; }
 #ann-modal-status { margin-bottom: 0; }
-#ann-modal-status .ann-status { margin-top: 12px; padding-top: 10px; }
-#ann-modal-edited { margin-top: 0px; margin-bottom: 14px; }
+#ann-modal-status .ann-status { margin-top: 10px; padding-top: 10px; }
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
@@ -1626,8 +1626,8 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
                 </button>
                 <div id="ann-modal-files" class="attach-list hidden"></div>
             </div>
-            <div id="ann-modal-status" class="modal-gap"></div>
             <div id="ann-modal-edited" class="ann-edited modal-gap"></div>
+            <div id="ann-modal-status" class="modal-gap"></div>
             
             <div id="ann-modal-actions" class="ann-actions modal-actions-end">
                 <button type="button" class="btn ghost sm" id="ann-modal-close" >Close</button>
@@ -2670,7 +2670,7 @@ function closeUser() {
     document.addEventListener("click", (e) => { pickers.forEach(p => { if (!p.field.contains(e.target)) p.close(); }); });
 
     const EVERYONE = { email: "All users", firstName: "everyone", everyone: true };
-    let mentionUsers = [], mentionSel = [], mMatches = [], mIdx = 0, mStart = 0;
+    let mentionUsers = [], mentionSel = [], mMatches = [], mIdx = 0, mStart = 0, mQuery = "";
     async function loadMentionUsers() {
         if (mentionUsers.length) return;
         try {
@@ -2702,6 +2702,7 @@ function closeUser() {
         const m = /(^|\s)@([^\n@]{0,30})$/.exec(ta.value.slice(0, pos));
         if (!m) return hideMention();
         const q = m[2].toLowerCase();
+        mQuery = q.trim();
         mStart = pos - m[2].length - 1;
         mMatches = [EVERYONE].concat(mentionUsers)
             .map(u => ({ u, s: mentionScore(u, q) }))
@@ -2731,10 +2732,29 @@ function mentionHandle(u) {
     const unique = (w) => !mentionUsers.some(x => x.email !== u.email && mentionAliases(x).includes(w.toLowerCase()));
     return cands.find(unique) || cands[0] || nameOf(u);
 }
+
+    // Name to insert: whichever of nickname / first name / surname matches what the admin typed
+function mentionHandleFor(u, q) {
+    q = (q || "").toLowerCase().trim();
+    if (!q) return mentionHandle(u);
+    const toks = q.split(/\s+/).filter(Boolean);
+    const fields = [u.nickname, u.firstName, u.lastName, u.middleName].map(s => (s || "").trim()).filter(Boolean);
+    let best = "", bestScore = 0;
+    fields.forEach(f => {
+        const l = f.toLowerCase();
+        let s = 0;
+        if (l === q) s = 4;
+        else if (l.startsWith(q)) s = 3;
+        else if (toks.some(t => l === t)) s = 2;
+        else if (toks.some(t => l.startsWith(t))) s = 1;
+        if (s > bestScore) { best = f; bestScore = s; }   // ties keep the earlier field (nickname, first, surname)
+    });
+    return best || mentionHandle(u);
+}
     
     function mentionPick(u) {
     const ta = $("b-text"), pos = ta.selectionStart;
-    const handle = u.everyone ? "everyone" : mentionHandle(u);
+    const handle = u.everyone ? "everyone" : mentionHandleFor(u, mQuery);
     const ins = "@" + handle + " ";
     ta.value = ta.value.slice(0, mStart) + ins + ta.value.slice(pos);
     ta.selectionStart = ta.selectionEnd = mStart + ins.length;
