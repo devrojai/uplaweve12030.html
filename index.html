@@ -866,7 +866,9 @@ html[data-theme="night"] .drawer-foot .btn-danger:hover {
 .ann-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-start; margin: 6px 0 10px; }
         .badge.due-now { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
 .badge.due-soon { background: transparent; color: var(--accent-text); border-color: var(--accent-text); }
-
+.badge.period-badge { background: transparent; color: var(--ink); border-color: var(--period); }
+.badge.period-ended { opacity: .7; }
+        
 /* ================= NEW: skeleton loaders ================= */
 .skeleton { flex-shrink: 0; background: linear-gradient(90deg, var(--surface2) 25%, var(--hover) 50%, var(--surface2) 75%); background-size: 200% 100%; border: 1px solid var(--line); border-radius: var(--r-lg); animation: shimmer 1.3s linear infinite; }
 .skeleton.card-sk { height: 110px; }
@@ -2977,6 +2979,18 @@ function closeUser() {
     if (n <= 3) return { text: "Due in " + n + " days", cls: "due-soon" };
     return null;
 }
+
+    function periodLabel(a) {
+    if (!a.periodStart || !a.periodEnd) return null;
+    const t = new Date(); t.setHours(0, 0, 0, 0);
+    const day = iso => { const [y, m, d] = iso.split("-").map(Number); return new Date(y, m - 1, d); };
+    const toStart = Math.round((day(a.periodStart) - t) / 86400000);
+    const toEnd = Math.round((day(a.periodEnd) - t) / 86400000);
+    const n = k => k + (k === 1 ? " day" : " days");
+    if (toStart > 0) return { text: "Beginning in " + n(toStart), cls: "period-badge" };
+    if (toEnd > 0) return { text: "Ending in " + n(toEnd), cls: "period-badge" };
+    return { text: "Ended on " + prettyDate(a.periodEnd), cls: "period-badge period-ended" };
+}
     
     function fillYears(sel, y, extra) {
         y = Number.isFinite(Number(y)) && Number(y) > 0 ? Number(y) : new Date().getFullYear();
@@ -3655,6 +3669,8 @@ function isNewAnn(a) {
         tags.appendChild(mk("span", "badge", a.course));
         const due = dueLabel(a);
         if (due) tags.appendChild(mk("span", "badge " + due.cls, due.text));
+        const per = periodLabel(a);
+        if (per) tags.appendChild(mk("span", "badge " + per.cls, per.text));
         c.appendChild(tags);
 
         const body = mk("div", "ann-body");
