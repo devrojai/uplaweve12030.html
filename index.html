@@ -1059,11 +1059,22 @@ html[data-theme="night"] .archive-btn:hover:not(:disabled), html[data-theme="nig
 .ann-card .ann-titlewrap .ann-title { flex: 0 1 auto; min-width: 0; padding-top: 0; }
 .new-tag { flex: none; margin-top: 2px; padding: 2px 8px; font-size: .7rem; font-weight: 800; line-height: 1.4; letter-spacing: .8px; color: #ffffff; background: #c62828; border-radius: var(--r-sm); }
 
-/* Course popup: centered announcement title, remove button pinned right */
-.course-ann-card { position: relative; justify-content: center; padding: 8px 46px; }
-.course-ann-card .ann-title { flex: 0 1 auto; text-align: center; }
-.course-ann-foot { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); }
+/* Course popup: left-aligned, vertically centered title + NEW tag, admin controls on the right */
+.course-ann-card { position: relative; align-items: center; justify-content: flex-start; padding: 8px 10px 8px 12px; }
+.course-ann-card .ann-titlewrap { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; }
+.course-ann-card .ann-title { flex: 0 1 auto; min-width: 0; text-align: left; }
+.course-ann-card .new-tag { margin-top: 0; }
+.course-ann-foot { position: static; transform: none; margin-left: auto; display: flex; align-items: center; gap: 4px; flex: none; }
+.course-ann-card .icon-btn.mv { background: var(--accent-soft); color: var(--accent-text); }
+.course-ann-card .icon-btn.mv:hover:not(:disabled) { background: var(--accent); color: var(--on-accent); }
+.course-ann-card .icon-btn:disabled { opacity: .3; cursor: not-allowed; }
 .cm-list .course-ann.course-ann-card { margin: 0; }
+.cm-sort { align-self: flex-start; margin-top: 10px; }
+
+/* Hidden courses (admins see them dimmed) */
+.course-row.is-hidden { opacity: .6; border-left-color: var(--period); }
+.chip-soft.hidden-chip { background: var(--period); color: #fff; }
+html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
 
 /* Courses page cards */
 .course-row { padding: 18px 20px; gap: 18px; }
@@ -3209,18 +3220,38 @@ let annFilter = "", carIdx = 0, annShowArchive = false, annShowPinned = false, o
 /* ===== COURSES ===== */
 
 let linkFor = null;
-async function saveCourseLinks(c, ids) {
+function courseEditPayload(c, over) {
     const keep = f => ({ id: f.id, name: f.name, type: f.type, size: f.size });
-    const r = await authCall("edit_course", {
+    return Object.assign({
         id: c.id, title: c.title, code: c.code, semester: c.semester, ay: c.ay, professor: c.professor,
         casesLink: c.casesLink || "", digestsLink: c.digestsLink || "",
         syllabus: (c.syllabus || []).map(keep), documents: (c.documents || []).map(keep),
-        announcementIds: ids
-    });
+        announcementIds: c.announcementIds || [], hidden: !!c.hidden
+    }, over || {});
+}
+async function saveCourseLinks(c, ids) {
+    const r = await authCall("edit_course", courseEditPayload(c, { announcementIds: ids }));
     if (r.status !== "success") return false;
     c.announcementIds = ids;
     return true;
 }
+// Newly linked announcements slot in by recency (newest on top) without disturbing manual order
+function insertByRecency(ids, id) {
+    const a = annList.find(x => x.id === id), t = a ? String(a.created || "") : "";
+    let i = ids.findIndex(x => { const o = annList.find(y => y.id === x); return !o || String(o.created || "") < t; });
+    if (i < 0) i = ids.length;
+    const out = ids.slice(); out.splice(i, 0, id); return out;
+}
+async function toggleCourseHidden(c, btn) {
+    setLoading(btn, true);
+    try {
+        const r = await authCall("edit_course", courseEditPayload(c, { hidden: !c.hidden }));
+        if (r.status === "success") { c.hidden = !c.hidden; renderCourses(); openCourseModal(c); return; }
+        notify(r.message || "Couldn't update the course.");
+    } catch (err) { if (err.message !== "auth") notify(netError(err)); }
+    setLoading(btn, false);
+}
+    
 function openLinkModal(a) {
     linkFor = a;
     const box = $("link-modal-list"); box.textContent = "";
@@ -3246,7 +3277,7 @@ async function saveLinks() {
             if (!c) continue;
             const cur = c.announcementIds || [];
             if (cb.checked === cur.includes(id)) continue;
-            const ids = cb.checked ? cur.concat(id) : cur.filter(x => x !== id);
+            const ids = cb.checked ? insertByRecency(cur, id) : cur.filter(x => x !== id);
             if (!(await saveCourseLinks(c, ids))) { setMessage(msg, "Couldn't update " + c.code + ".", ERR); setLoading(btn, false); return; }
         }
         closeLinkModal(); renderCourses();
@@ -3257,7 +3288,7 @@ $("link-cancel").addEventListener("click", closeLinkModal);
 $("link-save").addEventListener("click", saveLinks);
 $("link-modal").addEventListener("click", e => { if (e.target === e.currentTarget) closeLinkModal(); });
     
-let courseList = [], courseOpen = "", cSyl = [], cDocs = [], editingCourseId = "", editingCourseAnn = [], courseAdminShown = false;const SEMS = ["1st", "2nd"];
+let courseList = [], courseOpen = "", cSyl = [], cDocs = [], editingCourseId = "", editingCourseAnn = [], editingCourseHidden = false, courseAdminShown = false;const SEMS = ["1st", "2nd"];
 const AYS = ["AY 2025-2026", "AY 2026-2027", "AY 2027-2028", "AY 2028-2029", "AY 2029-2030"];
 function fillOpts(id, ph, vals) {
     const s = $(id); s.textContent = "";
@@ -3292,19 +3323,22 @@ function linkBtn(label, url) {
 
 // Lenient search: typos allowed, and "eve1" also finds "EVE 1"
 function courseVisible() {
+    const term = courseSearchTerm.trim();
     return courseList.filter(c => {
-        if (!courseSearchTerm) return true;
+        if (!term) return isAdmin || !c.hidden;   // a search reveals hidden courses for everyone
         const hay = [c.title, c.code, (c.code || "").replace(/[\s\-]/g, ""), c.professor,
             c.semester ? c.semester + " semester" : "", c.ay || "", (c.ay || "").replace("AY ", "")].join(" ");
-        return isFuzzyMatch(hay, courseSearchTerm);
+        return isFuzzyMatch(hay, term);
     });
 }
 
 function renderCourses() {
     const box = $("course-list"); box.textContent = "";
-    const list = courseVisible(), total = courseList.length;
-    $("course-count").textContent = !total ? "" :
-        (list.length === total ? total + (total === 1 ? " course" : " courses") : list.length + " of " + total + " courses");
+    
+        const list = courseVisible(), total = courseList.filter(c => isAdmin || !c.hidden).length;
+    $("course-count").textContent = courseSearchTerm.trim()
+        ? list.length + (list.length === 1 ? " result" : " results")
+        : (total ? total + (total === 1 ? " course" : " courses") : "");    
     if (!list.length) {
         const e = mk("div", "empty");
         e.appendChild(mk("b", "", courseSearchTerm ? "No matching courses" : "No courses yet"));
@@ -3313,6 +3347,7 @@ function renderCourses() {
     }
             list.forEach(c => {
         const row = mk("div", "course-row");
+        if (c.hidden) row.classList.add("is-hidden");
         row.setAttribute("role", "button"); row.tabIndex = 0;
         const ico = mk("div", "course-ico"); ico.innerHTML = BOOK_SVG;
         const main = mk("div", "course-main");
@@ -3320,6 +3355,7 @@ function renderCourses() {
         main.appendChild(mk("div", "course-code", c.code));
         const tags = mk("div", "course-tags");
         [c.semester ? c.semester + " Sem" : "", c.ay].filter(Boolean).forEach(t => tags.appendChild(mk("span", "chip-soft", t)));
+        if (c.hidden && isAdmin) tags.appendChild(mk("span", "chip-soft hidden-chip", "Hidden"));
         const nf = (c.syllabus || []).length + (c.documents || []).length;
         if (nf) tags.appendChild(mk("span", "chip-soft", "\uD83D\uDCCE " + nf + (nf === 1 ? " file" : " files")));
         main.appendChild(tags);
@@ -3381,53 +3417,84 @@ function openCourseModal(c) {
     // Linked announcements
     const annBox = $("course-modal-anns"); annBox.textContent = "";
     const linked = (c.announcementIds || []).map(id => annList.find(a => a.id === id)).filter(Boolean);
-    if (linked.length) {
+        if (linked.length) {
         const sec = mk("div", "cm-sec");
         const head = mk("div", "cm-sec-title", "Announcements");
         head.appendChild(mk("span", "cm-count", String(linked.length)));
         sec.appendChild(head);
         const list = mk("div", "cm-list");
-        linked.forEach(a => {
+    const moveAnn = async (from, to) => {
+            const body = document.querySelector("#course-modal .cm-body"), y = body ? body.scrollTop : 0;
+            const ids = linked.map(x => x.id);
+            ids.splice(to, 0, ids.splice(from, 1)[0]);
+            try {
+                if (await saveCourseLinks(c, ids)) { openCourseModal(c); const b = document.querySelector("#course-modal .cm-body"); if (b) b.scrollTop = y; return; }
+                notify("Couldn't reorder the announcements.");
+            } catch (err) { if (err.message !== "auth") notify(netError(err)); }
+        };
+        const iconSvg = d => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>';
+        linked.forEach((a, idx) => {
             const item = mk("article", "course-ann course-ann-card");
             item.setAttribute("role", "button"); item.tabIndex = 0;
-            item.appendChild(mk("h3", "ann-title", a.title));
+            const tw = mk("div", "ann-titlewrap");
+            tw.appendChild(mk("h3", "ann-title", a.title));
+            if (isNewAnn(a)) tw.appendChild(mk("span", "new-tag", "NEW"));   // same 72-hour rule as the parent card
+            item.appendChild(tw);
             item.addEventListener("click", () => openAnnModal(a));
             item.addEventListener("keydown", e => {
                 if (e.target === item && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openAnnModal(a); }
             });
             if (isAdmin) {
                 const foot = mk("div", "course-ann-foot");
-                const rb = mk("button", "icon-btn"); rb.type = "button";
-                rb.title = "Remove from course"; rb.setAttribute("aria-label", "Remove from course");
-                rb.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>';
-                rb.addEventListener("click", async (ev) => {
-                    ev.stopPropagation();
+                const mkBtn = (cls, title, svg, fn, disabled) => {
+                    const b = mk("button", "icon-btn " + cls); b.type = "button";
+                    b.title = title; b.setAttribute("aria-label", title); b.innerHTML = iconSvg(svg); b.disabled = !!disabled;
+                    b.addEventListener("click", ev => { ev.stopPropagation(); fn(b); });
+                    return b;
+                };
+                foot.appendChild(mkBtn("mv", "Move up", '<path d="M18 15l-6-6-6 6"/>', () => moveAnn(idx, idx - 1), idx === 0));
+                foot.appendChild(mkBtn("mv", "Move down", '<path d="M6 9l6 6 6-6"/>', () => moveAnn(idx, idx + 1), idx === linked.length - 1));
+                foot.appendChild(mkBtn("", "Remove from course", '<circle cx="12" cy="12" r="10"/><path d="M8 12h8"/>', async (rb) => {
                     rb.disabled = true;
                     try {
                         if (await saveCourseLinks(c, (c.announcementIds || []).filter(x => x !== a.id))) { openCourseModal(c); return; }
                         notify("Couldn't remove the announcement.");
                     } catch (err) { if (err.message !== "auth") notify(netError(err)); }
                     rb.disabled = false;
-                });
-                foot.appendChild(rb);
+                }));
                 item.appendChild(foot);
             }
             list.appendChild(item);
         });
         sec.appendChild(list);
+        if (isAdmin && linked.length > 1) {
+            const sb = mk("button", "btn sm ghost cm-sort", "Sort newest first"); sb.type = "button";
+            sb.onclick = async () => {
+                const ids = linked.slice().sort((x, y) => String(y.created || "").localeCompare(String(x.created || ""))).map(x => x.id);
+                setLoading(sb, true);
+                try { if (await saveCourseLinks(c, ids)) { openCourseModal(c); return; } notify("Couldn't sort."); }
+                catch (err) { if (err.message !== "auth") notify(netError(err)); }
+                setLoading(sb, false);
+            };
+            sec.appendChild(sb);
+        }
         annBox.appendChild(sec);
     }
 
     // Footer
     setEdited($("course-modal-edited"), c.edited ? "Last edited on " + c.edited : "");
     const actions = $("course-modal-actions"); actions.textContent = "";
+
     if (isAdmin) {
+        const hb = mk("button", "btn sm ghost", c.hidden ? "Unhide" : "Hide"); hb.type = "button";
+        hb.onclick = () => toggleCourseHidden(c, hb);
         const eb = mk("button", "btn sm ghost", "Edit"); eb.type = "button";
         eb.onclick = () => { closeCourseModal(); startCourseEdit(c); };
         const db = mk("button", "btn sm", "Delete"); db.type = "button";
         db.onclick = () => deleteCourse(c, db);
-        actions.append(eb, db);
+        actions.append(hb, eb, db);
     }
+    
     const cb = mk("button", "btn ghost sm", "Close"); cb.type = "button";
     cb.onclick = closeCourseModal;
     actions.appendChild(cb);
@@ -3467,7 +3534,7 @@ function courseDirty() { if ($("c-send").classList.contains("submitted")) course
 
 function resetCourseForm() {
     ["c-title", "c-code", "c-prof", "c-cases", "c-digests"].forEach(id => { $(id).value = ""; });    ["c-sem", "c-ay"].forEach(id => { $(id).value = ""; if ($(id)._sync) $(id)._sync(); });
-    editingCourseId = ""; editingCourseAnn = []; cSyl = []; cDocs = []; renderCSyl(); renderCDocs();
+    editingCourseId = ""; editingCourseAnn = []; editingCourseHidden = false; cSyl = []; cDocs = []; renderCSyl(); renderCDocs();
     courseMode(); setMessage($("c-message"), "", ""); syncFields();
 }
 
@@ -3475,6 +3542,7 @@ function startCourseEdit(c) {
     resetCourseForm();
     editingCourseId = c.id;
     editingCourseAnn = (c.announcementIds || []).slice();
+    editingCourseHidden = !!c.hidden;
     $("c-title").value = c.title; $("c-code").value = c.code; $("c-prof").value = c.professor;
         $("c-cases").value = c.casesLink || ""; $("c-digests").value = c.digestsLink || "";
     const ay = $("c-ay");
@@ -3522,7 +3590,7 @@ async function postCourse(e) {
     let added = false;
     try {
         const payload = { title, code, semester: sem, ay, professor: prof, casesLink, digestsLink, syllabus: cSyl, documents: cDocs };        
-        if (wasEdit) { payload.id = editedId; payload.announcementIds = editingCourseAnn; }
+        if (wasEdit) { payload.id = editedId; payload.announcementIds = editingCourseAnn; payload.hidden = editingCourseHidden; }
         const r = await authCall(wasEdit ? "edit_course" : "add_course", payload);
         if (r.status === "success") {
             resetCourseForm();
