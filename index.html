@@ -879,7 +879,7 @@ html[data-theme="night"] .drawer-foot .btn-danger:hover {
 /* ================= NEW: modal helper classes ================= */
 .modal-card.modal-wide { text-align: left; width: 520px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }.modal-card.modal-file { text-align: left; width: 640px; max-width: 95vw; }
 #file-modal { z-index: 80; }  
-.modal-head { margin-bottom: 8px; flex-direction: column; align-items: flex-start; gap: 4px; }
+.modal-head { margin-bottom: 14px; flex-direction: column; align-items: flex-start; gap: 14px; }
 .modal-head h3 { margin-bottom: 0; }
 .modal-gap { margin-bottom: 14px; }
 .modal-actions-end { justify-content: flex-end; gap: 10px; margin-top: 16px; }
@@ -988,6 +988,23 @@ html[data-theme="night"] .archive-btn:hover:not(:disabled), html[data-theme="nig
 .fmt-swatches { position: absolute; top: calc(100% + 6px); left: 0; z-index: 30; display: grid; grid-template-columns: repeat(3, 28px); gap: 6px; padding: 8px; background: var(--surface); border: 1px solid var(--line-strong); border-top: 3px solid var(--accent); border-radius: var(--r-lg); box-shadow: 0 12px 30px rgba(0,0,0,.25); }
 .fmt-bar .fmt-sw { width: 28px; height: 28px; min-width: 0; padding: 0; border: 2px solid var(--surface); border-radius: var(--r-md); box-shadow: 0 0 0 1px var(--line-strong); }
 .fmt-bar .fmt-sw:hover { transform: scale(1.1); }
+
+/* Modal action buttons: text centered inside each button */
+.ann-actions .btn, .modal-actions .btn.sm {
+    display: inline-flex; align-items: center; justify-content: center;
+    text-align: center; line-height: 1.2; white-space: nowrap; min-height: 38px;
+}
+@media (max-width: 520px) {
+    .ann-actions, .modal-actions-end { flex-wrap: wrap; }
+    .ann-actions .btn, .modal-actions-end .btn { flex: 1 1 auto; }
+}
+
+/* Course popup: title-only announcement cards */
+.course-ann-card { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: var(--r-lg); cursor: pointer; }
+.course-ann-card:hover { box-shadow: var(--shadow-md); border-color: var(--line-strong); border-left-color: var(--accent); }
+.course-ann-foot { display: flex; justify-content: flex-end; }
+
+#hl-modal { z-index: 85; }
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
@@ -1437,13 +1454,28 @@ html[data-theme="night"] .archive-btn:hover:not(:disabled), html[data-theme="nig
 <div class="modal hidden" id="link-modal" role="dialog" aria-modal="true">
     <div class="modal-card modal-wide">
         <h3>Add to course</h3>
-        <p id="link-modal-sub"></p>
+        
         <div class="link-list" id="link-modal-list"></div>
         <div class="msg" id="link-modal-msg"></div>
         <div class="modal-actions modal-actions-end">
             <button type="button" class="btn ghost sm" id="link-cancel">Cancel</button>
             <button type="button" class="btn sm" id="link-save">Save</button>
         </div>
+    </div>
+</div>
+
+<div class="modal hidden" id="hl-modal" role="dialog" aria-modal="true">
+    <div class="modal-card">
+        <h3>Add link</h3>
+        <form id="hl-form" novalidate>
+            <div class="field"><input type="text" id="hl-text" placeholder=" " maxlength="200"><label for="hl-text">Text to display</label></div>
+            <div class="field"><input type="url" id="hl-url" placeholder=" " maxlength="500"><label for="hl-url">Paste the link here</label></div>
+            <div class="msg" id="hl-msg"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn ghost" id="hl-cancel">Cancel</button>
+                <button type="submit" class="btn" id="hl-ok">Add link</button>
+            </div>
+        </form>
     </div>
 </div>
     
@@ -2658,14 +2690,23 @@ pre.className = "file-text";
     let annList = [], dlY = NOW.getFullYear(), dlM = NOW.getMonth(), dlSel = todayIso();
     let annSearchTerm = "";
 
-    let pins = new Set();
-    function loadPins() {
-        try { pins = new Set(JSON.parse(localStorage.getItem("eve1Pins:" + currentEmail) || "[]")); } catch (e) { pins = new Set(); }
-    }
-    function togglePin(a) {
-        if (pins.has(a.id)) pins.delete(a.id); else pins.add(a.id);
-        try { localStorage.setItem("eve1Pins:" + currentEmail, JSON.stringify(Array.from(pins))); } catch (e) {}
+        let pins = new Set();
+    function loadPins() { pins = new Set(); }
+    async function togglePin(a) {
+        const next = !a.pinned;
+        a.pinned = next;
+        if (next) pins.add(a.id); else pins.delete(a.id);
         annRefresh();
+        try {
+            const r = await authCall("announcement_pin", { id: a.id, pinned: next });
+            if (r.status !== "success") throw new Error(r.message || "Couldn't update the pin.");
+        } catch (err) {
+            if (err.message === "auth") return;
+            a.pinned = !next;
+            if (next) pins.delete(a.id); else pins.add(a.id);
+            annRefresh();
+            notify(err.message === "Failed to fetch" ? netError(err) : err.message);
+        }
     }
     
            function richText(el, text, mentions) {
@@ -3070,6 +3111,7 @@ let annFilter = "", carIdx = 0, annShowArchive = false, annShowPinned = false, o
                 annList = (r.announcements || []).map(a => Object.assign({}, a, {
                     deadline: normIso(a.deadline), periodStart: normIso(a.periodStart), periodEnd: normIso(a.periodEnd)
                 }));
+                pins = new Set(annList.filter(a => a.pinned).map(a => a.id));
                 renderAnnouncements(); syncCalSel(true); renderCalendar();
             }
                         else { ["ann-msg", "dl-msg"].forEach(id => setMessage($(id), r.message, ERR)); renderAnnouncements(); }
@@ -3097,14 +3139,13 @@ async function saveCourseLinks(c, ids) {
 }
 function openLinkModal(a) {
     linkFor = a;
-    $("link-modal-sub").textContent = 'Tick the courses that should show "' + a.title + '".';
     const box = $("link-modal-list"); box.textContent = "";
     if (!courseList.length) box.appendChild(mk("p", "repo-count", "No courses yet."));
     courseList.forEach(c => {
         const lab = mk("label", "link-row");
         const cb = mk("input"); cb.type = "checkbox"; cb.value = c.id;
         cb.checked = (c.announcementIds || []).includes(a.id);
-        lab.append(cb, document.createTextNode(c.code + " — " + c.title));
+        lab.append(cb, document.createTextNode(c.title + " (" + c.code + ")"));
         box.appendChild(lab);
     });
     setMessage($("link-modal-msg"), "", "");
@@ -3248,25 +3289,36 @@ function openCourseModal(c) {
     if (linked.length) {
         annBox.appendChild(mk("div", "attach-title course-anns", "Announcements"));
         linked.forEach(a => {
-            const item = mk("div", "course-ann");
-            item.appendChild(annCard(a));
+            const item = mk("article", "course-ann course-ann-card");
+            item.setAttribute("role", "button"); item.tabIndex = 0;
+            item.appendChild(mk("h3", "ann-title", a.title));
+            item.addEventListener("click", () => openAnnModal(a));
+            item.addEventListener("keydown", e => {
+                if (e.target === item && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openAnnModal(a); }
+            });
             if (isAdmin) {
-                const rb = mk("button", "btn sm ghost", "Remove from course"); rb.type = "button";
-                rb.onclick = async () => {
-                    setLoading(rb, true);
+                const foot = mk("div", "course-ann-foot");
+                const rb = mk("button", "icon-btn"); rb.type = "button";
+                rb.title = "Remove from course"; rb.setAttribute("aria-label", "Remove from course");
+                rb.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><path d="M8 12h8"/></svg>';
+                rb.addEventListener("click", async (ev) => {
+                    ev.stopPropagation();
+                    rb.disabled = true;
                     try {
                         if (await saveCourseLinks(c, (c.announcementIds || []).filter(x => x !== a.id))) { openCourseModal(c); return; }
                         notify("Couldn't remove the announcement.");
                     } catch (err) { if (err.message !== "auth") notify(netError(err)); }
-                    setLoading(rb, false);
-                };
-                item.appendChild(rb);
+                    rb.disabled = false;
+                });
+                foot.appendChild(rb);
+                item.appendChild(foot);
             }
             annBox.appendChild(item);
         });
     }
+
+    setEdited($("course-modal-edited"), c.edited ? "Last edited on " + c.edited : "");
     
-setEdited($("course-modal-edited"), c.edited ? "Last edited on " + c.edited : "");
     const actions = $("course-modal-actions"); actions.textContent = "";
     if (isAdmin) {
         const eb = mk("button", "btn sm ghost", "Edit"); eb.type = "button";        eb.onclick = () => { closeCourseModal(); startCourseEdit(c); };
@@ -3452,11 +3504,12 @@ $("c-doc").addEventListener("change", e => handleFileSelect(e, cDocs, "c-doc-lis
     document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
     if (!$("confirm-modal").classList.contains("hidden")) { $("confirm-no").click(); return; }
-    closeMenu(); closeProfile(); closeDelete(); closeLinkModal(); closeAnnModal(); closeCourseModal(); closeUser(); closeFileModal();});    
-    document.querySelectorAll(".nav button[data-section]").forEach(b => b.addEventListener("click", () => {
+    closeMenu(); closeProfile(); closeDelete(); closeLinkModal(); closeLinkDialog(); closeAnnModal(); closeCourseModal(); closeUser(); closeFileModal();});    document.querySelectorAll(".nav button[data-section]").forEach(b => b.addEventListener("click", () => {
     if (b.dataset.section === "addcourse" && editingCourseId) resetCourseForm();
     showSection(b.dataset.section); closeMenu();
+    closeLinkDialog();
 }));
+    
 $("logout-btn").addEventListener("click", leaveApp);    $("delete-open").addEventListener("click", openDelete);
     $("del-cancel").addEventListener("click", closeDelete);
     $("del-form").addEventListener("submit", handleDelete);
@@ -3509,47 +3562,70 @@ $("logout-btn").addEventListener("click", leaveApp);    $("delete-open").addEven
         ta.selectionStart = s + open.length; ta.selectionEnd = s + open.length + sel.length;
         fmtFire(ta);
     }
-        const BUL = ["•", "◦", "▪"], IND = "    ";
-    const BUL_RE = /^( *)([•◦▪]) /;
-    const bulletFor = (indent) => BUL[Math.min(Math.floor(indent.length / 4), 2)];
-    function lineBounds(ta) {
-        const v = ta.value, pos = ta.selectionStart;
-        const s = pos === 0 ? 0 : v.lastIndexOf("\n", pos - 1) + 1;
-        let e = v.indexOf("\n", pos); if (e < 0) e = v.length;
-        return { s, e, line: v.slice(s, e) };
-    }
-    function setLine(ta, s, e, text, caret) {
-        ta.value = ta.value.slice(0, s) + text + ta.value.slice(e);
-        ta.selectionStart = ta.selectionEnd = s + caret;
-        ta.dispatchEvent(new Event("input", { bubbles: true }));
-    }
-    function fmtBullets() {
-        const ta = $("b-text"), v = ta.value, s0 = ta.selectionStart, e0 = ta.selectionEnd;
-        const ls = s0 === 0 ? 0 : v.lastIndexOf("\n", s0 - 1) + 1;
-        let le = v.indexOf("\n", e0); if (le < 0) le = v.length;
-        const lines = v.slice(ls, le).split("\n");
-        const single = lines.length === 1;
-        const target = single ? lines : lines.filter(l => l.trim());
-        const allBul = target.every(l => BUL_RE.test(l));
-        const block = lines.map(l => {
-            if (!single && !l.trim()) return l;
-            if (allBul) return l.replace(BUL_RE, "");
-            if (BUL_RE.test(l)) return l;
-            const m = /^( *)(.*)$/.exec(l);
-            return m[1] + bulletFor(m[1]) + " " + m[2];
-        }).join("\n");
-        ta.value = v.slice(0, ls) + block + v.slice(le);
-        ta.selectionStart = ls; ta.selectionEnd = ls + block.length;
-        fmtFire(ta);
-    }
+    const BUL = ["•", "◦", "▪"], IND = "    ";
+const BUL_RE = /^( *)([•◦▪]) /;
+// top level = 4 spaces, sub-levels = 8 and 12
+const bulletFor = (indent) => BUL[Math.min(Math.max(Math.floor(indent.length / 4) - 1, 0), 2)];
+function lineBounds(ta) {
+    const v = ta.value, pos = ta.selectionStart;
+    const s = pos === 0 ? 0 : v.lastIndexOf("\n", pos - 1) + 1;
+    let e = v.indexOf("\n", pos); if (e < 0) e = v.length;
+    return { s, e, line: v.slice(s, e) };
+}
+function setLine(ta, s, e, text, caret) {
+    ta.value = ta.value.slice(0, s) + text + ta.value.slice(e);
+    ta.selectionStart = ta.selectionEnd = s + caret;
+    ta.dispatchEvent(new Event("input", { bubbles: true }));
+}
+function fmtBullets() {
+    const ta = $("b-text"), v = ta.value, s0 = ta.selectionStart, e0 = ta.selectionEnd;
+    const ls = s0 === 0 ? 0 : v.lastIndexOf("\n", s0 - 1) + 1;
+    let le = v.indexOf("\n", e0); if (le < 0) le = v.length;
+    const lines = v.slice(ls, le).split("\n");
+    const single = lines.length === 1;
+    const target = single ? lines : lines.filter(l => l.trim());
+    const allBul = target.every(l => BUL_RE.test(l));
+    const block = lines.map(l => {
+        if (!single && !l.trim()) return l;
+        if (allBul) return l.replace(BUL_RE, "");
+        if (BUL_RE.test(l)) return l;
+        const m = /^( *)(.*)$/.exec(l);
+        const ind = m[1].length >= 4 ? m[1] : IND;
+        return ind + bulletFor(ind) + " " + m[2];
+    }).join("\n");
+    ta.value = v.slice(0, ls) + block + v.slice(le);
+    ta.selectionStart = ls; ta.selectionEnd = ls + block.length;
+    fmtFire(ta);
+}
 
+    let hlRange = null;
     function fmtLink() {
-        const u = prompt("Link address (e.g. https://example.com)");
-        if (!u) return;
-        const href = safeUrl(u);
-        if (!href) return setMessage($("b-message"), "Enter a valid link.", ERR);
-        fmtWrap("[url=" + href + "]", "[/url]", "link");
+        const ta = $("b-text");
+        hlRange = { s: ta.selectionStart, e: ta.selectionEnd };
+        $("hl-text").value = ta.value.slice(hlRange.s, hlRange.e);
+        $("hl-url").value = "";
+        setMessage($("hl-msg"), "", "");
+        syncFields();
+        $("hl-modal").classList.remove("hidden");
+        ($("hl-text").value ? $("hl-url") : $("hl-text")).focus();
     }
+    function closeLinkDialog() { $("hl-modal").classList.add("hidden"); }
+    $("hl-cancel").addEventListener("click", closeLinkDialog);
+    $("hl-modal").addEventListener("click", e => { if (e.target === e.currentTarget) closeLinkDialog(); });
+    $("hl-form").addEventListener("submit", e => {
+        e.preventDefault();
+        const text = $("hl-text").value.replace(/\s+/g, " ").trim();
+        const href = safeUrl($("hl-url").value);
+        if (!text) return setMessage($("hl-msg"), "Enter the text to display.", ERR);
+        if (!href) return setMessage($("hl-msg"), "Enter a valid link (e.g. https://...).", ERR);
+        const ta = $("b-text"), ins = "[url=" + href + "]" + text + "[/url]";
+        const s = hlRange ? hlRange.s : ta.value.length, en = hlRange ? hlRange.e : s;
+        ta.value = ta.value.slice(0, s) + ins + ta.value.slice(en);
+        ta.selectionStart = ta.selectionEnd = s + ins.length;
+        closeLinkDialog();
+        fmtFire(ta);
+    });
+    
     $("fmt-bar").addEventListener("click", e => {
         const b = e.target.closest("button[data-fmt]");
         if (!b) return;
@@ -3581,52 +3657,56 @@ $("logout-btn").addEventListener("click", leaveApp);    $("delete-open").addEven
     swatchMenu("fmt-hl-btn", "fmt-hl-list", HL_COLORS, hex => { $("fmt-hl-bg").setAttribute("fill", hex); fmtWrap("[hl=" + hex + "]", "[/hl]"); });
     document.addEventListener("click", closeSwatches);
 
-    // Typing "- " (or "* ") at the start of a line turns it into a bullet
-    $("b-text").addEventListener("input", e => {
-        if (e.inputType !== "insertText" || e.data !== " ") return;
-        const ta = e.target, pos = ta.selectionStart, { s } = lineBounds(ta);
-        const m = /^( *)[-*] $/.exec(ta.value.slice(s, pos));
-        if (!m) return;
-        const ins = m[1] + bulletFor(m[1]) + " ";
-        ta.value = ta.value.slice(0, s) + ins + ta.value.slice(pos);
-        ta.selectionStart = ta.selectionEnd = s + ins.length;
-    });
+// Typing "- " (or "* ") at the start of a line turns it into an indented bullet
+$("b-text").addEventListener("input", e => {
+    if (e.inputType !== "insertText" || e.data !== " ") return;
+    const ta = e.target, pos = ta.selectionStart, { s } = lineBounds(ta);
+    const m = /^( *)[-*] $/.exec(ta.value.slice(s, pos));
+    if (!m) return;
+    const ind = m[1].length >= 4 ? m[1] : IND;
+    const ins = ind + bulletFor(ind) + " ";
+    ta.value = ta.value.slice(0, s) + ins + ta.value.slice(pos);
+    ta.selectionStart = ta.selectionEnd = s + ins.length;
+});
 
-    // Sub-bullets: Tab / Shift+Tab. Enter continues the list. Backspace removes the bullet.
-    $("b-text").addEventListener("keydown", e => {
-        if (e.defaultPrevented || !$("mention-list").classList.contains("hidden")) return;
-        const ta = e.target;
-        if (ta.selectionStart !== ta.selectionEnd && e.key !== "Tab") return;
-        const { s, e: en, line } = lineBounds(ta), m = BUL_RE.exec(line);
-        if (!m) return;
-        const content = line.slice(m[0].length), pos = ta.selectionStart;
+// Sub-bullets: Tab / Shift+Tab. Enter continues the list. Backspace removes the bullet.
+$("b-text").addEventListener("keydown", e => {
+    if (e.defaultPrevented || !$("mention-list").classList.contains("hidden")) return;
+    const ta = e.target;
+    if (ta.selectionStart !== ta.selectionEnd && e.key !== "Tab") return;
+    const { s, e: en, line } = lineBounds(ta), m = BUL_RE.exec(line);
+    if (!m) return;
+    const content = line.slice(m[0].length), pos = ta.selectionStart;
+    const outdent = () => {                       // one level up, or plain text at top level
+        if (m[1].length <= 4) return "";
+        const ind = m[1].slice(4);
+        return ind + bulletFor(ind) + " ";
+    };
 
-        if (e.key === "Tab") {
-            if (e.shiftKey && !m[1]) return;
-            e.preventDefault();
-            const ind = e.shiftKey ? m[1].slice(4) : (m[1].length >= 8 ? m[1] : m[1] + IND);
-            const prefix = ind + bulletFor(ind) + " ";
-            setLine(ta, s, en, prefix + content, Math.max(prefix.length, pos - s + prefix.length - m[0].length));
-        } else if (e.key === "Enter" && !e.shiftKey) {
-            if (pos < s + m[0].length) return;
-            e.preventDefault();
-            if (!content.trim()) {
-                const ind = m[1].slice(4);
-                const prefix = m[1] ? ind + bulletFor(ind) + " " : "";
-                setLine(ta, s, en, prefix, prefix.length);
-            } else {
-                const ins = "\n" + m[1] + m[2] + " ";
-                ta.value = ta.value.slice(0, pos) + ins + ta.value.slice(ta.selectionEnd);
-                ta.selectionStart = ta.selectionEnd = pos + ins.length;
-                ta.dispatchEvent(new Event("input", { bubbles: true }));
-            }
-        } else if (e.key === "Backspace" && pos === s + m[0].length) {
-            e.preventDefault();
-            const ind = m[1].slice(4);
-            const prefix = m[1] ? ind + bulletFor(ind) + " " : "";
-            setLine(ta, s, en, prefix + content, prefix.length);
+    if (e.key === "Tab") {
+        if (e.shiftKey && m[1].length <= 4) return;
+        e.preventDefault();
+        const ind = e.shiftKey ? m[1].slice(4) : (m[1].length >= 12 ? m[1] : m[1] + IND);
+        const prefix = ind + bulletFor(ind) + " ";
+        setLine(ta, s, en, prefix + content, Math.max(prefix.length, pos - s + prefix.length - m[0].length));
+    } else if (e.key === "Enter" && !e.shiftKey) {
+        if (pos < s + m[0].length) return;
+        e.preventDefault();
+        if (!content.trim()) {
+            const prefix = outdent();
+            setLine(ta, s, en, prefix, prefix.length);
+        } else {
+            const ins = "\n" + m[1] + m[2] + " ";
+            ta.value = ta.value.slice(0, pos) + ins + ta.value.slice(ta.selectionEnd);
+            ta.selectionStart = ta.selectionEnd = pos + ins.length;
+            ta.dispatchEvent(new Event("input", { bubbles: true }));
         }
-    });
+    } else if (e.key === "Backspace" && pos === s + m[0].length) {
+        e.preventDefault();
+        const prefix = outdent();
+        setLine(ta, s, en, prefix + content, prefix.length);
+    }
+});
     
     $("bin-form").addEventListener("submit", postAnnouncement);
     $("bin-form").addEventListener("input", binDirty);
