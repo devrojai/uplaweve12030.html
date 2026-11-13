@@ -1664,6 +1664,37 @@ html[data-theme="night"] .dibs-ic.ok:disabled, html[data-theme="night"] .dibs-ic
     *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
         
+    /* ===== PHONE FIXES ===== */
+@media (max-width: 520px) {
+
+    /* 1) Announcement Bin: icons go BELOW the text field, lower left */
+    #b-text { padding-bottom: 10px; }
+    #b-status { position: static; margin: 8px 0 14px 2px; justify-content: flex-start; }
+
+    /* 2, 3, 5) Announcement cards: one-line topic that slides, glow + NEW + pin close together */
+    .ann-card .ann-top { align-items: center; gap: 2px; }
+    .ann-card .ann-titlewrap { align-items: center; padding-top: 0; gap: 6px; }
+    .ann-card .ann-titlewrap .ann-title {
+        display: block; flex: 1 1 auto; min-width: 0; max-width: 100%;
+        white-space: nowrap; word-break: normal;
+        overflow-x: auto; overflow-y: hidden;
+        padding: 0; scrollbar-width: none;
+        -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
+    }
+    .ann-card .ann-titlewrap .ann-title::-webkit-scrollbar { display: none; }
+    .ann-card .ann-titlewrap .st-btn { flex: none; margin: 0; }
+    .ann-card .ann-titlewrap .new-tag { flex: none; margin-left: 0; align-self: center; }
+    .ann-card .ann-top .icon-btn { margin-left: -4px; }
+
+    /* 4) Add to course pop-up: no blue tap rectangle */
+    #link-modal-list .link-row,
+    #link-modal-list .link-row * { -webkit-tap-highlight-color: transparent; }
+    #link-modal-list .link-row { -webkit-touch-callout: none; }
+    #link-modal-list .link-row > .link-text .link-title {
+        -webkit-user-select: none; user-select: none; outline: none;
+    }
+}
+    
     </style>
     
 </head>
@@ -3971,8 +4002,8 @@ function isNewAnn(a) {
         const titleWrap = mk("div", "ann-titlewrap");
         const h = mk("h3", "ann-title", a.title);
         const sb = stBadge(a.mode);
-        if (sb) { h.appendChild(document.createTextNode("\u2060")); h.appendChild(sb); }
         titleWrap.appendChild(h);
+        if (sb) titleWrap.appendChild(sb);
         
 if (isNewAnn(a)) titleWrap.appendChild(mk("span", "new-tag", "NEW"));
         top.appendChild(titleWrap);
@@ -4192,12 +4223,7 @@ async function syncBinCourses(annId, sel) {
 function linkRowText(c) {
     const box = mk("div", "link-text");
     const t = mk("span", "link-title", c.title + (c.hidden ? " \u2014 hidden" : ""));
-    t.addEventListener("click", ev => {
-        ev.preventDefault(); ev.stopPropagation();   // tapping the title must NOT tick the box
-        const max = t.scrollWidth - t.clientWidth;
-        if (max <= 2) return;
-        t.scrollTo({ left: t.scrollLeft > 2 ? 0 : max, behavior: SMOOTH });
-    });
+    t.addEventListener("click", ev => { ev.preventDefault(); ev.stopPropagation(); });
     box.appendChild(t);
     box.appendChild(mk("span", "link-code", c.code));
     return box;
