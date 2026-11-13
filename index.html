@@ -1442,8 +1442,9 @@ html[data-theme="night"] .cal-chip.period .st-glow { --g: var(--g-for-light); --
 
 .st-btn { flex: none; width: 16px; height: 16px; margin-top: 0; display: inline-grid; place-items: center; color: var(--ic); background: var(--g); border-radius: 50%; box-shadow: var(--glow); }
 
-.fmt-bar .st-group { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.fmt-bar .st-group { display: flex; align-items: center; gap: 10px; margin-left: auto; margin-right: 16px; }
 .fmt-bar .st-group + .btn.add-course-btn { margin-left: 0; }
+.fmt-bar .st-group { padding-right: 4px; }
 .fmt-bar .st-ico { width: 34px; height: 34px; min-width: 0; padding: 0; display: grid; place-items: center; color: var(--ic); background: var(--g); border: 0; border-radius: 50%; cursor: pointer; opacity: 1; filter: none; transition: box-shadow .2s, transform .2s; }
 .fmt-bar .st-ico:hover { background: var(--g); opacity: 1; transform: scale(1.08); }
 .fmt-bar .st-ico svg { width: 18px; height: 18px; }
@@ -1454,14 +1455,14 @@ html[data-theme="night"] .cal-chip.period .st-glow { --g: var(--g-for-light); --
 .cal-cell .cal-chip { position: relative; display: block; width: 18px; height: 18px; padding: 0; font-size: 0; line-height: 0; border-radius: var(--r-sm); overflow: visible; }
 .cal-cell .cal-chip.status { background: transparent; border: 2px solid var(--accent); }
 
-.cal-st { position: absolute; inset: 0; margin: auto; display: block; width: 12px; height: 12px; border-radius: 50%; background: var(--g); box-shadow: var(--glow); }
-.cal-chip .cal-st { width: 10px; height: 10px; }
+.cal-st { position: absolute; inset: 0; margin: auto; display: block; width: 12px; height: 12px; border-radius: 50%; background: var(--g); box-shadow: 0 0 3px 0 var(--g); }
+.cal-chip .cal-st { width: 10px; height: 10px; box-shadow: 0 0 2px 0 var(--g); }
 
 @media (max-width: 520px) {
     .cal-marks { justify-content: center; gap: 4px; }
     .cal-cell .cal-chip { width: 14px; height: 14px; border-radius: 50%; }
     .cal-cell .cal-chip.status { border-width: 2px; }
-    .cal-chip .cal-st { width: 6px; height: 6px; box-shadow: 0 0 4px 1px var(--g); }
+    .cal-chip .cal-st { width: 6px; height: 6px; box-shadow: 0 0 2px 0 var(--g); }
 }
 
 .dibs-table th.c-tick { width: 52px; text-align: center; }
