@@ -2033,7 +2033,7 @@ html[data-theme="night"] .dibs-ic.ok:disabled, html[data-theme="night"] .dibs-ic
     <h2>DIBS SYSTEM</h2>
     <form class="req-form" id="d-form" novalidate>
         <div class="group-title">Course</div>
-        <select id="d-course" aria-label="Course"></select>
+        <select id="d-course" aria-label="Course" data-code="1"></select>
         <div class="field"><input type="text" id="d-topic" placeholder=" " maxlength="120"><label for="d-topic">Topic</label></div>
         <div class="stepper-row">
     <label for="d-max">Max cases per student</label>
@@ -5102,7 +5102,12 @@ function fillDibsCourses() {
     const o0 = mk("option", "", "Select course"); o0.value = ""; s.appendChild(o0);
     courseList.filter(c => !c.hidden)
         .sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: "base" }))
-        .forEach(c => { const o = mk("option", "", c.code + " \u2014 " + c.title); o.value = c.id; s.appendChild(o); });
+        .forEach(c => {
+            const o = mk("option", "", c.title);
+            o.value = c.id;
+            o.dataset.code = c.code;
+            s.appendChild(o);
+        });
     if (cur && courseList.some(c => c.id === cur && !c.hidden)) s.value = cur;
     if (s._sync) s._sync();
 }
