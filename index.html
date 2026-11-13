@@ -1485,31 +1485,70 @@ html[data-theme="night"] .dibs-ic.ok:disabled, html[data-theme="night"] .dibs-ic
 /* ===== Music button ===== */
 .drawer-head { position: relative; }
 .music-btn {
-    position: absolute; top: 10px; right: 14px; z-index: 2;
-    width: 34px; height: 34px; padding: 0; display: grid; place-items: center;
-    color: #c62828; background: transparent; border: 0; border-radius: 50%; cursor: pointer;
+    --mc: #5b6cff; --mcr: 91,108,255;
+    position: absolute; top: 12px; right: 14px; z-index: 2;
+    width: 36px; height: 36px; padding: 0; display: grid; place-items: center;
+    color: var(--dr-muted); background: var(--dr-hover);
+    border: 1px solid var(--dr-line); border-radius: 50%; cursor: pointer;
     touch-action: manipulation; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
-    transition: transform .15s var(--ease), background .2s, color .2s;
+    transition: transform .2s var(--ease), background .25s, color .25s, border-color .25s;
 }
+.music-btn:hover { transform: scale(1.08); border-color: currentColor; }
 .music-btn:active { transform: scale(.92); }
-.music-btn svg { width: 20px; height: 20px; pointer-events: none; }
+.music-btn:focus-visible { outline: 2px solid var(--dr-ink); outline-offset: 2px; }
+.music-btn svg { width: 18px; height: 18px; pointer-events: none; }
 .music-btn .m-slash { display: none; }
-.music-btn[data-state="off"] { color: var(--dr-muted); }
 .music-btn[data-state="off"] .m-slash { display: block; }
-.music-btn[data-state="jazz"] { background: #ffffff; color: #c62828; box-shadow: 0 0 0 1px rgba(0,0,0,.2); }
-.music-btn[data-state="upnm"] { background: #c62828; color: #ffffff; }
-html[data-theme="classic"] .music-btn[data-state="classical"] { color: #ff8a80; }
-html[data-theme="classic"] .music-btn[data-state="upnm"] { box-shadow: 0 0 0 1px rgba(255,255,255,.6); }
 
-.music-vol {
-    position: absolute; left: calc(100% + 6px); top: 10px; z-index: 3;
-    width: 44px; height: 150px;
-    background: var(--surface); border: 1px solid var(--line-strong); border-top: 3px solid var(--accent);
-    border-radius: var(--r-lg); box-shadow: 0 12px 30px rgba(0,0,0,.25);
+/* Playing: coloured by mode, with a soft pulse */
+.music-btn:not([data-state="off"]) {
+    color: #fff; background: var(--mc); border-color: transparent;
+    animation: musicPulse 2.2s ease-out infinite;
 }
+.music-btn[data-state="classical"] { --mc: #5b6cff; --mcr: 91,108,255; }
+.music-btn[data-state="jazz"]      { --mc: #d98a00; --mcr: 217,138,0; }
+.music-btn[data-state="upnm"]      { --mc: #1f8a4c; --mcr: 31,138,76; }
+@keyframes musicPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(var(--mcr), .55); }
+    70%  { box-shadow: 0 0 0 10px rgba(var(--mcr), 0); }
+    100% { box-shadow: 0 0 0 0 rgba(var(--mcr), 0); }
+}
+
+/* ===== Volume panel ===== */
+.music-vol {
+    position: absolute; left: calc(100% + 10px); top: 8px; z-index: 3;
+    width: 56px; padding: 12px 0 12px;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    color: var(--ink); background: var(--surface);
+    border: 1px solid var(--line-strong); border-top: 3px solid var(--accent); border-radius: 16px;
+    box-shadow: 0 14px 34px rgba(0,0,0,.3);
+    animation: volIn .22s var(--ease);
+}
+@keyframes volIn { from { opacity: 0; transform: translateX(-8px) scale(.96); } to { opacity: 1; transform: none; } }
+.vol-val { font-size: var(--fs-n1); font-weight: 800; letter-spacing: .3px; color: var(--accent-text); }
+.vol-ico { width: 18px; height: 18px; color: var(--muted); }
+.vol-track { position: relative; width: 28px; height: 130px; }
 .music-vol input {
-    position: absolute; left: 50%; top: 50%; width: 110px; height: 24px; margin: 0;
-    transform: translate(-50%, -50%) rotate(-90deg); accent-color: var(--accent); cursor: pointer;
+    -webkit-appearance: none; appearance: none; background: transparent; --v: 40%;
+    position: absolute; left: 50%; top: 50%; width: 130px; height: 28px; margin: 0;
+    transform: translate(-50%, -50%) rotate(-90deg); cursor: pointer; outline: none;
+}
+.music-vol input::-webkit-slider-runnable-track {
+    height: 6px; border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent) var(--v), var(--line-strong) var(--v));
+}
+.music-vol input::-webkit-slider-thumb {
+    -webkit-appearance: none; box-sizing: border-box; width: 18px; height: 18px; margin-top: -6px;
+    border-radius: 50%; background: #fff; border: 3px solid var(--accent);
+    box-shadow: 0 2px 6px rgba(0,0,0,.35); transition: transform .15s var(--ease);
+}
+.music-vol input:hover::-webkit-slider-thumb,
+.music-vol input:active::-webkit-slider-thumb { transform: scale(1.2); }
+.music-vol input::-moz-range-track { height: 6px; border-radius: 999px; background: var(--line-strong); }
+.music-vol input::-moz-range-progress { height: 6px; border-radius: 999px; background: var(--accent); }
+.music-vol input::-moz-range-thumb {
+    box-sizing: border-box; width: 18px; height: 18px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--accent); box-shadow: 0 2px 6px rgba(0,0,0,.35);
 }
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
@@ -1607,9 +1646,13 @@ html[data-theme="classic"] .music-btn[data-state="upnm"] { box-shadow: 0 0 0 1px
     <button type="button" class="music-btn" id="music-btn" data-state="off" title="Music: off" aria-label="Music: off. Click for the next option">
         <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13" fill="none"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/><line class="m-slash" x1="3" y1="3" x2="21" y2="21" fill="none"/></svg>
     </button>
-    <div class="music-vol hidden" id="music-vol-panel">
+<div class="music-vol hidden" id="music-vol-panel">
+    <span class="vol-val" id="music-vol-val">40%</span>
+    <div class="vol-track">
         <input type="range" id="music-vol" min="0" max="100" value="40" aria-label="Music volume">
     </div>
+    <svg class="vol-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+</div>
 </div>               
         <nav class="nav">
     <button type="button" data-section="announcements" class="active">
@@ -5239,7 +5282,13 @@ let musicState = "off", musicIdx = 0;
 var volTimer = 0;
 
 try { audio.volume = (Number(localStorage.getItem("eve1Vol")) || 40) / 100; } catch (e) { audio.volume = .4; }
+function volPaint() {
+    const v = $("music-vol");
+    v.style.setProperty("--v", v.value + "%");
+    $("music-vol-val").textContent = v.value + "%";
+}
 $("music-vol").value = String(Math.round(audio.volume * 100));
+volPaint();
 
 function musicRender() {
     const b = $("music-btn");
@@ -5282,10 +5331,12 @@ function showVol() {
 }
 function toggleVol() { $("music-vol-panel").classList.contains("hidden") ? showVol() : hideVol(); }
 $("music-vol").addEventListener("input", e => {
+    volPaint();
     audio.volume = Number(e.target.value) / 100;
     try { localStorage.setItem("eve1Vol", e.target.value); } catch (err) {}
     showVol();
 });
+    
 document.addEventListener("pointerdown", e => {
     if (!e.target.closest("#music-btn") && !e.target.closest("#music-vol-panel")) hideVol();
 });
