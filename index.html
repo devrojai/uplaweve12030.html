@@ -1068,9 +1068,9 @@ html[data-theme="night"] .archive-btn:hover:not(:disabled), html[data-theme="nig
 }
 
 /* NEW tag on announcement cards */
-.ann-card .ann-titlewrap { flex: 1; min-width: 0; display: flex; align-items: flex-start; gap: 10px; padding-top: 4px; }
+.ann-card .ann-titlewrap { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; padding-top: 4px; }
 .ann-card .ann-titlewrap .ann-title { flex: 0 1 auto; min-width: 0; padding-top: 0; }
-.new-tag { flex: none; margin-top: 2px; padding: 2px 8px; font-size: .7rem; font-weight: 800; line-height: 1.4; letter-spacing: .8px; color: #ffffff; background: #c62828; border-radius: var(--r-sm); }
+.new-tag { flex: none; margin-top: 0; padding: 2px 8px; font-size: .7rem; font-weight: 800; line-height: 1.4; letter-spacing: .8px; color: #ffffff; background: #c62828; border-radius: var(--r-sm); }
 
 /* Course popup: left-aligned, vertically centered title + NEW tag, admin controls on the right */
 .course-ann-card { position: relative; align-items: center; justify-content: flex-start; padding: 8px 10px 8px 12px; }
@@ -1425,24 +1425,29 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
 .st-glow.onsite    { --g: #f97316; --ic: #ffffff; }   /* orange */
 .st-glow.suspended { --g: #d1d5db; --ic: #4b4f56; }   /* light grey */
 
-.st-btn { flex: none; width: 16px; height: 16px; margin-top: 3px; display: inline-grid; place-items: center; color: var(--ic); background: var(--g); border-radius: 50%; box-shadow: 0 0 6px 1px var(--g), 0 0 14px 3px var(--g); animation: stGlow 2.4s ease-in-out infinite; }
+.st-btn { flex: none; width: 16px; height: 16px; margin-top: 0; display: inline-grid; place-items: center; color: var(--ic); background: var(--g); border-radius: 50%; box-shadow: 0 0 6px 1px var(--g), 0 0 14px 3px var(--g); animation: stGlow 2.4s ease-in-out infinite; }
 @keyframes stGlow { 50% { box-shadow: 0 0 4px 0 var(--g), 0 0 9px 1px var(--g); } }
 
 .fmt-bar .st-group { display: flex; align-items: center; gap: 10px; margin-left: auto; }
 .fmt-bar .st-group + .btn.add-course-btn { margin-left: 0; }
-.fmt-bar .st-ico { width: 34px; height: 34px; min-width: 0; padding: 0; display: grid; place-items: center; color: var(--ic); background: var(--g); border: 0; border-radius: 50%; cursor: pointer; opacity: .45; filter: saturate(.7); transition: opacity .2s, box-shadow .2s; }
-.fmt-bar .st-ico:hover { background: var(--g); opacity: .8; }
+.fmt-bar .st-ico { width: 34px; height: 34px; min-width: 0; padding: 0; display: grid; place-items: center; color: var(--ic); background: var(--g); border: 0; border-radius: 50%; cursor: pointer; opacity: 1; filter: none; transition: box-shadow .2s, transform .2s; }
+.fmt-bar .st-ico:hover { background: var(--g); opacity: 1; transform: scale(1.08); }
 .fmt-bar .st-ico svg { width: 18px; height: 18px; }
 .fmt-bar .st-ico.on { opacity: 1; filter: none; box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--g), 0 0 16px 4px var(--g); }
 
-.cal-marks { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+.cal-marks { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 2px; }
 .cal-cell .cal-chip { display: inline-grid; place-items: center; width: 18px; height: 18px; padding: 0; font-size: 0; line-height: 0; border-radius: var(--r-sm); }
+.cal-cell .cal-chip.status { background: transparent; border: 2px solid var(--accent); }
 .cal-st { display: block; width: 12px; height: 12px; border-radius: 50%; background: var(--g); box-shadow: 0 0 5px 1px var(--g), 0 0 10px 2px var(--g); animation: stGlow 2.4s ease-in-out infinite; }
+.cal-chip .cal-st { width: 10px; height: 10px; box-shadow: 0 0 0 1px rgba(0,0,0,.25), 0 0 4px 1px var(--g); }
+.cal-legend .k.hl { background: transparent; border: 2px solid var(--accent); }
 .cal-legend .k.st { border-radius: 50%; background: var(--g); box-shadow: 0 0 6px 1px var(--g); }
 @media (max-width: 520px) {
     .cal-marks { justify-content: center; gap: 3px; }
     .cal-cell .cal-chip { width: 12px; height: 12px; border-radius: 50%; }
     .cal-st { width: 8px; height: 8px; animation: none; box-shadow: 0 0 4px 1px var(--g); }
+    .cal-chip .cal-st { width: 6px; height: 6px; box-shadow: 0 0 0 1px rgba(0,0,0,.2); }
+    .cal-cell .cal-chip.status { border-width: 1.5px; }
 }
 
 .dibs-table th.c-tick { width: 52px; text-align: center; }
@@ -1453,6 +1458,14 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
 html[data-theme="night"] .dibs-ic.ok:disabled, html[data-theme="night"] .dibs-ic.no:disabled { background: #3a3a3e; color: #77777d; }
 .dibs-ic.ok.done:disabled { background: #66bb6a; color: #fff; }
 .dibs-ic.no.done:disabled { background: #e53935; color: #fff; }
+
+/* Course dropdown with code chip */
+.sdrop.has-code .sdrop-label,
+.sdrop.has-code .sdrop-item { display: flex; align-items: center; gap: 10px; }
+.sdrop-text { flex: 1; min-width: 0; }
+.sdrop.has-code .sdrop-label .sdrop-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sdrop-code { flex: none; margin-left: auto; padding: 2px 8px; font-size: .75rem; font-weight: 700; letter-spacing: .8px; line-height: 1.4; color: var(--on-accent); background: var(--accent); border-radius: var(--r-sm); }
+.sdrop-item.sel .sdrop-code { color: var(--accent); background: var(--on-accent); }
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
@@ -1710,7 +1723,7 @@ html[data-theme="night"] .dibs-ic.ok:disabled, html[data-theme="night"] .dibs-ic
                 <button type="button" class="dp-nav" id="dl-next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
                 <button type="button" class="btn sm ghost" id="dl-today">Today</button>
             </div>
-            <div class="cal-legend"><span><i class="k dl"></i>Deadline</span><span><i class="k pd"></i>Period</span><span><i class="k st st-glow online"></i>Online</span><span><i class="k st st-glow onsite"></i>Onsite</span><span><i class="k st st-glow suspended"></i>Suspended</span></div>
+            <div class="cal-legend"><span><i class="k dl"></i>Deadline</span><span><i class="k pd"></i>Period</span><span><i class="k hl"></i>Status only</span><span><i class="k st st-glow online"></i>Online</span><span><i class="k st st-glow onsite"></i>Onsite</span><span><i class="k st st-glow suspended"></i>Suspended</span></div>
             <div class="cal-grid" id="dl-grid"></div>
             <div id="dl-detail"></div>
             <div class="msg" id="dl-msg"></div>
@@ -1746,7 +1759,8 @@ html[data-theme="night"] .dibs-ic.ok:disabled, html[data-theme="night"] .dibs-ic
             <form class="req-form" id="bin-form" novalidate>
                 <div class="edit-banner hidden" id="b-edit-banner">You're editing an announcement. Saving will mark it as edited by you.</div>
                 <div class="field"><input type="text" id="b-title" placeholder=" " maxlength="120"><label for="b-title">Topic</label></div>
-<div class="field"><input type="text" id="b-course" placeholder=" " maxlength="30"><label for="b-course">Course Title</label></div>
+<div class="group-title">Course Title</div>
+<select id="b-course" aria-label="Course Title" data-code="1"></select>
                 <div class="field has-peek">
                     <input type="text" id="b-deadline" placeholder=" " readonly><label for="b-deadline">Deadline (optional)</label>
                     <button type="button" class="peek" id="b-deadline-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></button>
@@ -2119,6 +2133,7 @@ html[data-theme="night"] .dibs-ic.ok:disabled, html[data-theme="night"] .dibs-ic
 </div>
 
 <script>
+    
     // Replace SCRIPT_URL with your published Web App endpoint URL
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyXGio_hof7wKZQcprT51cwFxrQ-_GQBEQvsz83hHNy_Qe1EW8EsCW1xydoLhxBjGOyoQ/exec";
 
@@ -3260,7 +3275,8 @@ function mentionHandleFor(u, q) {
     }
     function binDirty() { if ($("b-send").classList.contains("submitted")) binMode(); }
     function resetBinForm() {
-        ["b-title", "b-course", "b-text"].forEach(id => { $(id).value = ""; });
+        ["b-title", "b-text"].forEach(id => { $(id).value = ""; });
+        fillBinCourses("");
         binDeadline = binStart = binEnd = ""; editingId = ""; binStatus = ""; renderBinStatus(); mentionSel = []; binFiles = []; binCourseIds = []; updateBinCourseBtn();        renderFileList("b-file-list", binFiles, (idx) => { binFiles.splice(idx, 1); resetBinFormFileRender(); });
         pkDeadline.show(); pkStart.show(); pkEnd.show();
         pickers.forEach(p => p.close());
@@ -3272,13 +3288,16 @@ function mentionHandleFor(u, q) {
     function startEdit(a) {
         resetBinForm();
         editingId = a.id;
-        $("b-title").value = a.title; $("b-course").value = a.course; $("b-text").value = a.message;
+                $("b-title").value = a.title; $("b-text").value = a.message;
         binDeadline = a.deadline || ""; binStart = a.periodStart || ""; binEnd = a.periodEnd || ""; binStatus = a.mode || ""; renderBinStatus();
         binFiles = (a.files || []).map(f => f.id ? { id: f.id, name: f.name, type: f.type, size: f.size } : { name: f.name, type: f.type, size: f.size, data: f.data });
         renderFileList("b-file-list", binFiles, (idx) => { binFiles.splice(idx, 1); resetBinFormFileRender(); binDirty(); });
         pkDeadline.show(); pkStart.show(); pkEnd.show();
         mentionSel = (a.mentions || []).filter(m => m.email).map(m => ({ email: m.email, name: m.name }));
         binCourseIds = courseList.filter(c => (c.announcementIds || []).includes(a.id)).map(c => c.id); updateBinCourseBtn();
+        const sameTitle = courseList.filter(c => c.title === a.course);
+        const pickC = sameTitle.find(c => binCourseIds.includes(c.id)) || sameTitle[0];
+        fillBinCourses(pickC ? pickC.id : (a.course ? "txt:" + a.course : ""));
         binMode(); syncFields();
         showSection("bin");
         window.scrollTo(0, 0);
@@ -3288,12 +3307,20 @@ function mentionHandleFor(u, q) {
         const btn = $("b-send"), bm = $("b-message");
         if (btn.classList.contains("submitted")) return;
         const title = $("b-title").value.replace(/\s+/g, " ").trim();
-        const course = $("b-course").value.replace(/\s+/g, " ").trim();
+        const cv = $("b-course").value;
+        let course = "", selCourseId = "";
+        if (cv.indexOf("txt:") === 0) course = cv.slice(4);
+        else { const cc = courseList.find(x => x.id === cv); if (cc) { course = cc.title; selCourseId = cc.id; } }
         const text = $("b-text").value.trim();
   clearFieldErrors($("bin-form"));
   let bad = false;
-  [["b-title", title], ["b-course", course], ["b-text", text]].forEach(([id, v]) => { if (!v) { fieldError(id, "Required"); bad = true; } });
-  if (bad) return;        if (!!binStart !== !!binEnd) return setMessage(bm, "A period needs both a beginning date and an end date.", ERR);
+  [["b-title", title], ["b-text", text]].forEach(([id, v]) => { if (!v) { fieldError(id, "Required"); bad = true; } });
+  if (!course) { setMessage(bm, "Choose a course.", ERR); bad = true; }
+  else if (binStatus && !selCourseId) { setMessage(bm, "Pick a course from the list so only its students can see this class status.", ERR); bad = true; }
+  if (bad) return;
+  const courseIds = binCourseIds.slice();
+  if (binStatus && selCourseId && !courseIds.includes(selCourseId)) courseIds.push(selCourseId);        
+        if (!!binStart !== !!binEnd) return setMessage(bm, "A period needs both a beginning date and an end date.", ERR);
         if (binStart && binEnd < binStart) return setMessage(bm, "The end date can't be before the beginning date.", ERR);
         const wasEdit = !!editingId;
         let posted = false;
@@ -3306,7 +3333,8 @@ function mentionHandleFor(u, q) {
                 await loadMentionUsers();
                 mentions = Array.from(new Set(mentions.concat(mentionUsers.map(u => u.email))));
             }
-            const payload = { title, course, deadline: binDeadline, periodStart: binStart, periodEnd: binEnd, message: text, mentions, everyone, courseIds: binCourseIds.slice(), mode: binStatus };            if (binFiles.length) payload.files = binFiles;
+            const payload = { title, course, deadline: binDeadline, periodStart: binStart, periodEnd: binEnd, message: text, mentions, everyone, courseIds, mode: binStatus };            
+            if (binFiles.length) payload.files = binFiles;
             if (wasEdit) payload.id = editingId;
             const r = await authCall(wasEdit ? "edit_announcement" : "post_announcement", payload);
             if (r.status === "success") {
@@ -3836,6 +3864,10 @@ let annFilter = "", carIdx = 0, annShowArchive = false, annShowPinned = false, o
         const by = {};
         const put = (d, a, kind) => { const l = (by[d] = by[d] || []); if (!l.some(e => e.a.id === a.id)) l.push({ a, kind }); };
         annList.forEach(a => {
+            if (ST_META[a.mode] && !a.deadline && !(a.periodStart && a.periodEnd)) {
+                const m = /^(\d{4}-\d{2}-\d{2})/.exec(String(a.created || ""));
+                if (m) put(m[1], a, "status");
+            }
             if (a.deadline) put(a.deadline, a, "deadline");
             if (a.periodStart && a.periodEnd) {
                 const s = a.periodStart.split("-").map(Number), e = a.periodEnd.split("-").map(Number);
@@ -3873,12 +3905,12 @@ let annFilter = "", carIdx = 0, annShowArchive = false, annShowPinned = false, o
                 
 list.slice(0, 8).forEach(e => {
     const m = mk("span", "cal-chip " + e.kind); m.setAttribute("aria-hidden", "true");
-    marks.appendChild(m);
     if (ST_META[e.a.mode]) {
-        const d = mk("i", "cal-st st-glow " + e.a.mode);
-        d.title = ST_META[e.a.mode].label;
-        marks.appendChild(d);
+        const dot = mk("i", "cal-st st-glow " + e.a.mode);
+        dot.title = ST_META[e.a.mode].label;
+        m.appendChild(dot);
     }
+    marks.appendChild(m);
 });
                 
     cell.appendChild(marks);
@@ -3897,7 +3929,7 @@ cell.setAttribute("aria-label", d + " " + MONTHS[dlM] + (list.length ? ", " + li
         const l = by[dlSel] || [];
         if (!l.length) dd.appendChild(mk("p", "repo-count", "Nothing is scheduled on this day."));
         l.forEach(e => {
-            dd.appendChild(mk("div", "cal-kind", e.kind === "deadline" ? "Deadline" : "Period"));
+            dd.appendChild(mk("div", "cal-kind", e.kind === "deadline" ? "Deadline" : e.kind === "period" ? "Period" : "Class status"));
             dd.appendChild(annCard(e.a));
         });
     }
@@ -4184,6 +4216,7 @@ function renderHiddenCourses() {
 
     function renderCourses() {
     fillDibsCourses();
+    fillBinCourses();
     renderHiddenCourses();
     const box = $("course-list"); box.textContent = "";
     const list = courseVisible(), total = courseList.filter(c => !c.hidden).length;
@@ -4963,6 +4996,24 @@ function fillDibsCourses() {
     if (cur && courseList.some(c => c.id === cur && !c.hidden)) s.value = cur;
     if (s._sync) s._sync();
 }
+
+function fillBinCourses(want) {
+    const s = $("b-course"); if (!s) return;
+    const cur = want !== undefined ? want : s.value;
+    s.textContent = "";
+    const o0 = mk("option", "", "Select course"); o0.value = ""; s.appendChild(o0);
+    const add = c => { const o = mk("option", "", c.title); o.value = c.id; o.dataset.code = c.code; s.appendChild(o); };
+    courseList.filter(c => !c.hidden)
+        .sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: "base" })).forEach(add);
+    if (cur && !Array.from(s.options).some(o => o.value === cur)) {
+        const c = courseList.find(x => x.id === cur);
+        if (c) add(c);
+        else if (cur.indexOf("txt:") === 0) { const o = mk("option", "", cur.slice(4)); o.value = cur; s.appendChild(o); }
+    }
+    s.value = Array.from(s.options).some(o => o.value === cur) ? cur : "";
+    if (s._sync) s._sync();
+}
+$("b-course").addEventListener("change", binDirty);
     
 function parseCaseLines(text) {
     return String(text || "").replace(/\r\n?/g, "\n").split("\n")
@@ -5075,11 +5126,15 @@ setInterval(() => {
         wrap.append(btn, list);
 
         if (sel.dataset.avatar) wrap.classList.add("has-ava");
+        if (sel.dataset.code) wrap.classList.add("has-code");
         const ini = t => { const p = String(t).trim().split(/\s+/).filter(Boolean); return (((p[0] || "")[0] || "") + (p.length > 1 ? p[p.length - 1][0] : "")).toUpperCase(); };
         const fill = (el, o) => {
             el.textContent = "";
             if (sel.dataset.avatar) el.appendChild(mk("span", "sdrop-ava" + (o && o.value ? "" : " none"), o && o.value ? ini(o.textContent) : "\u2013"));
-            el.appendChild(document.createTextNode(o ? o.textContent : ""));
+            if (o && o.dataset.code) {
+                el.appendChild(mk("span", "sdrop-text", o.textContent));
+                el.appendChild(mk("span", "sdrop-code", o.dataset.code));
+            } else el.appendChild(document.createTextNode(o ? o.textContent : ""));
         };
         const sync = () => fill(label, sel.options[sel.selectedIndex]);
         const close = () => { list.classList.add("hidden"); wrap.classList.remove("open"); };
@@ -5101,8 +5156,8 @@ setInterval(() => {
         sync();
     }
     document.addEventListener("click", e => drops.forEach(d => { if (!d.wrap.contains(e.target)) d.close(); }));
-["dl-month", "dl-year", "ann-filter", "c-sem", "c-ay", "d-course", "dibs-e-by"].forEach(id => enhanceSelect($(id)));
-        function applyTheme(t) {
+["dl-month", "dl-year", "ann-filter", "c-sem", "c-ay", "d-course", "dibs-e-by", "b-course"].forEach(id => enhanceSelect($(id)));
+    function applyTheme(t) {
         if (t !== "classic" && t !== "night") t = "light";
         if (t === "light") document.documentElement.removeAttribute("data-theme");
         else document.documentElement.setAttribute("data-theme", t);
