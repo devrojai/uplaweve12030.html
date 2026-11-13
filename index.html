@@ -1606,6 +1606,8 @@ html[data-theme="night"] .dibs-ic.ok:disabled, html[data-theme="night"] .dibs-ic
 .ann-card .ann-titlewrap .new-tag { margin-left: auto; white-space: nowrap; }
 .ann-card .ann-titlewrap .ann-title { display: block; }
 .ann-title .st-btn { margin-left: 8px; vertical-align: -2px; }
+.ann-card .ann-titlewrap { align-items: center; }
+.ann-card .ann-titlewrap .st-btn { flex: none; margin-left: 0; }
 
 /* ===== FIX 3: "Add to course" pop-up: title stays on one line, scrolls sideways, code stays on the right ===== */
 #link-modal-list .link-row { min-width: 0; }
@@ -1674,13 +1676,17 @@ html[data-theme="night"] .dibs-ic.ok:disabled, html[data-theme="night"] .dibs-ic
     /* 2, 3, 5) Announcement cards: one-line topic that slides, glow + NEW + pin close together */
     .ann-card .ann-top { align-items: center; gap: 2px; }
     .ann-card .ann-titlewrap { align-items: center; padding-top: 0; gap: 6px; }
-    .ann-card .ann-titlewrap .ann-title {
-        display: block; flex: 1 1 auto; min-width: 0; max-width: 100%;
+        .ann-card .ann-titlewrap .ann-title {
+        display: block; flex: 0 1 auto; min-width: 0; max-width: 100%;
         white-space: nowrap; word-break: normal;
         overflow-x: auto; overflow-y: hidden;
         padding: 0; scrollbar-width: none;
         -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
     }
+    .ann-card .ann-titlewrap .ann-title::-webkit-scrollbar { display: none; }
+    .ann-card .ann-titlewrap .st-btn,
+    .ann-card .ann-titlewrap .new-tag { flex: none; position: static; margin-left: 0; }
+    .ann-card .ann-titlewrap .new-tag { align-self: center; }
     .ann-card .ann-titlewrap .ann-title::-webkit-scrollbar { display: none; }
     .ann-card .ann-titlewrap .st-btn { flex: none; margin: 0; }
     .ann-card .ann-titlewrap .new-tag { flex: none; margin-left: 0; align-self: center; }
