@@ -1421,33 +1421,50 @@ html[data-theme="night"] .chip-soft.hidden-chip { color: #000; }
 @keyframes btnShine { 0% { left: -60%; } 55%, 100% { left: 130%; } }
 
 /* ===== Status: Online / Onsite / Suspended ===== */
-.st-glow.online    { --g: #10b981; --ic: #ffffff; }   /* emerald */
-.st-glow.onsite    { --g: #f97316; --ic: #ffffff; }   /* orange */
-.st-glow.suspended { --g: #d1d5db; --ic: #4b4f56; }   /* light grey */
+/* Each status has a darker colour for light backgrounds and a lighter one for dark backgrounds */
+.st-glow.online    { --g-for-light:#059669; --g-for-dark:#34d399; --ic-for-light:#ffffff; --ic-for-dark:#04281d; }
+.st-glow.onsite    { --g-for-light:#ea580c; --g-for-dark:#fb923c; --ic-for-light:#ffffff; --ic-for-dark:#3a1604; }
+.st-glow.suspended { --g-for-light:#4b4f56; --g-for-dark:#d1d5db; --ic-for-light:#ffffff; --ic-for-dark:#2a2d33; }
 
-.st-btn { flex: none; width: 16px; height: 16px; margin-top: 0; display: inline-grid; place-items: center; color: var(--ic); background: var(--g); border-radius: 50%; box-shadow: 0 0 6px 1px var(--g), 0 0 14px 3px var(--g); animation: stGlow 2.4s ease-in-out infinite; }
-@keyframes stGlow { 50% { box-shadow: 0 0 4px 0 var(--g), 0 0 9px 1px var(--g); } }
+.st-glow { --g: var(--g-for-light); --ic: var(--ic-for-light); }
+html[data-theme="night"] .st-glow { --g: var(--g-for-dark); --ic: var(--ic-for-dark); }
+
+/* Calendar chips have their own background, so the dot adapts to the chip */
+.cal-chip.deadline .st-glow,
+.cal-chip.period .st-glow { --g: var(--g-for-dark); --ic: var(--ic-for-dark); }
+html[data-theme="night"] .cal-chip.period .st-glow { --g: var(--g-for-light); --ic: var(--ic-for-light); }
+
+/* Static, soft glow (no animation, so nothing can flicker) */
+.st-glow { --glow: 0 0 6px 1px var(--g), 0 0 12px 3px var(--g); }
+@supports (color: color-mix(in srgb, red 50%, transparent)) {
+    .st-glow { --glow: 0 0 5px 1px color-mix(in srgb, var(--g) 70%, transparent), 0 0 12px 3px color-mix(in srgb, var(--g) 35%, transparent); }
+}
+
+.st-btn { flex: none; width: 16px; height: 16px; margin-top: 0; display: inline-grid; place-items: center; color: var(--ic); background: var(--g); border-radius: 50%; box-shadow: var(--glow); }
 
 .fmt-bar .st-group { display: flex; align-items: center; gap: 10px; margin-left: auto; }
 .fmt-bar .st-group + .btn.add-course-btn { margin-left: 0; }
 .fmt-bar .st-ico { width: 34px; height: 34px; min-width: 0; padding: 0; display: grid; place-items: center; color: var(--ic); background: var(--g); border: 0; border-radius: 50%; cursor: pointer; opacity: 1; filter: none; transition: box-shadow .2s, transform .2s; }
 .fmt-bar .st-ico:hover { background: var(--g); opacity: 1; transform: scale(1.08); }
 .fmt-bar .st-ico svg { width: 18px; height: 18px; }
-.fmt-bar .st-ico.on { opacity: 1; filter: none; box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--g), 0 0 16px 4px var(--g); }
-
+.fmt-bar .st-ico.on { opacity: 1; filter: none; box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--g), var(--glow); }
 .cal-marks { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 2px; }
-.cal-cell .cal-chip { display: inline-grid; place-items: center; width: 18px; height: 18px; padding: 0; font-size: 0; line-height: 0; border-radius: var(--r-sm); }
+
+/* The chip is a fixed size; the dot is absolutely centered inside it */
+.cal-cell .cal-chip { position: relative; display: block; width: 18px; height: 18px; padding: 0; font-size: 0; line-height: 0; border-radius: var(--r-sm); overflow: visible; }
 .cal-cell .cal-chip.status { background: transparent; border: 2px solid var(--accent); }
-.cal-st { display: block; width: 12px; height: 12px; border-radius: 50%; background: var(--g); box-shadow: 0 0 5px 1px var(--g), 0 0 10px 2px var(--g); animation: stGlow 2.4s ease-in-out infinite; }
-.cal-chip .cal-st { width: 10px; height: 10px; box-shadow: 0 0 0 1px rgba(0,0,0,.25), 0 0 4px 1px var(--g); }
+
+.cal-st { position: absolute; inset: 0; margin: auto; display: block; width: 12px; height: 12px; border-radius: 50%; background: var(--g); box-shadow: var(--glow); }
+.cal-chip .cal-st { width: 10px; height: 10px; }
+
 .cal-legend .k.hl { background: transparent; border: 2px solid var(--accent); }
-.cal-legend .k.st { border-radius: 50%; background: var(--g); box-shadow: 0 0 6px 1px var(--g); }
+.cal-legend .k.st { border-radius: 50%; background: var(--g); box-shadow: var(--glow); }
+
 @media (max-width: 520px) {
-    .cal-marks { justify-content: center; gap: 3px; }
-    .cal-cell .cal-chip { width: 12px; height: 12px; border-radius: 50%; }
-    .cal-st { width: 8px; height: 8px; animation: none; box-shadow: 0 0 4px 1px var(--g); }
-    .cal-chip .cal-st { width: 6px; height: 6px; box-shadow: 0 0 0 1px rgba(0,0,0,.2); }
-    .cal-cell .cal-chip.status { border-width: 1.5px; }
+    .cal-marks { justify-content: center; gap: 4px; }
+    .cal-cell .cal-chip { width: 14px; height: 14px; border-radius: 50%; }
+    .cal-cell .cal-chip.status { border-width: 2px; }
+    .cal-chip .cal-st { width: 6px; height: 6px; box-shadow: 0 0 4px 1px var(--g); }
 }
 
 .dibs-table th.c-tick { width: 52px; text-align: center; }
