@@ -1700,6 +1700,28 @@ html[data-theme="night"] .dibs-ic.ok:disabled, html[data-theme="night"] .dibs-ic
         -webkit-user-select: none; user-select: none; outline: none;
     }
 }
+
+/* ===== Bin: status icons in the toolbar on wide screens ===== */
+.fmt-bar .st-group { margin: 0 0 0 auto; }
+.fmt-bar .st-group + .btn.add-course-btn { margin-left: 10px; }
+
+/* ===== Announcement card header (phone + desktop) =====
+   [Topic (scrolls if long)] [glow circle] ........ [NEW] [pin] */
+.ann-card .ann-top { align-items: center; gap: 6px; }
+.ann-card .ann-titlewrap {
+    flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; padding-top: 0;
+}
+.ann-card .ann-titlewrap .ann-title {
+    display: block; flex: 0 1 auto; min-width: 0; max-width: 100%;
+    white-space: nowrap; word-break: normal;
+    overflow-x: auto; overflow-y: hidden; padding: 2px 0;
+    scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
+}
+.ann-card .ann-titlewrap .ann-title::-webkit-scrollbar { display: none; }
+.ann-card .ann-titlewrap .st-btn { flex: none; margin: 0; position: static; }
+.ann-card .ann-titlewrap .new-tag {
+    flex: none; margin-left: auto; position: static; align-self: center; white-space: nowrap;
+}
     
     </style>
     
@@ -3342,6 +3364,21 @@ Object.keys(ST_META).forEach(k => {
     b.addEventListener("click", () => { binStatus = binStatus === k ? "" : k; renderBinStatus(); binDirty(); });
     $("b-status").appendChild(b);
 });
+
+// Wide screens: status icons sit in the toolbar, left of "Add to Course".
+// Narrow screens (phones): they sit just under the text field.
+const binStatusMq = matchMedia("(max-width: 520px)");
+function placeBinStatus() {
+    const g = $("b-status");
+    if (binStatusMq.matches) {
+        const field = $("b-text").closest(".field");
+        if (g.previousElementSibling !== field) field.after(g);
+    } else {
+        $("fmt-bar").insertBefore(g, $("b-addcourse"));
+    }
+}
+placeBinStatus();
+binStatusMq.addEventListener("change", placeBinStatus);
     
     const pickers = [];
     const CHEV = {
