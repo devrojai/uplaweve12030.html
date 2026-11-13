@@ -28,7 +28,13 @@
         html { font-size: 100%; }
         @media (max-width: 380px) { html { font-size: 93.75%; } }
 
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        button, [role="button"], .ann-card, .course-row, .cal-cell, .user-row {
+    -webkit-touch-callout: none;
+    user-select: none;
+}
+        
         html, body { height: 100%; }
         body {
             margin: 0;
