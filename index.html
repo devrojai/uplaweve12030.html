@@ -1833,9 +1833,10 @@ html[data-bg="custom"] .bg {
     background: var(--user-bg) center / cover no-repeat, var(--bg-grad);
 }
 html[data-bg="custom"] .bg::before, html[data-bg="custom"] .waves { display: none; }
-html[data-bg="custom"] .app {
-    background: var(--user-bg) center / cover no-repeat, var(--bg);
-    background-attachment: fixed;
+html[data-bg="custom"] .app { background: var(--bg); }
+html[data-bg="custom"] .app::before {
+    content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: var(--user-bg) center / cover no-repeat;
 }
 
 /* Buttons in the switcher */
@@ -5598,13 +5599,7 @@ setInterval(() => {
         document.querySelectorAll(".theme-switch button[data-mode]").forEach(b => b.classList.toggle("on", b.dataset.mode === t));
     }
     
-document.querySelectorAll(".theme-switch button[data-mode]").forEach(b => b.addEventListener("click", () => {
-    const root = document.documentElement;
-    root.classList.add("theme-anim");
-    applyTheme(b.dataset.mode);
-    clearTimeout(applyTheme._t);
-    applyTheme._t = setTimeout(() => root.classList.remove("theme-anim"), 350);
-}));
+document.querySelectorAll(".theme-switch button[data-mode]").forEach(b => b.addEventListener("click", () => applyTheme(b.dataset.mode)));
 
 const BG_KEY = "eve1BgImg";
 function bgImage() {
