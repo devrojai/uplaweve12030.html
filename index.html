@@ -2017,6 +2017,39 @@ html[data-theme="night"] .org-kid::after { background: #d65d63; }
 #of-fields .skeleton { display: block; margin-bottom: 16px; }
 #of-fields .skeleton:last-child { margin-bottom: 0; }
 #of-fields .skeleton.card-sk { height: 160px; }
+
+/* ===== Officers: four main cards side by side, no connector lines ===== */
+
+/* Remove every connector line */
+.org-trunk { display: none; }
+.org-kid::before, .org-kid::after { display: none; }
+
+/* One row: President, VP Internals, VP Externals, Treasurer */
+.org-tree { display: block; margin: 8px 0 14px; }
+.org-tree > .org-card.big { display: none; }   /* President is moved into the row by the script below */
+
+.org-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    width: 100%;
+}
+.org-kid { padding-top: 0; display: block; }
+.org-kid .org-card,
+.org-row .org-card { width: 100%; height: 100%; }
+
+/* President is the same size as the others now */
+.org-card.big { width: 100%; padding-top: 16px; }
+.org-card.big .org-ava { width: 76px; height: 76px; font-size: 1.35rem; }
+
+/* Tablet: 2 x 2 */
+@media (max-width: 900px) {
+    .org-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+/* Phone: one column */
+@media (max-width: 520px) {
+    .org-row { grid-template-columns: 1fr; }
+}
         
     </style>
     
@@ -6060,10 +6093,8 @@ function renderOrgChart() {
     }
 
     const tree = mk("div", "org-tree");
-    tree.appendChild(orgCard("President", core.president, true));
-    tree.appendChild(mk("div", "org-trunk"));
     const row = mk("div", "org-row");
-    OF_CORE.slice(1).forEach(([k, l]) => { const kid = mk("div", "org-kid"); kid.appendChild(orgCard(l, core[k])); row.appendChild(kid); });
+    OF_CORE.forEach(([k, l]) => { const kid = mk("div", "org-kid"); kid.appendChild(orgCard(l, core[k])); row.appendChild(kid); });
     tree.appendChild(row);
     box.appendChild(tree);
 
