@@ -2098,17 +2098,27 @@ html[data-theme="night"] .org-kid::after { background: #d65d63; }
 /* Course code tag inside a record row */
 .off-code { display: inline-block; margin-right: 10px; padding: 2px 8px; font-size: .75rem; font-weight: 700; letter-spacing: .8px; line-height: 1.4; color: var(--on-accent); background: var(--accent); border-radius: var(--r-sm); vertical-align: 1px; }
 
-/* Edits group */
-.off-edit-block { padding: 10px 16px 12px; border-top: 1px solid var(--line); }
-.off-edit-block + .off-edit-block { border-top: 2px solid var(--line-strong); }
-.off-edit-title { font-size: var(--fs-n1); font-weight: 600; line-height: 1.4; color: var(--muted); }
-.off-edit-title b { font-weight: 800; color: var(--accent-text); }
-.off-edit-lines { margin: 6px 0 0 22px; font-size: var(--fs-n1); font-weight: 600; line-height: 1.4; color: var(--ink); }
-.off-edit-lines .off-rec-line + .off-rec-line { margin-top: 3px; }
+/* Edits group: timeline */
 .off-edits-toggle { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; text-align: left; font-size: .7rem; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--accent-text); background: var(--surface2); border: 0; border-top: 1px solid var(--line); cursor: pointer; }
 .off-edits-toggle .cm-count { margin-left: 0; }
 .off-edits-toggle .coll-chev { margin-left: auto; width: 18px; height: 18px; transition: transform .25s var(--ease); }
 .off-edits-toggle[aria-expanded="true"] .coll-chev { transform: rotate(180deg); }
+
+.off-edits-wrap { padding: 8px 16px 12px; background: var(--surface); }
+.off-edit-block { position: relative; display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 12px; padding: 8px 0; }
+.off-edit-block::before { content: ""; position: absolute; left: 14px; top: 40px; bottom: -6px; width: 2px; background: var(--line-strong); }
+.off-edit-block:last-child::before { display: none; }
+.off-edit-ava { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: var(--accent); color: var(--on-accent); font-size: .65rem; font-weight: 800; box-shadow: 0 0 0 3px var(--accent-soft); }
+.off-edit-card { min-width: 0; padding: 10px 14px; background: var(--surface2); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: var(--r-md); }
+.off-edit-title { font-size: var(--fs-n1); font-weight: 600; line-height: 1.4; color: var(--muted); }
+.off-edit-title b { font-weight: 800; color: var(--accent-text); }
+.off-edit-lines { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--line-strong); }
+.off-chg { display: flex; align-items: baseline; gap: 10px; font-size: var(--fs-n1); font-weight: 600; color: var(--ink); }
+.off-chg-text { min-width: 0; word-break: break-word; }
+.off-chg-tag { flex: none; width: 66px; padding: 1px 0; text-align: center; font-size: .6rem; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; border-radius: var(--r-sm); }
+.off-chg-tag.add { color: var(--on-accent); background: var(--accent); border: 1px solid var(--accent); }
+.off-chg-tag.rem { color: var(--accent-text); background: transparent; border: 1px solid var(--accent-text); }
+.off-chg-tag.chg { color: var(--accent-text); background: var(--accent-soft); border: 1px solid var(--badge-line); }
         
 @media (max-width: 520px) { .off-rec-k { white-space: normal; } }
 
@@ -6260,6 +6270,9 @@ function editStamp(s) {
     return prettyDate(m[1]) + " at " + pad(h) + ":" + m[3] + ":" + (m[4] || "00") + " " + ap;
 }
 
+const editKind = t => /\u2192/.test(t) ? ["Changed", "chg"]
+    : (/: added |\(was vacant\)|added to this record/.test(t) ? ["Added", "add"] : ["Removed", "rem"]);
+    
 function recordCard(r, withEye) {
     const card = mk("div", "off-rec" + (r.hidden && withEye ? " is-hidden" : ""));
     const head = mk("div", "off-rec-head");
@@ -6327,15 +6340,24 @@ function recordCard(r, withEye) {
         const wrap = mk("div", "off-edits-wrap" + (open ? "" : " hidden"));
 
         edits.forEach(e => {
+            const who = e.byName || e.by || "";
             const blk = mk("div", "off-edit-block");
+            blk.appendChild(mk("div", "off-edit-ava", personInitials({ name: who })));
+            const card = mk("div", "off-edit-card");
             const title = mk("div", "off-edit-title");
             title.appendChild(mk("b", "", "Edited on"));
             title.appendChild(document.createTextNode(" " + editStamp(e.at) + " by "));
-            title.appendChild(mk("b", "", e.byName || e.by || ""));
-            blk.appendChild(title);
+            title.appendChild(mk("b", "", who));
+            card.appendChild(title);
             const lines = mk("div", "off-edit-lines");
-            (e.changes || []).forEach(t => lines.appendChild(mk("div", "off-rec-line", t)));
-            blk.appendChild(lines);
+            (e.changes || []).forEach(t => {
+                const k = editKind(t), row = mk("div", "off-chg");
+                row.appendChild(mk("span", "off-chg-tag " + k[1], k[0]));
+                row.appendChild(mk("span", "off-chg-text", t));
+                lines.appendChild(row);
+            });
+            card.appendChild(lines);
+            blk.appendChild(card);
             wrap.appendChild(blk);
         });
 
