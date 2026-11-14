@@ -1825,7 +1825,7 @@ html[data-bg="none"] .waves, html[data-bg="dots"] .waves { display: none; }
 @media print { .waves { display: none !important; } }
 
 /* ===== MY BACKGROUND ===== */
-:root { --user-bg: none; --ub-login: rgba(250,248,245,.62); --ub-app: rgba(247,245,242,.80); --ub-accent: rgba(118,9,12,.10); }
+:root { --user-bg: none; }
 html[data-theme="classic"] { --ub-login: rgba(118,9,12,.66); --ub-app: rgba(251,248,243,.80); --ub-accent: rgba(118,9,12,.10); }
 html[data-theme="night"] { --ub-login: rgba(0,0,0,.74); --ub-app: rgba(0,0,0,.80); --ub-accent: rgba(163,23,30,.24); }
 
@@ -1837,13 +1837,14 @@ html[data-bg="custom"] .bg {
         var(--user-bg) center / cover no-repeat,
         var(--bg-grad);
 }
+        
+/* Login screens and the site: the picture only, no tint or overlay */
+html[data-bg="custom"] .bg {
+    background: var(--user-bg) center / cover no-repeat, var(--bg-grad);
+}
 html[data-bg="custom"] .bg::before, html[data-bg="custom"] .waves { display: none; }
 html[data-bg="custom"] .app {
-    background:
-        linear-gradient(to top, var(--ub-accent), transparent 55%),
-        linear-gradient(var(--ub-app), var(--ub-app)),
-        var(--user-bg) center / cover no-repeat,
-        var(--bg);
+    background: var(--user-bg) center / cover no-repeat, var(--bg);
     background-attachment: fixed;
 }
 
@@ -1859,15 +1860,21 @@ html[data-bg="custom"] .app {
 
 /* Pop-up preview (shows the picture with the current theme's tint) */
 #bg-modal { z-index: 95; }
+
+/* Buttons in the switcher */
+.bg-switch button { padding: 8px 2px; font-size: .75rem; }
+.bg-switch .bg-add { flex: none; width: 32px; padding: 0; display: grid; place-items: center; }
+.bg-switch .bg-add svg { width: 16px; height: 16px; transition: transform .3s var(--ease); }
+/* A background is set: the + turns into an X */
+.bg-switch .bg-add.has-bg svg { transform: rotate(45deg); }
+
+/* Pop-up preview (the picture exactly as it will appear) */
+#bg-modal { z-index: 95; }
 .bg-preview {
     height: 170px; margin: 12px 0 4px; display: grid; place-items: center; text-align: center;
     color: var(--muted); font-weight: 600;
     border: 1px solid var(--line); border-radius: var(--r-lg);
-    background:
-        linear-gradient(to top, var(--ub-accent), transparent 55%),
-        linear-gradient(var(--ub-app), var(--ub-app)),
-        var(--user-bg) center / cover no-repeat,
-        var(--bg);
+    background: var(--user-bg) center / cover no-repeat, var(--bg);
 }
         
     </style>
@@ -1952,7 +1959,6 @@ html[data-bg="custom"] .app {
     <button type="button" data-bg="dots">Dots</button>
     <button type="button" data-bg="waves">Waves</button>
     <button type="button" data-bg="both">Both</button>
-    <button type="button" class="bg-mine hidden" data-bg="custom" title="My background" aria-label="My background"></button>
     <button type="button" class="bg-add" data-bg-add title="Add your own background" aria-label="Add your own background"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
 </div>
 <div class="auth-theme-switch theme-switch" role="group" aria-label="Theme">
@@ -2044,7 +2050,6 @@ html[data-bg="custom"] .app {
     <button type="button" data-bg="dots">Dots</button>
     <button type="button" data-bg="waves">Waves</button>
     <button type="button" data-bg="both">Both</button>
-    <button type="button" class="bg-mine hidden" data-bg="custom" title="My background" aria-label="My background"></button>
     <button type="button" class="bg-add" data-bg-add title="Add your own background" aria-label="Add your own background"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
 </div>
 <div class="theme-switch" id="theme-switch" role="group" aria-label="Theme">
@@ -5632,10 +5637,14 @@ function bgImage() {
 function paintBgImage() {
     const u = bgImage(), root = document.documentElement;
     if (u) root.style.setProperty("--user-bg", 'url("' + u + '")'); else root.style.removeProperty("--user-bg");
-    document.querySelectorAll(".bg-mine").forEach(b => b.classList.toggle("hidden", !u));
-    $("bg-remove").classList.toggle("hidden", !u);
+    document.querySelectorAll(".bg-add").forEach(b => {
+        b.classList.toggle("has-bg", !!u);
+        const label = u ? "Remove your background" : "Add your own background";
+        b.title = label; b.setAttribute("aria-label", label);
+    });
     $("bg-preview-ph").classList.toggle("hidden", !!u);
 }
+    
 function applyBg(v) {
     if (["none", "dots", "waves", "both", "custom"].indexOf(v) < 0) v = "both";
     if (v === "custom" && !bgImage()) v = "both";
@@ -5677,8 +5686,16 @@ function processBgImage(file) {
 }
 function openBgModal() { paintBgImage(); setMessage($("bg-msg"), "", ""); $("bg-modal").classList.remove("hidden"); }
 function closeBgModal() { $("bg-modal").classList.add("hidden"); }
-document.querySelectorAll("[data-bg-add]").forEach(b => b.addEventListener("click", openBgModal));
-$("bg-close").addEventListener("click", closeBgModal);
+function removeBg() {
+    try { localStorage.removeItem(BG_KEY); } catch (e) {}
+    paintBgImage();
+    applyBg("none");
+}
+document.querySelectorAll("[data-bg-add]").forEach(b => b.addEventListener("click", () => {
+    if (bgImage()) removeBg(); else openBgModal();
+}));
+    
+    $("bg-close").addEventListener("click", closeBgModal);
 $("bg-modal").addEventListener("click", e => { if (e.target === e.currentTarget) closeBgModal(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeBgModal(); });
 $("bg-choose").addEventListener("click", () => $("bg-file").click());
@@ -5691,10 +5708,9 @@ $("bg-file").addEventListener("change", async e => {
         try { localStorage.setItem(BG_KEY, url); }
         catch (err) { throw new Error("Your browser has no room to save this picture. Try a smaller one."); }
         paintBgImage(); applyBg("custom");
-        setMessage(m, "Background added. It now follows your theme.", OK);
+        closeBgModal();
     } catch (err) { setMessage(m, err.message, ERR); }
 });
-$("bg-remove").addEventListener("click", () => {
     try { localStorage.removeItem(BG_KEY); } catch (e) {}
     const wasOn = document.documentElement.getAttribute("data-bg") === "custom";
     paintBgImage();
