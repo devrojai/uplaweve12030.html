@@ -2149,14 +2149,23 @@ html[data-theme="night"] .org-kid::after { background: #d65d63; }
 .bg-switch .bg-add, .bg-switch button[data-bg="none"] { width: auto; display: grid; place-items: center; }
 .theme-switch + .theme-switch { margin-top: 8px; }
 
-/* Admin tools: no button backgrounds, a clear label, and a marker line on each admin button */
+/* Admin tools: clear label, plain buttons with no border design */
 .nav-label[data-admin] {
     margin: 24px 0 8px; padding: 10px 14px; font-size: .8rem; letter-spacing: 2.2px;
     border: 0; border-radius: var(--r-md);
 }
-.nav button[data-admin] { margin-left: 0; width: 100%; background: transparent; border-left: 4px solid var(--dr-muted); }
+.nav button[data-admin] { margin-left: 0; width: 100%; background: transparent; }
+.nav button[data-admin]:not(.active) { border-left-color: transparent; }
 .nav button[data-admin]:not(.active):hover { background: var(--dr-hover); }
-.nav button[data-admin].active { background: var(--dr-act-bg); border-left-color: var(--dr-act-line); }
+.nav button[data-admin].active { background: var(--dr-act-bg); border-left-color: var(--dr-act-line); } 
+
+/* Log Out + Delete: icons side by side, under the background options */
+.drawer-foot .foot-actions { display: flex; gap: 8px; margin-top: 14px; }
+.drawer-foot .foot-actions .foot-ico {
+    flex: 1 1 0; width: auto; margin: 0 !important; padding: 12px;
+    display: flex; align-items: center; justify-content: center;
+}
+.drawer-foot .foot-actions .foot-ico svg { width: 22px; height: 22px; }
         
     </style>
     
@@ -2334,6 +2343,7 @@ html[data-theme="night"] .org-kid::after { background: #d65d63; }
         Hidden Courses
     </button>
 </nav>
+        
         <div class="drawer-foot">
 
 <div class="theme-switch" id="theme-switch" role="group" aria-label="Theme">
@@ -2349,11 +2359,12 @@ html[data-theme="night"] .org-kid::after { background: #d65d63; }
     <button type="button" class="bg-add" data-bg-add title="Add your own background" aria-label="Add your own background"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
 </div>
 
-<div class="drawer-gap"></div>
-            
-            <button type="button" class="btn" id="logout-btn">Log Out</button>
-            <button type="button" class="btn-danger" id="delete-open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="lid"><path d="M3 6h18"/><path d="M8 6V4h8v2"/></g><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg><span>Delete Account</span></button>
+            <div class="foot-actions">
+                <button type="button" class="btn foot-ico" id="logout-btn" title="Log Out" aria-label="Log Out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></button>
+                <button type="button" class="btn-danger foot-ico" id="delete-open" title="Delete Account" aria-label="Delete Account"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="lid"><path d="M3 6h18"/><path d="M8 6V4h8v2"/></g><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>
+            </div>
         </div>
+        
     </aside>
 
        <aside class="pdrawer" id="pdrawer">
