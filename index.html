@@ -2148,6 +2148,18 @@ html[data-theme="night"] .org-kid::after { background: #d65d63; }
 .bg-switch button { padding: 8px 2px; text-align: center; }
 .bg-switch .bg-add, .bg-switch button[data-bg="none"] { width: auto; display: grid; place-items: center; }
 .theme-switch + .theme-switch { margin-top: 8px; }
+
+/* Admin buttons: Light = maroon, Classic and Night = white. Hover only slides them right. */
+html:not([data-theme]) .nav button[data-admin]:not(.active),
+html:not([data-theme]) .nav button[data-admin]:not(.active):hover {
+    background: #76090c; color: #ffffff;
+}
+html[data-theme="classic"] .nav button[data-admin]:not(.active),
+html[data-theme="classic"] .nav button[data-admin]:not(.active):hover,
+html[data-theme="night"] .nav button[data-admin]:not(.active),
+html[data-theme="night"] .nav button[data-admin]:not(.active):hover {
+    background: #ffffff; color: #76090c;
+}
         
     </style>
     
