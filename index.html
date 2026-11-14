@@ -1848,12 +1848,6 @@ html[data-bg="custom"] .app::before {
 
 /* Pop-up preview (the picture exactly as it will appear) */
 #bg-modal { z-index: 95; }
-.bg-preview {
-    height: 170px; margin: 12px 0 4px; display: grid; place-items: center; text-align: center;
-    color: var(--muted); font-weight: 600;
-    border: 1px solid var(--line); border-radius: var(--r-lg);
-    background: var(--user-bg) center / cover no-repeat, var(--bg);
-}
         
     </style>
     
@@ -1864,9 +1858,8 @@ html[data-bg="custom"] .app::before {
 <input type="file" id="bg-file" accept="image/*" class="hidden">
 <div class="modal hidden" id="bg-modal" role="dialog" aria-modal="true">
     <div class="modal-card modal-wide">
-        <h3>My background</h3>
+        <h3>My Background</h3>
         <p>Your picture is shown exactly as you uploaded it, in every theme. To remove it, press the X next to the background options.</p>
-        <div class="bg-preview" id="bg-preview"><span id="bg-preview-ph">No picture yet</span></div>
         <div class="msg" id="bg-msg"></div>
         <div class="modal-actions modal-actions-end">
             <button type="button" class="btn sm" id="bg-choose">Choose picture</button>
@@ -5613,7 +5606,6 @@ function paintBgImage() {
         const label = u ? "Remove your background" : "Add your own background";
         b.title = label; b.setAttribute("aria-label", label);
     });
-    $("bg-preview-ph").classList.toggle("hidden", !!u);
 }
     
 function applyBg(v) {
