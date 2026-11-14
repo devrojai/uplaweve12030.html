@@ -1917,8 +1917,8 @@ html[data-theme="night"] .dibs-ic.ok:disabled, html[data-theme="night"] .dibs-ic
                     <section class="p-card">
                         <div class="p-card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Name</div>
                         <div class="p-card-body">
-                            <div class="field"><input type="text" id="p-first" placeholder=" " maxlength="60"><label for="p-first">First name</label></div>
-                            <div class="field"><input type="text" id="p-middle" placeholder=" " maxlength="60"><label for="p-middle">Middle name</label></div>
+                            <div class="field"><input type="text" id="p-first" placeholder=" " maxlength="60"><label for="p-first">First Name</label></div>
+                            <div class="field"><input type="text" id="p-middle" placeholder=" " maxlength="60"><label for="p-middle">Middle Name</label></div>
                             <div class="field"><input type="text" id="p-last" placeholder=" " maxlength="60"><label for="p-last">Last name</label></div>
                             <div class="field"><input type="text" id="p-nick" placeholder=" " maxlength="60"><label for="p-nick">Nickname</label></div>
                             <p class="hint">Admins can tag you by nickname, first name or surname.</p>
@@ -1928,8 +1928,8 @@ html[data-theme="night"] .dibs-ic.ok:disabled, html[data-theme="night"] .dibs-ic
                     <section class="p-card">
                         <div class="p-card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Contact</div>
                         <div class="p-card-body">
-                            <div class="field"><input type="tel" id="p-contact" placeholder=" " maxlength="20"><label for="p-contact">Contact no.</label></div>
-                            <div class="field"><input type="email" id="p-upemail" placeholder=" " maxlength="100"><label for="p-upemail">UP student email address</label></div>
+                            <div class="field"><input type="tel" id="p-contact" placeholder=" " maxlength="20"><label for="p-contact">Contact No.</label></div>
+                            <div class="field"><input type="email" id="p-upemail" placeholder=" " maxlength="100"><label for="p-upemail">UP Student Email Address</label></div>
                             <p class="hint">Must end with @up.edu.ph</p>
                         </div>
                     </section>
@@ -1937,7 +1937,7 @@ html[data-theme="night"] .dibs-ic.ok:disabled, html[data-theme="night"] .dibs-ic
                     <section class="p-card">
                         <div class="p-card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>Social</div>
                         <div class="p-card-body">
-                            <div class="field"><input type="text" id="p-tg" placeholder=" " maxlength="33"><label for="p-tg">Telegram handle</label></div>
+                            <div class="field"><input type="text" id="p-tg" placeholder=" " maxlength="33"><label for="p-tg">Telegram</label></div>
                             <p class="hint">Example: @juandelacruz</p>
                             <div class="field"><input type="text" id="p-fb" placeholder=" " maxlength="200"><label for="p-fb">Facebook URL</label></div>
                             <p class="hint">Example: https://facebook.com/yourname</p>
@@ -3041,8 +3041,8 @@ if (acts.children.length) box.appendChild(acts);
             });
             body.appendChild(card);
         };
-        section("Personal information", [["First name", u.firstName], ["Middle name", u.middleName], ["Last name", u.lastName], ["Nickname", u.nickname]]);
-        section("Contact", [["Contact no.", u.contact], ["Telegram", u.tg], ["UP student email", u.upEmail], ["Facebook", u.fb, true]]);
+        section("Personal information", [["First Name", u.firstName], ["Middle Name", u.middleName], ["Last name", u.lastName], ["Nickname", u.nickname]]);
+        section("Contact", [["Contact No.", u.contact], ["Telegram", u.tg], ["UP student email", u.upEmail], ["Facebook", u.fb, true]]);
         section("Account", [["Account email", u.email], ["Account created", u.created], ["Profile updated", u.updated]]);
                 
         // Admin-only: delete this account (not shown on your own profile)
