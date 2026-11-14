@@ -2067,6 +2067,8 @@ html[data-theme="night"] .org-kid::after { background: #d65d63; }
 .off-rec-v { font-weight: 600; word-break: break-word; }
 .off-rec-v.vacant { font-weight: 400; font-style: italic; color: var(--muted); }
 @media (max-width: 520px) { .off-rec-row { grid-template-columns: 1fr; gap: 2px; } }
+
+#of-records .off-hint { margin-bottom: 16px; }
         
     </style>
     
@@ -6222,7 +6224,7 @@ function renderOfRecords() {
     box.appendChild(mk("p", "hint off-hint", "Latest semester first. Hide a record with the eye icon and non-admin users can no longer see it. Records can be hidden but never deleted."));
     if (!list.length) {
         const e = mk("div", "empty");
-        e.appendChild(mk("b", "", "No records yet"));
+        e.appendChild(mk("b", "", "No Records Yet"));
         e.appendChild(mk("p", "", "Choose a semester and academic year, then press \u201cAdd to Records\u201d."));
         box.appendChild(e); return;
     }
