@@ -1774,13 +1774,61 @@ html[data-bg="both"] .app::after {
     animation: waveFlow 28s linear infinite;
 }
 @media print { html[data-bg] .app::after { display: none !important; } }
-    
+
+/* ===== FLUID WAVES (3 layers) ===== */
+/* Turn off the old single-layer waves */
+.bg::after, .app::after { content: none !important; display: none !important; }
+
+.waves {
+    position: fixed; left: 0; right: 0; bottom: 0; height: 42%;
+    overflow: hidden; pointer-events: none; z-index: 0;
+    --wa: var(--swave-a); --wb: var(--swave-b);
+}
+.bg .waves { --wa: var(--wave-a); --wb: var(--wave-b); }
+
+.waves i {
+    display: block; position: absolute; left: 0; bottom: 0;
+    width: calc(var(--n) * var(--tile)); height: var(--h);
+    background: linear-gradient(to top, var(--wa), var(--wb));
+    opacity: var(--o, 1);
+    -webkit-mask-image: var(--m); mask-image: var(--m);
+    -webkit-mask-size: var(--tile) 100%; mask-size: var(--tile) 100%;
+    -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
+    -webkit-mask-position: 0 100%; mask-position: 0 100%;
+    will-change: transform;
+    animation:
+        waveX var(--t) linear infinite var(--dir, normal),
+        waveBob var(--tb) ease-in-out infinite;
+}
+/* Back layer: long, slow, tall */
+.waves i:nth-child(1) {
+    --m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 200' preserveAspectRatio='none'%3E%3Cpath d='M0 110C200 40 400 40 600 110S1000 180 1200 110V200H0Z'/%3E%3C/svg%3E");
+    --tile: max(100vw, 700px); --n: 2; --h: 100%; --t: 38s; --tb: 9s; --bob: 8px; --o: .9;
+}
+/* Middle layer: longest wavelength, moves the other way */
+.waves i:nth-child(2) {
+    --m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 200' preserveAspectRatio='none'%3E%3Cpath d='M0 90C150 150 450 150 600 90S1050 30 1200 90V200H0Z'/%3E%3C/svg%3E");
+    --tile: max(140vw, 900px); --n: 2; --h: 80%; --t: 56s; --dir: reverse; --tb: 12s; --bob: 12px; --o: .65;
+}
+/* Front layer: shorter, closer, subtle */
+.waves i:nth-child(3) {
+    --m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 200' preserveAspectRatio='none'%3E%3Cpath d='M0 120C100 80 300 80 400 120S700 160 800 120S1100 160 1200 120V200H0Z'/%3E%3C/svg%3E");
+    --tile: max(80vw, 500px); --n: 3; --h: 60%; --t: 74s; --tb: 14s; --bob: 6px; --o: .5;
+}
+
+@keyframes waveX   { to { transform: translateX(calc(var(--tile) * -1)); } }
+@keyframes waveBob { 0%, 100% { translate: 0 0; } 50% { translate: 0 var(--bob, 8px); } }
+
+/* Background options */
+html[data-bg="none"] .waves, html[data-bg="dots"] .waves { display: none; }
+@media print { .waves { display: none !important; } }
+        
     </style>
     
 </head>
 <body>
 
-<div class="bg"></div>
+<div class="bg"><div class="waves" aria-hidden="true"><i></i><i></i><i></i></div></div>
     
 <!-- AUTHENTICATION VIEW -->
 <div class="stage" id="stage">
@@ -1855,6 +1903,7 @@ html[data-bg="both"] .app::after {
 
 <!-- MAIN APPLICATION VIEW -->
 <div class="app hidden" id="app">
+    <div class="waves" aria-hidden="true"><i></i><i></i><i></i></div>
     <header class="topbar">
         <button class="burger" id="burger" aria-label="Open menu"><span></span><span></span><span></span></button>
         <div class="site">EVE1 2030</div>
