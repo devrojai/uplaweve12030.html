@@ -2142,7 +2142,6 @@ html[data-theme="night"] .org-kid::after { background: #d65d63; }
             mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z'/%3E%3C/svg%3E") center / contain no-repeat; }
 .nav button[data-admin] { margin-left: 4px; width: calc(100% - 4px); background: var(--dr-hover); }
 .nav button[data-admin]:not(.active) { border-left-color: var(--accent2); }
-.nav button[data-admin]::after { content: "ADMIN"; margin-left: auto; padding: 1px 6px; font-size: .55rem; font-weight: 800; letter-spacing: 1px; border: 1px solid currentColor; border-radius: 999px; opacity: .7; }
 
 /* Background switch: equal columns, even spacing */
 .theme-switch.bg-switch { display: grid; grid-template-columns: 36px repeat(3, minmax(0, 1fr)) 36px; gap: 4px; margin-bottom: 0; }
@@ -4840,7 +4839,8 @@ function insertByRecency(ids, id) {
     const out = ids.slice(); out.splice(i, 0, id); return out;
 }
 const hidePending = {}, hideChain = {};
-function toggleCourseHidden(c, btn) {
+function toggleCourseHidden(c0, btn) {
+    const c = courseList.find(x => x.id === c0.id) || c0;   // always act on the live object
     const next = !c.hidden;
     c.hidden = next;                       // update the screen right away
     officerData = null;   // officers are kept; the Officers pages reload
@@ -5272,8 +5272,8 @@ async function loadCourses() {
                     return c;
                 }).sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: "base" }));
                 const changed = !coursesLoaded || JSON.stringify(next) !== JSON.stringify(old);
-                courseList = next; coursesLoaded = true;
-                if (changed) renderCourses();   // identical data: no redraw, so nothing flickers
+                coursesLoaded = true;
+                if (changed) { courseList = next; renderCourses(); }   // unchanged: keep the same objects the buttons point to
             } else { setMessage(m, r.message, ERR); coursesLoaded = true; renderCourses(); }
         } catch (err) { if (err.message !== "auth") { setMessage(m, netError(err), ERR); coursesLoaded = true; renderCourses(); } }
     })().finally(() => { coursesInflight = null; });
@@ -6227,8 +6227,7 @@ function renderOrgChart() {
     const termEl = $("off-term");
     termEl.textContent = tm.semester && tm.ay ? tm.semester + " Semester \u00b7 " + tm.ay : "Semester and academic year not set";
     termEl.classList.remove("hidden");
-    const core = officerData.core, courses = officerData.courses || [], seen = {};
-    const note = p => { if (p) seen[p.email] = 1; };
+    const core = officerData.core, courses = (officerData.courses || []).filter(c => !c.hidden), seen = {};    const note = p => { if (p) seen[p.email] = 1; };
     OF_CORE.forEach(([k]) => note(core[k]));
     OF_TEAMS.forEach(([k]) => (core[k] || []).forEach(note));
     courses.forEach(c => { note(c.beadle); (c.academic || []).forEach(note); });
@@ -6601,7 +6600,7 @@ $("of-form").addEventListener("submit", async e => {
         if (r.status === "success") {
             done = true;
             loadCourses();
-            if (await loadOfficers(true)) renderOfRecords();
+            loadOfficers(true).then(res => { if (res) renderOfRecords(); });   // refresh in the background
         } else setMessage(m, r.message, ERR);
     } catch (err) { if (err.message !== "auth") setMessage(m, netError(err), ERR); }
     setLoading(btn, false);
