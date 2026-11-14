@@ -1908,6 +1908,100 @@ html[data-bg="custom"] .app::before {
 .off-arch { margin-top: 10px; padding: 12px 16px; background: var(--surface); border: 1px dashed var(--line-strong); border-left: 4px solid var(--period); border-radius: var(--r-lg); }
 .off-arch-top { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 10px; }
 .off-arch-line { margin-top: 4px; font-size: var(--fs-n1); color: var(--muted); }
+
+/* ===== Officers: more contrast + depth ===== */
+
+/* Tinted panel behind the chart, so white cards stand out from the page */
+.org-tree {
+    padding: 28px 16px 26px;
+    margin: 8px 0 14px;
+    background:
+        radial-gradient(ellipse at 50% 0%, var(--accent-soft), transparent 70%),
+        linear-gradient(var(--accent-soft), var(--accent-soft)),
+        var(--bg);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-xl);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.4);
+}
+
+/* Stronger connector lines in the accent color */
+.org-trunk { width: 3px; background: var(--accent); opacity: .55; }
+.org-kid::before { height: 3px; background: var(--accent); opacity: .55; }
+.org-kid::after  { width: 3px; margin-left: -1.5px; background: var(--accent); opacity: .55; }
+
+/* Cards: thicker accent top, real shadow, lift on hover */
+.org-card {
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-top: 5px solid var(--accent);
+    box-shadow: 0 12px 26px rgba(40,10,10,.20), 0 2px 5px rgba(0,0,0,.10);
+    transition: transform .25s var(--ease), box-shadow .25s;
+}
+.org-card:not(.vacant):hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 34px rgba(40,10,10,.28), 0 3px 8px rgba(0,0,0,.12);
+}
+.org-ava {
+    border-width: 4px;
+    box-shadow: 0 0 0 3px var(--accent), 0 6px 14px rgba(0,0,0,.25);
+}
+.org-name { font-size: 1.05rem; }
+.org-card.big { background: linear-gradient(180deg, var(--accent-soft), var(--surface) 55%); }
+
+/* Vacant slots: still clearly visible */
+.org-card.vacant {
+    background: color-mix(in srgb, var(--surface) 55%, transparent);
+    border: 2px dashed var(--line-strong);
+    border-top: 2px dashed var(--line-strong);
+    box-shadow: none;
+}
+.org-ava.vacant { box-shadow: 0 0 0 3px var(--line-strong); }
+
+/* Team + course cards get the same treatment */
+.org-team, .org-course {
+    border: 1px solid var(--line-strong);
+    border-left: 5px solid var(--accent);
+    box-shadow: 0 8px 20px rgba(40,10,10,.14);
+}
+.org-team-head, .org-course-head { background: var(--accent-soft); }
+.org-mini .org-ava { box-shadow: 0 0 0 2px var(--accent), 0 3px 8px rgba(0,0,0,.2); }
+
+/* Night theme: cards lighter than the background, with a maroon glow */
+html[data-theme="night"] .org-tree {
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(163,23,30,.30), transparent 70%),
+        #0b0809;
+    border-color: #3a2a2c;
+    box-shadow: none;
+}
+html[data-theme="night"] .org-card {
+    background: #202025;
+    border-color: #4a4a52;
+    border-top-color: #d65d63;
+    box-shadow: 0 0 0 1px rgba(214,93,99,.12), 0 12px 28px rgba(163,23,30,.28);
+}
+html[data-theme="night"] .org-card.big { background: linear-gradient(180deg, rgba(163,23,30,.35), #202025 60%); }
+html[data-theme="night"] .org-card.vacant { background: rgba(255,255,255,.03); border-color: #55555d; box-shadow: none; }
+html[data-theme="night"] .org-ava { box-shadow: 0 0 0 3px #d65d63, 0 0 16px rgba(214,93,99,.35); }
+html[data-theme="night"] .org-team,
+html[data-theme="night"] .org-course {
+    background: #1b1b20; border-color: #3e3e45; border-left-color: #d65d63;
+    box-shadow: 0 8px 22px rgba(163,23,30,.20);
+}
+html[data-theme="night"] .org-team-head,
+html[data-theme="night"] .org-course-head { background: rgba(163,23,30,.25); }
+html[data-theme="night"] .org-trunk,
+html[data-theme="night"] .org-kid::before,
+html[data-theme="night"] .org-kid::after { background: #d65d63; opacity: .6; }
+
+@media (max-width: 720px) {
+    .org-tree { padding: 18px 10px; }
+}
+
+/* ===== Add Officers: loading tiles should not touch ===== */
+#of-fields .skeleton { display: block; margin-bottom: 16px; }
+#of-fields .skeleton:last-child { margin-bottom: 0; }
+#of-fields .skeleton.card-sk { height: 160px; }
         
     </style>
     
