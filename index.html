@@ -2149,17 +2149,14 @@ html[data-theme="night"] .org-kid::after { background: #d65d63; }
 .bg-switch .bg-add, .bg-switch button[data-bg="none"] { width: auto; display: grid; place-items: center; }
 .theme-switch + .theme-switch { margin-top: 8px; }
 
-/* Admin buttons: Light = maroon, Classic and Night = white. Hover only slides them right. */
-html:not([data-theme]) .nav button[data-admin]:not(.active),
-html:not([data-theme]) .nav button[data-admin]:not(.active):hover {
-    background: #76090c; color: #ffffff;
+/* Admin tools: no button backgrounds, a clear label, and a marker line on each admin button */
+.nav-label[data-admin] {
+    margin: 24px 0 8px; padding: 10px 14px; font-size: .8rem; letter-spacing: 2.2px;
+    border: 0; border-radius: var(--r-md);
 }
-html[data-theme="classic"] .nav button[data-admin]:not(.active),
-html[data-theme="classic"] .nav button[data-admin]:not(.active):hover,
-html[data-theme="night"] .nav button[data-admin]:not(.active),
-html[data-theme="night"] .nav button[data-admin]:not(.active):hover {
-    background: #ffffff; color: #76090c;
-}
+.nav button[data-admin] { margin-left: 0; width: 100%; background: transparent; border-left: 4px solid var(--dr-muted); }
+.nav button[data-admin]:not(.active):hover { background: var(--dr-hover); }
+.nav button[data-admin].active { background: var(--dr-act-bg); border-left-color: var(--dr-act-line); }
         
     </style>
     
