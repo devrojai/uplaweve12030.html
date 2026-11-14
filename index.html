@@ -2100,6 +2100,18 @@ html[data-theme="night"] .org-kid::after { background: #d65d63; }
 .bg-switch button[data-bg="none"] svg { width: 17px; height: 17px; }
 .sem-ay { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .off-bar { margin-top: 22px; }
+
+.sem-ay > div { min-width: 0; }
+.off-rec-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; padding: 10px 16px; background: var(--surface); border-top: 1px solid var(--line); }
+.off-rec-cmp { font-size: var(--fs-n1); color: var(--muted); }
+.off-rec-rem { display: none; font-size: var(--fs-n1); font-weight: 500; color: var(--ink); padding-left: 12px; border-left: 2px solid var(--badge-line); word-break: break-word; }
+.off-rec-rem .off-rec-line.none { font-style: italic; color: var(--muted); }
+.off-rec.show-rem .off-rec-row { grid-template-columns: 300px minmax(0, 1fr) minmax(0, 1.2fr); }
+.off-rec.show-rem .off-rec-rem { display: block; }
+@media (max-width: 520px) {
+    .off-rec.show-rem .off-rec-row { grid-template-columns: 1fr; }
+    .off-rec-rem { padding-left: 0; border-left: 0; }
+}
         
     </style>
     
@@ -6248,12 +6260,47 @@ function recordCard(r, withEye) {
     card.appendChild(head);
 
     const s = r.snapshot || { core: {}, courses: [] }, core = s.core || {};
+
+    // The record just before this one (the next older semester)
+    const all = (officerData && officerData.records) || [];
+    const at = all.findIndex(x => x.id === r.id);
+    const prev = at >= 0 ? all[at + 1] : null;
+    const ps = prev ? (prev.snapshot || {}) : {}, pcore = ps.core || {};
+
+    // Bar with the "Show Changes" button
+    const bar = mk("div", "off-rec-bar");
+    const tog = mk("button", "btn sm", "Show Changes"); tog.type = "button";
+    tog.addEventListener("click", () => {
+        const on = card.classList.toggle("show-rem");
+        tog.textContent = on ? "Hide Changes" : "Show Changes";
+    });
+    bar.appendChild(tog);
+    bar.appendChild(mk("span", "off-rec-cmp", prev
+        ? "Compared with " + prev.semester + " Semester, " + prev.ay
+        : "First record: nothing earlier to compare"));
+    card.appendChild(bar);
+
+    const diffOne = (a, b) => {
+        a = a || ""; b = b || "";
+        if (a === b) return [];
+        if (!a) return ["Filled (was vacant)"];
+        if (!b) return ["Now vacant (was " + a + ")"];
+        return ["Changed from " + a];
+    };
+    const diffList = (a, b) => {
+        a = a || []; b = b || [];
+        const out = [];
+        b.filter(n => a.indexOf(n) < 0).forEach(n => out.push("Added: " + n));
+        a.filter(n => b.indexOf(n) < 0).forEach(n => out.push("Removed: " + n));
+        return out;
+    };
+
     const sec = t => card.appendChild(mk("div", "off-rec-sec", t));
-        const row = (k, items) => {
+    const row = (k, items, rem, vtext) => {
         const d = mk("div", "off-rec-row");
         d.appendChild(mk("div", "off-rec-k", k));
         const v = mk("div", "off-rec-v" + (items.length ? "" : " vacant"));
-        if (!items.length) v.textContent = "Vacant";
+        if (!items.length) v.textContent = vtext || "Vacant";
         items.forEach(it => {
             const l = mk("div", "off-rec-line");
             l.appendChild(document.createTextNode(it.name));
@@ -6261,21 +6308,47 @@ function recordCard(r, withEye) {
             v.appendChild(l);
         });
         d.appendChild(v);
+        const m = mk("div", "off-rec-rem");
+        const has = prev && rem && rem.length;
+        const lines = !prev ? ["\u2014"] : (has ? rem : ["No change"]);
+        lines.forEach(t => m.appendChild(mk("div", "off-rec-line" + (has ? "" : " none"), t)));
+        d.appendChild(m);
         card.appendChild(d);
     };
     const one = n => n ? [{ name: n }] : [];
+
     sec("Executive officers");
-    OF_CORE.forEach(([k, l]) => row(l, one(core[k])));
+    OF_CORE.forEach(([k, l]) => row(l, one(core[k]), prev ? diffOne(pcore[k], core[k]) : []));
     sec("Teams");
-    OF_TEAMS.forEach(([k, l]) => row(l, (core[k] || []).map(n => ({ name: n }))));
-    if ((s.courses || []).length) {
+    OF_TEAMS.forEach(([k, l]) => row(l, (core[k] || []).map(n => ({ name: n })), prev ? diffList(pcore[k], core[k]) : []));
+
+    const ckey = c => (c.code || "") + "|" + c.title;
+    const clabel = c => (c.code ? c.code + " \u00b7 " : "") + c.title;
+    const pmap = {};
+    (ps.courses || []).forEach(c => { pmap[ckey(c)] = c; });
+    const curKeys = {};
+    (s.courses || []).forEach(c => { curKeys[ckey(c)] = 1; });
+    const removed = prev ? (ps.courses || []).filter(c => !curKeys[ckey(c)]) : [];
+
+    if ((s.courses || []).length || removed.length) {
         sec("Course officers");
-        s.courses.forEach(c => {
+        (s.courses || []).forEach(c => {
             const items = [];
             if (c.beadle) items.push({ name: c.beadle, tag: "B" });
             (c.academic || []).filter(Boolean).forEach(n => items.push({ name: n, tag: "AO" }));
-            row((c.code ? c.code + " \u00b7 " : "") + c.title, items);
+            let rem = [];
+            if (prev) {
+                const p = pmap[ckey(c)];
+                if (!p) rem = ["New course in this record"];
+                else {
+                    diffOne(p.beadle, c.beadle).forEach(t => rem.push("Beadle: " + t));
+                    diffList((p.academic || []).filter(Boolean), (c.academic || []).filter(Boolean))
+                        .forEach(t => rem.push("Academic Officer " + t.charAt(0).toLowerCase() + t.slice(1)));
+                }
+            }
+            row(clabel(c), items, rem);
         });
+        removed.forEach(c => row(clabel(c), [], ["Course no longer in this record"], "Not in this record"));
     }
     return card;
 }
