@@ -754,7 +754,10 @@ html[data-theme="classic"] .bg {
 }
         
 html[data-theme="night"] .bg {
-    background: #000000;
+    background:
+        radial-gradient(circle, rgba(255,146,150,.10) 1.2px, transparent 1.6px) 0 0 / 24px 24px,
+        radial-gradient(ellipse at 15% 10%, rgba(163,23,30,.14), transparent 50%),
+        #000000;
 }
 
 /* ---------- Login background ---------- */
