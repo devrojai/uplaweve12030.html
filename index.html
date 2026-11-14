@@ -2098,12 +2098,13 @@ html[data-theme="night"] .org-kid::after { background: #d65d63; }
 /* Course code tag inside a record row */
 .off-code { display: inline-block; margin-right: 10px; padding: 2px 8px; font-size: .75rem; font-weight: 700; letter-spacing: .8px; line-height: 1.4; color: var(--on-accent); background: var(--accent); border-radius: var(--r-sm); vertical-align: 1px; }
 
-/* Edits group: same font size for label and details, tighter rows */
-.off-edits-wrap .off-rec-row { padding: 5px 16px; }
-.off-edits-wrap .off-rec-k,
-.off-edits-wrap .off-rec-v { font-size: var(--fs-n1); line-height: 1.35; }
-.off-edits-wrap .off-rec-line + .off-rec-line { margin-top: 2px; }
+/* Edits group */
+.off-edit-block { padding: 10px 16px 12px; border-top: 1px solid var(--line); }
 .off-edit-block + .off-edit-block { border-top: 2px solid var(--line-strong); }
+.off-edit-title { font-size: var(--fs-n1); font-weight: 600; line-height: 1.4; color: var(--muted); }
+.off-edit-title b { font-weight: 800; color: var(--accent-text); }
+.off-edit-lines { margin: 6px 0 0 22px; font-size: var(--fs-n1); font-weight: 600; line-height: 1.4; color: var(--ink); }
+.off-edit-lines .off-rec-line + .off-rec-line { margin-top: 3px; }
 .off-edits-toggle { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; text-align: left; font-size: .7rem; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--accent-text); background: var(--surface2); border: 0; border-top: 1px solid var(--line); cursor: pointer; }
 .off-edits-toggle .cm-count { margin-left: 0; }
 .off-edits-toggle .coll-chev { margin-left: auto; width: 18px; height: 18px; transition: transform .25s var(--ease); }
@@ -6251,12 +6252,12 @@ async function loadOfficers(quiet) {
 $("off-edit").addEventListener("click", () => showSection("addofficers"));
 
 function editStamp(s) {
-    const m = /^(\d{4}-\d{2}-\d{2})[ T](\d{2}):(\d{2})/.exec(String(s || ""));
+    const m = /^(\d{4}-\d{2}-\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/.exec(String(s || ""));
     if (!m) return longDate(s);
     let h = Number(m[2]);
     const ap = h >= 12 ? "PM" : "AM";
     h = h % 12 || 12;
-    return prettyDate(m[1]) + " at " + pad(h) + ":" + m[3] + " " + ap;
+    return prettyDate(m[1]) + " at " + pad(h) + ":" + m[3] + ":" + (m[4] || "00") + " " + ap;
 }
 
 function recordCard(r, withEye) {
@@ -6327,17 +6328,14 @@ function recordCard(r, withEye) {
 
         edits.forEach(e => {
             const blk = mk("div", "off-edit-block");
-            const addRow = (label, node) => {
-                const d = mk("div", "off-rec-row");
-                d.appendChild(mk("div", "off-rec-k", label));
-                const v = mk("div", "off-rec-v");
-                if (typeof node === "string") v.textContent = node; else node.forEach(n => v.appendChild(n));
-                d.appendChild(v);
-                blk.appendChild(d);
-            };
-            addRow("Edits", (e.changes || []).map(t => mk("div", "off-rec-line", t)));
-            addRow("Edited by", e.byName || e.by || "");
-            addRow("Edited on", editStamp(e.at));
+            const title = mk("div", "off-edit-title");
+            title.appendChild(mk("b", "", "Edited on"));
+            title.appendChild(document.createTextNode(" " + editStamp(e.at) + " by "));
+            title.appendChild(mk("b", "", e.byName || e.by || ""));
+            blk.appendChild(title);
+            const lines = mk("div", "off-edit-lines");
+            (e.changes || []).forEach(t => lines.appendChild(mk("div", "off-rec-line", t)));
+            blk.appendChild(lines);
             wrap.appendChild(blk);
         });
 
