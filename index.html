@@ -2091,9 +2091,24 @@ html[data-theme="night"] .org-kid::after { background: #d65d63; }
 
 #of-records .off-hint { margin-bottom: 16px; }
 
-.off-rec-k { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.off-rec-k { white-space: normal; overflow-wrap: anywhere; }
 .off-rec-line + .off-rec-line { margin-top: 4px; }
-.off-tag { display: inline-block; margin: 0 8px 0 0; padding: 1px 7px; font-size: .7rem; font-weight: 800; letter-spacing: .5px; line-height: 1.5; vertical-align: 1px; color: var(--on-accent); background: var(--accent); border-radius: var(--r-sm); }
+.off-tag { display: inline-block; box-sizing: border-box; width: 30px; margin: 0 10px 0 0; padding: 1px 0; text-align: center; font-size: .7rem; font-weight: 800; letter-spacing: .5px; line-height: 1.5; vertical-align: 1px; color: var(--on-accent); background: var(--accent); border-radius: var(--r-sm); }
+
+/* Course code tag inside a record row */
+.off-code { display: inline-block; margin-right: 10px; padding: 2px 8px; font-size: .75rem; font-weight: 700; letter-spacing: .8px; line-height: 1.4; color: var(--on-accent); background: var(--accent); border-radius: var(--r-sm); vertical-align: 1px; }
+
+/* Edits group: same font size for label and details, tighter rows */
+.off-edits-wrap .off-rec-row { padding: 5px 16px; }
+.off-edits-wrap .off-rec-k,
+.off-edits-wrap .off-rec-v { font-size: var(--fs-n1); line-height: 1.35; }
+.off-edits-wrap .off-rec-line + .off-rec-line { margin-top: 2px; }
+.off-edit-block + .off-edit-block { border-top: 2px solid var(--line-strong); }
+.off-edits-toggle { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; text-align: left; font-size: .7rem; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--accent-text); background: var(--surface2); border: 0; border-top: 1px solid var(--line); cursor: pointer; }
+.off-edits-toggle .cm-count { margin-left: 0; }
+.off-edits-toggle .coll-chev { margin-left: auto; width: 18px; height: 18px; transition: transform .25s var(--ease); }
+.off-edits-toggle[aria-expanded="true"] .coll-chev { transform: rotate(180deg); }
+        
 @media (max-width: 520px) { .off-rec-k { white-space: normal; } }
 
 .bg-switch button[data-bg="none"] { display: grid; place-items: center; }
@@ -6263,9 +6278,14 @@ function recordCard(r, withEye) {
     const s = r.snapshot || { core: {}, courses: [] }, core = s.core || {};
     const sec = t => card.appendChild(mk("div", "off-rec-sec", t));
     const row = (k, items, vtext) => {
-        const d = mk("div", "off-rec-row");
-        d.appendChild(mk("div", "off-rec-k", k));
-        const v = mk("div", "off-rec-v" + (items.length ? "" : " vacant"));
+    const d = mk("div", "off-rec-row");
+    const kk = mk("div", "off-rec-k");
+        if (k && typeof k === "object") {
+            if (k.code) kk.appendChild(mk("span", "off-code", k.code));
+            kk.appendChild(document.createTextNode(k.title));
+        } else kk.textContent = k;
+        d.appendChild(kk);    const v = mk("div", "off-rec-v" + (items.length ? "" : " vacant"));
+       
         if (!items.length) v.textContent = vtext || "Vacant";
         items.forEach(it => {
             const l = mk("div", "off-rec-line");
@@ -6289,30 +6309,47 @@ function recordCard(r, withEye) {
             const items = [];
             if (c.beadle) items.push({ name: c.beadle, tag: "B" });
             (c.academic || []).filter(Boolean).forEach(n => items.push({ name: n, tag: "AO" }));
-            row((c.code ? c.code + " \u00b7 " : "") + c.title, items);
+            row({ code: c.code, title: c.title }, items);
         });
     }
 
-    // Edit rows (bottom of the card), one block per edit
-    const edits = r.edits || [];
-    edits.forEach((e, i) => {
-        sec(edits.length > 1 ? "Edit " + (i + 1) : "Edit");
-        const d1 = mk("div", "off-rec-row");
-        d1.appendChild(mk("div", "off-rec-k", "Edits made were"));
-        const v1 = mk("div", "off-rec-v");
-        (e.changes || []).forEach(t => v1.appendChild(mk("div", "off-rec-line", t)));
-        d1.appendChild(v1); card.appendChild(d1);
+    // Edits: collapsible group at the bottom, newest on top
+    const edits = (r.edits || []).slice().reverse();
+    if (edits.length) {
+        const key = "edits:" + r.id;
+        const open = !!collOpen[key];
+        const tog = mk("button", "off-edits-toggle"); tog.type = "button";
+        tog.setAttribute("aria-expanded", String(open));
+        tog.appendChild(mk("span", "", "Edits"));
+        tog.appendChild(mk("span", "cm-count", String(edits.length)));
+        tog.insertAdjacentHTML("beforeend", '<svg class="coll-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>');
+        const wrap = mk("div", "off-edits-wrap" + (open ? "" : " hidden"));
 
-        const d2 = mk("div", "off-rec-row");
-        d2.appendChild(mk("div", "off-rec-k", "Edited by"));
-        d2.appendChild(mk("div", "off-rec-v", e.byName || e.by || ""));
-        card.appendChild(d2);
+        edits.forEach(e => {
+            const blk = mk("div", "off-edit-block");
+            const addRow = (label, node) => {
+                const d = mk("div", "off-rec-row");
+                d.appendChild(mk("div", "off-rec-k", label));
+                const v = mk("div", "off-rec-v");
+                if (typeof node === "string") v.textContent = node; else node.forEach(n => v.appendChild(n));
+                d.appendChild(v);
+                blk.appendChild(d);
+            };
+            addRow("Edits", (e.changes || []).map(t => mk("div", "off-rec-line", t)));
+            addRow("Edited by", e.byName || e.by || "");
+            addRow("Edited on", editStamp(e.at));
+            wrap.appendChild(blk);
+        });
 
-        const d3 = mk("div", "off-rec-row");
-        d3.appendChild(mk("div", "off-rec-k", "Edited on"));
-        d3.appendChild(mk("div", "off-rec-v", editStamp(e.at)));
-        card.appendChild(d3);
-    });
+        tog.addEventListener("click", () => {
+            collOpen[key] = !collOpen[key];
+            tog.setAttribute("aria-expanded", String(collOpen[key]));
+            wrap.classList.toggle("hidden", !collOpen[key]);
+        });
+        card.appendChild(tog);
+        card.appendChild(wrap);
+    }
+    
     return card;
 }
 
