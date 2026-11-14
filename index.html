@@ -537,7 +537,7 @@ html[data-theme="night"] { --sb-track: #0b0b0c; --sb-thumb: #5a2226; --sb-thumb-
     --shadow-md: 0 6px 18px rgba(40,30,25,.08);
     --font: "Inter", "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
     --r-sm: 4px; --r-md: 6px; --r-lg: 8px; --r-xl: 10px;
-    --pat: rgba(118,9,12,.09);
+    --pat: rgba(118,9,12,.22);
     --glow1: rgba(118,9,12,.10);
     --glow2: rgba(255,255,255,.6);
 }
@@ -556,8 +556,8 @@ html[data-theme="classic"] {
     --dr-act-bg: #5a0709; --dr-act-ink: #ffffff; --dr-act-line: #f3ebe1;
     --dr-title: #ffffff; --dr-btn: #ffffff; --dr-danger: #ffd0d0;
     --bg-grad: linear-gradient(160deg, #8a0d11 0%, #76090c 45%, #4f0608 100%);
-        --shadow-md: 0 6px 18px rgba(60,20,20,.12);
-    --pat: rgba(118,9,12,.08); --glow1: rgba(118,9,12,.08); --glow2: rgba(243,235,225,.06);
+    --shadow-md: 0 6px 18px rgba(60,20,20,.12);
+    --pat: rgba(118,9,12,.20); --glow1: rgba(118,9,12,.08); --glow2: rgba(243,235,225,.06);
 }
 
 /* ---------- NIGHT: near-black, maroon ---------- */
@@ -576,7 +576,8 @@ html[data-theme="night"] {
     --dr-title: #ff9296; --dr-btn: #ff9296; --dr-danger: #ff9296;
     --bg-grad: #000000;
     --shadow-md: 0 6px 18px rgba(0,0,0,.6);
-    --pat: rgba(255,146,150,.07); --glow1: rgba(163,23,30,.12); --glow2: rgba(163,23,30,.06);
+    --pat: rgba(255,146,150,.15); 
+    --glow1: rgba(163,23,30,.12); --glow2: rgba(163,23,30,.06);
 }
 
 body { background: var(--bg); color: var(--ink); }
@@ -748,13 +749,13 @@ html[data-theme="night"] .cal-chip.period { color: #000000; }
         
 html[data-theme="classic"] .bg {
     background:
-        radial-gradient(circle, rgba(255,255,255,.07) 1.2px, transparent 1.6px) 0 0 / 24px 24px,
+        radial-gradient(circle, rgba(255,255,255,.20) 1.6px, transparent 2.1px) 0 0 / 24px 24px,
         var(--bg-grad);
 }
         
 html[data-theme="night"] .bg {
     background:
-        radial-gradient(circle, rgba(255,146,150,.10) 1.2px, transparent 1.6px) 0 0 / 24px 24px,
+        radial-gradient(circle, rgba(255,146,150,.20) 1.6px, transparent 2.1px) 0 0 / 24px 24px,
         radial-gradient(ellipse at 15% 10%, rgba(163,23,30,.14), transparent 50%),
         #000000;
 }
@@ -828,7 +829,7 @@ html[data-theme="night"] .bg {
 /* ---------- Site background ---------- */
 .app {
     background:
-        radial-gradient(circle, var(--pat) 1.1px, transparent 1.5px) 0 0 / 26px 26px,
+        radial-gradient(circle, var(--pat) 1.5px, transparent 2px) 0 0 / 26px 26px,
         radial-gradient(ellipse at 100% 0%, var(--glow1), transparent 45%),
         radial-gradient(ellipse at 0% 100%, var(--glow2), transparent 45%),
         var(--bg);
