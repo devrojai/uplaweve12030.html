@@ -1826,17 +1826,7 @@ html[data-bg="none"] .waves, html[data-bg="dots"] .waves { display: none; }
 
 /* ===== MY BACKGROUND ===== */
 :root { --user-bg: none; }
-html[data-theme="classic"] { --ub-login: rgba(118,9,12,.66); --ub-app: rgba(251,248,243,.80); --ub-accent: rgba(118,9,12,.10); }
-html[data-theme="night"] { --ub-login: rgba(0,0,0,.74); --ub-app: rgba(0,0,0,.80); --ub-accent: rgba(163,23,30,.24); }
 
-/* Login screens and the site */
-html[data-bg="custom"] .bg {
-    background:
-        linear-gradient(to top, var(--ub-accent), transparent 55%),
-        linear-gradient(var(--ub-login), var(--ub-login)),
-        var(--user-bg) center / cover no-repeat,
-        var(--bg-grad);
-}
         
 /* Login screens and the site: the picture only, no tint or overlay */
 html[data-bg="custom"] .bg {
@@ -1847,19 +1837,6 @@ html[data-bg="custom"] .app {
     background: var(--user-bg) center / cover no-repeat, var(--bg);
     background-attachment: fixed;
 }
-
-/* Buttons in the switcher */
-.bg-switch button { padding: 8px 2px; font-size: .75rem; }
-.bg-switch .bg-add, .bg-switch .bg-mine { flex: none; width: 32px; padding: 0; display: grid; place-items: center; }
-.bg-switch .bg-add svg { width: 16px; height: 16px; }
-.bg-switch .bg-mine {
-    background: var(--user-bg) center / cover no-repeat !important;
-    border: 1px solid var(--line-strong);
-}
-.bg-switch .bg-mine.on { box-shadow: inset 0 0 0 2px var(--accent-text) !important; }
-
-/* Pop-up preview (shows the picture with the current theme's tint) */
-#bg-modal { z-index: 95; }
 
 /* Buttons in the switcher */
 .bg-switch button { padding: 8px 2px; font-size: .75rem; }
@@ -1887,11 +1864,10 @@ html[data-bg="custom"] .app {
 <div class="modal hidden" id="bg-modal" role="dialog" aria-modal="true">
     <div class="modal-card modal-wide">
         <h3>My background</h3>
-        <p>Your picture is blended with the current theme's colors, so text stays easy to read in Light, Classic and Night.</p>
+        <p>Your picture is shown exactly as you uploaded it, in every theme. To remove it, press the X next to the background options.</p>
         <div class="bg-preview" id="bg-preview"><span id="bg-preview-ph">No picture yet</span></div>
         <div class="msg" id="bg-msg"></div>
         <div class="modal-actions modal-actions-end">
-            <button type="button" class="btn ghost sm hidden" id="bg-remove">Remove</button>
             <button type="button" class="btn sm" id="bg-choose">Choose picture</button>
             <button type="button" class="btn ghost sm" id="bg-close">Close</button>
         </div>
@@ -5710,12 +5686,6 @@ $("bg-file").addEventListener("change", async e => {
         paintBgImage(); applyBg("custom");
         closeBgModal();
     } catch (err) { setMessage(m, err.message, ERR); }
-});
-    try { localStorage.removeItem(BG_KEY); } catch (e) {}
-    const wasOn = document.documentElement.getAttribute("data-bg") === "custom";
-    paintBgImage();
-    if (wasOn) applyBg("both");
-    setMessage($("bg-msg"), "Background removed.", OK);
 });
 
 paintBgImage();
