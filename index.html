@@ -770,8 +770,12 @@ html[data-theme="night"] .bg {
 /* Flowing waves + soft moving gradient */
 .bg { --sheen: rgba(118,9,12,.12); --wave-a: rgba(118,9,12,.16); --wave-b: rgba(118,9,12,.03); }
 html[data-theme="classic"] .bg { --sheen: rgba(255,255,255,.10); --wave-a: rgba(255,255,255,.16); --wave-b: rgba(243,235,225,.10); }
-html[data-theme="night"] .bg { --sheen: transparent; --wave-a: transparent; --wave-b: transparent; }
-
+html[data-theme="night"] .bg {
+    --sheen: rgba(163,23,30,.14);
+    --wave-a: rgba(163,23,30,.32);
+    --wave-b: rgba(255,146,150,.04);
+}
+        
 /* Moving gradient glow */
 .bg::before {
     content: ""; position: absolute; inset: -30%; pointer-events: none;
