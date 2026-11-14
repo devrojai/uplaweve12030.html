@@ -2093,7 +2093,7 @@ html[data-theme="night"] .org-kid::after { background: #d65d63; }
 
 .off-rec-k { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .off-rec-line + .off-rec-line { margin-top: 4px; }
-.off-tag { display: inline-block; margin-left: 6px; padding: 1px 7px; font-size: .7rem; font-weight: 800; letter-spacing: .5px; line-height: 1.5; vertical-align: 1px; color: var(--on-accent); background: var(--accent); border-radius: var(--r-sm); }
+.off-tag { display: inline-block; margin: 0 8px 0 0; padding: 1px 7px; font-size: .7rem; font-weight: 800; letter-spacing: .5px; line-height: 1.5; vertical-align: 1px; color: var(--on-accent); background: var(--accent); border-radius: var(--r-sm); }
 @media (max-width: 520px) { .off-rec-k { white-space: normal; } }
 
 .bg-switch button[data-bg="none"] { display: grid; place-items: center; }
@@ -2102,15 +2102,8 @@ html[data-theme="night"] .org-kid::after { background: #d65d63; }
 .off-bar { margin-top: 22px; }
 
 .sem-ay > div { min-width: 0; }
-.off-rec-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; padding: 10px 16px; background: var(--surface); border-top: 1px solid var(--line); }
-.off-rec-cmp { font-size: var(--fs-n1); color: var(--muted); }
-.off-rec-rem { display: none; font-size: var(--fs-n1); font-weight: 500; color: var(--ink); padding-left: 12px; border-left: 2px solid var(--badge-line); word-break: break-word; }
-.off-rec-rem .off-rec-line.none { font-style: italic; color: var(--muted); }
-.off-rec.show-rem .off-rec-row { grid-template-columns: 300px minmax(0, 1fr) minmax(0, 1.2fr); }
-.off-rec.show-rem .off-rec-rem { display: block; }
+
 @media (max-width: 520px) {
-    .off-rec.show-rem .off-rec-row { grid-template-columns: 1fr; }
-    .off-rec-rem { padding-left: 0; border-left: 0; }
 }
         
     </style>
@@ -2653,8 +2646,7 @@ html[data-theme="night"] .org-kid::after { background: #d65d63; }
             <div><div class="group-title">Academic Year</div><select id="of-ay" aria-label="Academic Year"></select></div>
         </div>
         <div id="of-fields"></div>
-        <button type="submit" class="btn" id="of-send">Save officers</button>
-        <button type="button" class="btn" id="of-record">Add to Records</button>
+        <button type="submit" class="btn" id="of-record">Update Record</button>
         <div class="msg" id="of-message"></div>
     </form>
     <div id="of-records"></div>
@@ -6243,6 +6235,15 @@ async function loadOfficers(quiet) {
 }
 $("off-edit").addEventListener("click", () => showSection("addofficers"));
 
+function editStamp(s) {
+    const m = /^(\d{4}-\d{2}-\d{2})[ T](\d{2}):(\d{2})/.exec(String(s || ""));
+    if (!m) return longDate(s);
+    let h = Number(m[2]);
+    const ap = h >= 12 ? "PM" : "AM";
+    h = h % 12 || 12;
+    return prettyDate(m[1]) + " at " + pad(h) + ":" + m[3] + " " + ap;
+}
+
 function recordCard(r, withEye) {
     const card = mk("div", "off-rec" + (r.hidden && withEye ? " is-hidden" : ""));
     const head = mk("div", "off-rec-head");
@@ -6260,96 +6261,58 @@ function recordCard(r, withEye) {
     card.appendChild(head);
 
     const s = r.snapshot || { core: {}, courses: [] }, core = s.core || {};
-
-    // The record just before this one (the next older semester)
-    const all = (officerData && officerData.records) || [];
-    const at = all.findIndex(x => x.id === r.id);
-    const prev = at >= 0 ? all[at + 1] : null;
-    const ps = prev ? (prev.snapshot || {}) : {}, pcore = ps.core || {};
-
-    // Bar with the "Show Changes" button
-    const bar = mk("div", "off-rec-bar");
-    const tog = mk("button", "btn sm", "Show Changes"); tog.type = "button";
-    tog.addEventListener("click", () => {
-        const on = card.classList.toggle("show-rem");
-        tog.textContent = on ? "Hide Changes" : "Show Changes";
-    });
-    bar.appendChild(tog);
-    bar.appendChild(mk("span", "off-rec-cmp", prev
-        ? "Compared with " + prev.semester + " Semester, " + prev.ay
-        : "First record: nothing earlier to compare"));
-    card.appendChild(bar);
-
-    const diffOne = (a, b) => {
-        a = a || ""; b = b || "";
-        if (a === b) return [];
-        if (!a) return ["Filled (was vacant)"];
-        if (!b) return ["Now vacant (was " + a + ")"];
-        return ["Changed from " + a];
-    };
-    const diffList = (a, b) => {
-        a = a || []; b = b || [];
-        const out = [];
-        b.filter(n => a.indexOf(n) < 0).forEach(n => out.push("Added: " + n));
-        a.filter(n => b.indexOf(n) < 0).forEach(n => out.push("Removed: " + n));
-        return out;
-    };
-
     const sec = t => card.appendChild(mk("div", "off-rec-sec", t));
-    const row = (k, items, rem, vtext) => {
+    const row = (k, items, vtext) => {
         const d = mk("div", "off-rec-row");
         d.appendChild(mk("div", "off-rec-k", k));
         const v = mk("div", "off-rec-v" + (items.length ? "" : " vacant"));
         if (!items.length) v.textContent = vtext || "Vacant";
         items.forEach(it => {
             const l = mk("div", "off-rec-line");
+            if (it.tag) l.appendChild(mk("span", "off-tag", it.tag));   // tag first, then the name
             l.appendChild(document.createTextNode(it.name));
-            if (it.tag) l.appendChild(mk("span", "off-tag", it.tag));
             v.appendChild(l);
         });
         d.appendChild(v);
-        const m = mk("div", "off-rec-rem");
-        const has = prev && rem && rem.length;
-        const lines = !prev ? ["\u2014"] : (has ? rem : ["No change"]);
-        lines.forEach(t => m.appendChild(mk("div", "off-rec-line" + (has ? "" : " none"), t)));
-        d.appendChild(m);
         card.appendChild(d);
     };
     const one = n => n ? [{ name: n }] : [];
 
     sec("Executive officers");
-    OF_CORE.forEach(([k, l]) => row(l, one(core[k]), prev ? diffOne(pcore[k], core[k]) : []));
+    OF_CORE.forEach(([k, l]) => row(l, one(core[k])));
     sec("Teams");
-    OF_TEAMS.forEach(([k, l]) => row(l, (core[k] || []).map(n => ({ name: n })), prev ? diffList(pcore[k], core[k]) : []));
+    OF_TEAMS.forEach(([k, l]) => row(l, (core[k] || []).map(n => ({ name: n }))));
 
-    const ckey = c => (c.code || "") + "|" + c.title;
-    const clabel = c => (c.code ? c.code + " \u00b7 " : "") + c.title;
-    const pmap = {};
-    (ps.courses || []).forEach(c => { pmap[ckey(c)] = c; });
-    const curKeys = {};
-    (s.courses || []).forEach(c => { curKeys[ckey(c)] = 1; });
-    const removed = prev ? (ps.courses || []).filter(c => !curKeys[ckey(c)]) : [];
-
-    if ((s.courses || []).length || removed.length) {
+    if ((s.courses || []).length) {
         sec("Course officers");
         (s.courses || []).forEach(c => {
             const items = [];
             if (c.beadle) items.push({ name: c.beadle, tag: "B" });
             (c.academic || []).filter(Boolean).forEach(n => items.push({ name: n, tag: "AO" }));
-            let rem = [];
-            if (prev) {
-                const p = pmap[ckey(c)];
-                if (!p) rem = ["New course in this record"];
-                else {
-                    diffOne(p.beadle, c.beadle).forEach(t => rem.push("Beadle: " + t));
-                    diffList((p.academic || []).filter(Boolean), (c.academic || []).filter(Boolean))
-                        .forEach(t => rem.push("Academic Officer " + t.charAt(0).toLowerCase() + t.slice(1)));
-                }
-            }
-            row(clabel(c), items, rem);
+            row((c.code ? c.code + " \u00b7 " : "") + c.title, items);
         });
-        removed.forEach(c => row(clabel(c), [], ["Course no longer in this record"], "Not in this record"));
     }
+
+    // Edit rows (bottom of the card), one block per edit
+    const edits = r.edits || [];
+    edits.forEach((e, i) => {
+        sec(edits.length > 1 ? "Edit " + (i + 1) : "Edit");
+        const d1 = mk("div", "off-rec-row");
+        d1.appendChild(mk("div", "off-rec-k", "Edits made were"));
+        const v1 = mk("div", "off-rec-v");
+        (e.changes || []).forEach(t => v1.appendChild(mk("div", "off-rec-line", t)));
+        d1.appendChild(v1); card.appendChild(d1);
+
+        const d2 = mk("div", "off-rec-row");
+        d2.appendChild(mk("div", "off-rec-k", "Edited by"));
+        d2.appendChild(mk("div", "off-rec-v", e.byName || e.by || ""));
+        card.appendChild(d2);
+
+        const d3 = mk("div", "off-rec-row");
+        d3.appendChild(mk("div", "off-rec-k", "Edited on"));
+        d3.appendChild(mk("div", "off-rec-v", editStamp(e.at)));
+        card.appendChild(d3);
+    });
     return card;
 }
 
@@ -6375,7 +6338,7 @@ function renderOfRecords() {
     if (!list.length) {
         const e = mk("div", "empty");
         e.appendChild(mk("b", "", "No Records Yet"));
-        e.appendChild(mk("p", "", "Choose a semester and academic year, then press \u201cAdd to Records\u201d."));
+        e.appendChild(mk("p", "", "Choose a semester and academic year, then press \u201cUpdate Record\u201d."));
         nodes.push(e);
     } else {
         const g = mk("div", "org-recs");
@@ -6398,10 +6361,8 @@ function setOfTerm(t) {
 const ofUserLabel = u => [u.firstName, u.lastName].filter(Boolean).join(" ") || u.email;
 function ofLabel(email) { const u = mentionUsers.find(x => x.email === email); return u ? ofUserLabel(u) : email; }
 function ofMark() {
-    [["of-send", "Save officers"], ["of-record", "Add to Records"]].forEach(([id, label]) => {
-        const b = $(id);
-        if (b.classList.contains("submitted")) { b.classList.remove("submitted"); b.disabled = false; b.textContent = label; }
-    });
+    const b = $("of-record");
+    if (b.classList.contains("submitted")) { b.classList.remove("submitted"); b.disabled = false; b.textContent = "Update Record"; }
     setMessage($("of-message"), "", "");
 }
 
@@ -6537,10 +6498,9 @@ function renderOfficerArchive(list) {
 }
 
 async function openOfficerEditor() {
-    const m = $("of-message"), btn = $("of-send");
-    setMessage(m, "", "");
-    btn.classList.remove("submitted"); btn.disabled = false; btn.textContent = "Save officers";
-    const rb = $("of-record"); rb.classList.remove("submitted"); rb.disabled = false; rb.textContent = "Add to Records";
+const m = $("of-message"), btn = $("of-record");
+setMessage(m, "", "");
+btn.classList.remove("submitted"); btn.disabled = false; btn.textContent = "Update Record";
     showSkeleton($("of-fields"), "card-sk", 2);
     $("of-archive").textContent = ""; $("of-records").textContent = "";
     let r = null;
@@ -6550,24 +6510,6 @@ async function openOfficerEditor() {
 
 $("of-form").addEventListener("submit", async e => {
     e.preventDefault();
-    const btn = $("of-send"), m = $("of-message");
-    if (btn.classList.contains("submitted") || !ofState) return;
-    const semester = $("of-sem").value, ay = $("of-ay").value;
-    if (!semester || !ay) return setMessage(m, "Choose a semester and an academic year.", ERR);
-    setLoading(btn, true); setMessage(m, "", "");
-    let saved = false;
-    try {
-        const r = await authCall("officers_save", { core: ofState.core, courses: ofState.courses, semester, ay });
-        if (r.status === "success") { saved = true; loadCourses(); loadOfficers(true); }
-        else setMessage(m, r.message, ERR);
-    } catch (err) { if (err.message !== "auth") setMessage(m, netError(err), ERR); }
-    setLoading(btn, false);
-    if (saved) { btn.textContent = "Officers Saved"; btn.classList.add("submitted"); btn.disabled = true; }
-});
-
-    ["of-sem", "of-ay"].forEach(id => $(id).addEventListener("change", ofMark));
-
-$("of-record").addEventListener("click", async () => {
     const btn = $("of-record"), m = $("of-message");
     if (!ofState || btn.classList.contains("submitted")) return;
     const semester = $("of-sem").value, ay = $("of-ay").value;
@@ -6583,7 +6525,7 @@ $("of-record").addEventListener("click", async () => {
         } else setMessage(m, r.message, ERR);
     } catch (err) { if (err.message !== "auth") setMessage(m, netError(err), ERR); }
     setLoading(btn, false);
-    if (done) { btn.textContent = "Added to Records"; btn.classList.add("submitted"); btn.disabled = true; }
+    if (done) { btn.textContent = "Record Updated"; btn.classList.add("submitted"); btn.disabled = true; }
 });
     
     // Event Bindings
