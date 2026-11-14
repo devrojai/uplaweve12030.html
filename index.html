@@ -1676,6 +1676,27 @@ html[data-theme="night"] .dibs-ic.ok:disabled, html[data-theme="night"] .dibs-ic
 /* ===== FIX 8 (part): hide any nickname shown above the profile icons ===== */
 .um-nick { display: none !important; }
 
+/* Officers bar */
+.off-bar { flex-wrap: wrap; gap: 10px 14px; }
+.off-bar-left { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; min-width: 0; }
+.off-bar .org-term { margin: 0; }
+
+/* Collapsible sections */
+.coll-toggle { width: 100%; padding: 0; background: none; border: 0; text-align: left; cursor: pointer; }
+.coll-toggle .coll-chev { order: 2; flex: none; width: 18px; height: 18px; transition: transform .25s var(--ease); }
+.coll.open > .coll-toggle .coll-chev { transform: rotate(180deg); }
+.coll-toggle:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 4px; }
+.coll-body { margin-top: 8px; }
+
+/* No flicker on course cards */
+.course-row { animation: none; }
+
+/* Night: Log Out + Delete Account maroon-filled */
+html[data-theme="night"] .drawer-foot .btn,
+html[data-theme="night"] .drawer-foot .btn-danger { background: var(--accent); color: var(--on-accent); border: 1px solid var(--accent); }
+html[data-theme="night"] .drawer-foot .btn:hover:not(:disabled),
+html[data-theme="night"] .drawer-foot .btn-danger:hover { background: var(--accent-hover); color: #fff; border-color: var(--accent-hover); }
+        
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
@@ -2263,7 +2284,7 @@ html[data-theme="night"] .org-kid::after { background: #d65d63; }
 <div class="drawer-gap"></div>
             
             <button type="button" class="btn" id="logout-btn">Log Out</button>
-            <button type="button" class="btn-danger" id="delete-open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="lid"><path d="M3 6h18"/><path d="M8 6V4h8v2"/></g><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg><span>Delete account</span></button>
+            <button type="button" class="btn-danger" id="delete-open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="lid"><path d="M3 6h18"/><path d="M8 6V4h8v2"/></g><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg><span>Delete Account</span></button>
         </div>
     </aside>
 
@@ -2591,10 +2612,13 @@ html[data-theme="night"] .org-kid::after { background: #d65d63; }
     <!-- Officers (everyone) -->
 <section class="section hidden" id="sec-officers">
     <h2>OFFICERS</h2>
-    <div class="course-bar">
+    <div class="course-bar off-bar">
+    <div class="off-bar-left">
         <span class="repo-count" id="off-count"></span>
-        <button type="button" class="btn sm hidden" id="off-edit">Edit officers</button>
+        <span class="org-term hidden" id="off-term"></span>
     </div>
+    <button type="button" class="btn sm hidden" id="off-edit">Edit officers</button>
+</div>
     <div id="org-chart"></div>
     <div class="msg" id="off-msg"></div>
 </section>
@@ -3010,10 +3034,13 @@ html[data-theme="night"] .org-kid::after { background: #d65d63; }
     }
 
     const titles = { announcements: "Announcements", calendar: "Calendar", requests: "Requests", bin: "Announcement Bin", directory: "Directory", courses: "Courses", addcourse: "Add Course", hiddencourses: "Hidden Courses", dibs: "Dibs Cases", dibssystem: "Dibs System", officers: "Officers", addofficers: "Add Officers" };
-const ADMIN_SECTIONS = ["bin", "directory", "addcourse", "hiddencourses", "dibssystem", "addofficers"];    function enterApp(email, tok, admin, startSection) {
+const ADMIN_SECTIONS = ["bin", "directory", "addcourse", "hiddencourses", "dibssystem", "addofficers"];    
+    
+    function enterApp(email, tok, admin, startSection) {
         currentEmail = email;
         token = tok || null;
         loadPins();
+        const cc = readCourseCache(); courseList = cc || []; coursesLoaded = !!cc;
         document.body.classList.add("app-mode");
         $("stage").classList.add("hidden");
         $("app").classList.remove("hidden");
@@ -3037,13 +3064,14 @@ const ADMIN_SECTIONS = ["bin", "directory", "addcourse", "hiddencourses", "dibss
         sessionStorage.removeItem("isAdmin");
         sessionStorage.removeItem("section");
         currentEmail = null;
+        try { sessionStorage.removeItem(courseCacheKey()); } catch (e) {}
         pins = new Set();
         token = null;
         pending = null;
         resetProfileState();
         resetRequestForm();
         annList = []; annShowArchive = false; annShowPinned = false; openAnnId = ""; annFilter = ""; annSearchTerm = ""; carIdx = 0; dlSel = todayIso(); mentionUsers = []; mentionSel = []; repoPhotos = {}; resetBinForm();
-        dibsList = []; dsysArchive = false; officerData = null; ofState = null; $("org-chart").textContent = ""; $("of-fields").textContent = ""; $("of-archive").textContent = "";        courseList = []; courseOpen = ""; courseSearchTerm = ""; $("course-search").value = ""; closeCourseModal(); resetCourseForm();
+        dibsList = []; dsysArchive = false; officerData = null; ofState = null; $("org-chart").textContent = ""; $("off-term").classList.add("hidden"); $("of-fields").textContent = ""; $("of-archive").textContent = "";        courseList = []; courseOpen = ""; courseSearchTerm = ""; $("course-search").value = ""; closeCourseModal(); resetCourseForm();
         isAdmin = false;
         adminPending = false;
         applyAdmin();
@@ -3453,7 +3481,7 @@ if (acts.children.length) box.appendChild(acts);
             const zone = mk("div", "um-danger-zone");
             const del = mk("button", "btn um-delete"); del.type = "button";
             del.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>';
-            del.appendChild(mk("span", "", "Delete account"));
+            del.appendChild(mk("span", "", "Delete Account"));
             del.addEventListener("click", () => deleteUserAccount(u, del));
             zone.appendChild(del);
             body.appendChild(zone);
@@ -4757,7 +4785,7 @@ const hidePending = {}, hideChain = {};
 function toggleCourseHidden(c, btn) {
     const next = !c.hidden;
     c.hidden = next;                       // update the screen right away
-    if (next) { c.beadle = ""; c.officer = ""; officerData = null; }   // the server archives and clears them    
+    officerData = null;   // officers are kept; the Officers pages reload
     hidePending[c.id] = (hidePending[c.id] || 0) + 1;
     closeCourseModal();
     renderCourses();
@@ -4836,6 +4864,10 @@ $("link-save").addEventListener("click", saveLinks);
 $("link-modal").addEventListener("click", e => { if (e.target === e.currentTarget) closeLinkModal(); });
     
 let courseList = [], courseOpen = "", cSyl = [], cDocs = [], editingCourseId = "", editingCourseAnn = [], editingCourseHidden = false, courseAdminShown = false;const SEMS = ["1st", "2nd"];
+let coursesLoaded = false, coursesInflight = null;
+const courseCacheKey = () => "eve1Courses:" + (currentEmail || "");
+function readCourseCache() { try { const s = sessionStorage.getItem(courseCacheKey()); return s ? JSON.parse(s) : null; } catch (e) { return null; } }
+function writeCourseCache() { try { sessionStorage.setItem(courseCacheKey(), JSON.stringify(courseList)); } catch (e) {} }
 const AYS = ["AY 2025-2026", "AY 2026-2027", "AY 2027-2028", "AY 2028-2029", "AY 2029-2030"];
 function fillOpts(id, ph, vals) {
     const s = $(id); s.textContent = "";
@@ -4905,6 +4937,7 @@ function courseRow(c, dim) {
 
 function renderHiddenCourses() {
     const box = $("hcourse-list"); if (!box) return;
+    if (!coursesLoaded) return;
     box.textContent = "";
     const list = courseList.filter(c => c.hidden);
     $("hcourse-count").textContent = list.length ? list.length + (list.length === 1 ? " hidden course" : " hidden courses") : "";
@@ -4918,9 +4951,11 @@ function renderHiddenCourses() {
 }
 
     function renderCourses() {
+    if (coursesLoaded) writeCourseCache();
     fillDibsCourses();
     fillBinCourses();
     renderHiddenCourses();
+    if (!coursesLoaded && !courseList.length) return;   // still loading: keep the skeleton, no "No courses yet" flash
     const box = $("course-list"); box.textContent = "";
     const list = courseVisible(), total = courseList.filter(c => !c.hidden).length;
     $("course-count").textContent = courseSearchTerm.trim()
@@ -5165,22 +5200,26 @@ window.addEventListener("resize", marqueeAll);
 function closeCourseModal() { $("course-modal").classList.add("hidden"); }
 
 async function loadCourses() {
-    const m = $("course-msg");
-    setMessage(m, "", "");
-  if (!courseList.length) showSkeleton($("course-list"), "row-sk", 4);    try {
-        const r = await authCall("courses_list");
-        if (r.status === "success") {
-            const oldCourses = courseList;
-courseList = (r.courses || []).map(c => {
-    if (hidePending[c.id] > 0) {
-        const o = oldCourses.find(x => x.id === c.id);
-        if (o) c.hidden = o.hidden;
-    }
-    return c;
-}).sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: "base" }));
-            renderCourses();
-                } else { setMessage(m, r.message, ERR); renderCourses(); }
-    } catch (err) { if (err.message !== "auth") { setMessage(m, netError(err), ERR); renderCourses(); } }
+    if (coursesInflight) return coursesInflight;
+    coursesInflight = (async () => {
+        const m = $("course-msg");
+        setMessage(m, "", "");
+        if (!coursesLoaded && !courseList.length) showSkeleton($("course-list"), "row-sk", 4);
+        try {
+            const r = await authCall("courses_list");
+            if (r.status === "success") {
+                const old = courseList;
+                const next = (r.courses || []).map(c => {
+                    if (hidePending[c.id] > 0) { const o = old.find(x => x.id === c.id); if (o) c.hidden = o.hidden; }
+                    return c;
+                }).sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: "base" }));
+                const changed = !coursesLoaded || JSON.stringify(next) !== JSON.stringify(old);
+                courseList = next; coursesLoaded = true;
+                if (changed) renderCourses();   // identical data: no redraw, so nothing flickers
+            } else { setMessage(m, r.message, ERR); coursesLoaded = true; renderCourses(); }
+        } catch (err) { if (err.message !== "auth") { setMessage(m, netError(err), ERR); coursesLoaded = true; renderCourses(); } }
+    })().finally(() => { coursesInflight = null; });
+    return coursesInflight;
 }
 
 $("course-search").addEventListener("input", e => { courseSearchTerm = e.target.value; renderCourses(); });
@@ -6048,7 +6087,26 @@ document.addEventListener("pointerdown", e => {
 let officerData = null, ofState = null;
 const OF_CORE = [["president", "President"], ["vpInternals", "VP for Internals"], ["vpExternals", "VP for Externals"], ["treasurer", "Treasurer"]];
 const OF_TEAMS = [["social", "Social Media Team"], ["wellness", "Wellness Team"]];
-
+const collOpen = { orgRecs: false, ofRecs: false, ofArch: false };   // set one to true to start it expanded
+function collapsible(key, title, count, nodes) {
+    const wrap = mk("div", "coll" + (collOpen[key] ? " open" : ""));
+    const btn = mk("button", "group-title coll-toggle"); btn.type = "button";
+    btn.setAttribute("aria-expanded", String(!!collOpen[key]));
+    btn.appendChild(mk("span", "", title));
+    if (count != null) btn.appendChild(mk("span", "cm-count", String(count)));
+    btn.insertAdjacentHTML("beforeend", '<svg class="coll-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>');
+    const body = mk("div", "coll-body" + (collOpen[key] ? "" : " hidden"));
+    nodes.forEach(n => body.appendChild(n));
+    btn.addEventListener("click", () => {
+        collOpen[key] = !collOpen[key];
+        wrap.classList.toggle("open", collOpen[key]);
+        btn.setAttribute("aria-expanded", String(collOpen[key]));
+        body.classList.toggle("hidden", !collOpen[key]);
+    });
+    wrap.append(btn, body);
+    return wrap;
+}
+    
 function personInitials(p) {
     const w = String(p && p.name || "").trim().split(/\s+/).filter(Boolean);
     return (((w[0] || "")[0] || "") + (w.length > 1 ? w[w.length - 1][0] : "")).toUpperCase() || "?";
@@ -6104,9 +6162,12 @@ function orgCourse(c) {
 function renderOrgChart() {
     const box = $("org-chart"); box.textContent = "";
     $("off-edit").classList.toggle("hidden", !(officerData && officerData.canEdit));
-        if (!officerData) return;
+    $("off-term").classList.add("hidden");
+    if (!officerData) return;
     const tm = officerData.term || {};
-    box.appendChild(mk("div", "org-term", tm.semester && tm.ay ? tm.semester + " Semester \u00b7 " + tm.ay : "Semester and academic year not set"));
+    const termEl = $("off-term");
+    termEl.textContent = tm.semester && tm.ay ? tm.semester + " Semester \u00b7 " + tm.ay : "Semester and academic year not set";
+    termEl.classList.remove("hidden");
     const core = officerData.core, courses = officerData.courses || [], seen = {};
     const note = p => { if (p) seen[p.email] = 1; };
     OF_CORE.forEach(([k]) => note(core[k]));
@@ -6142,10 +6203,9 @@ function renderOrgChart() {
 
     const recs = (officerData.records || []).filter(r => !r.hidden);
     if (recs.length) {
-        box.appendChild(mk("div", "group-title", "Records"));
         const g = mk("div", "org-recs");
         recs.forEach(r => g.appendChild(recordCard(r, false)));
-        box.appendChild(g);
+        box.appendChild(collapsible("orgRecs", "Records", recs.length, [g]));
     }
 }
 
@@ -6220,17 +6280,18 @@ async function toggleRecordHidden(r) {
 function renderOfRecords() {
     const box = $("of-records"); box.textContent = "";
     const list = (officerData && officerData.records) || [];
-    box.appendChild(mk("div", "group-title", "Records"));
-    box.appendChild(mk("p", "hint off-hint", "Latest semester first. Hide a record with the eye icon and non-admin users can no longer see it. Records can be hidden but never deleted."));
+    const nodes = [mk("p", "hint off-hint", "Latest semester first. Hide a record with the eye icon and non-admin users can no longer see it. Records can be hidden but never deleted.")];
     if (!list.length) {
         const e = mk("div", "empty");
         e.appendChild(mk("b", "", "No Records Yet"));
         e.appendChild(mk("p", "", "Choose a semester and academic year, then press \u201cAdd to Records\u201d."));
-        box.appendChild(e); return;
+        nodes.push(e);
+    } else {
+        const g = mk("div", "org-recs");
+        list.forEach(r => g.appendChild(recordCard(r, true)));
+        nodes.push(g);
     }
-    const g = mk("div", "org-recs");
-    list.forEach(r => g.appendChild(recordCard(r, true)));
-    box.appendChild(g);
+    box.appendChild(collapsible("ofRecs", "Records", list.length, nodes));
 }
 
 function setOfTerm(t) {
@@ -6368,8 +6429,7 @@ function renderOfficerForm() {
 function renderOfficerArchive(list) {
     const box = $("of-archive"); box.textContent = "";
     if (!list.length) return;
-    box.appendChild(mk("div", "group-title", "Archived course officers"));
-    box.appendChild(mk("p", "hint off-hint", "Officers of courses that have since been hidden."));
+    const nodes = [mk("p", "hint off-hint", "Officers of courses that are currently hidden. When a course is unhidden, its officers return to the course and leave this list.")];
     list.forEach(a => {
         const row = mk("div", "off-arch"), top = mk("div", "off-arch-top");
         if (a.code) top.appendChild(mk("span", "link-code", a.code));
@@ -6378,8 +6438,9 @@ function renderOfficerArchive(list) {
         row.appendChild(top);
         row.appendChild(mk("div", "off-arch-line", "Beadle: " + (a.beadle || "\u2014")));
         row.appendChild(mk("div", "off-arch-line", "Academic Officers: " + ((a.academic || []).filter(Boolean).join(", ") || "\u2014")));
-        box.appendChild(row);
+        nodes.push(row);
     });
+    box.appendChild(collapsible("ofArch", "Archived course officers", list.length, nodes));
 }
 
 async function openOfficerEditor() {
