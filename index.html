@@ -7,7 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script>try{var t=localStorage.getItem("eve1Theme");if(t==="classic"||t==="night")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+    <script>try{var t=localStorage.getItem("eve1Theme");if(t==="classic"||t==="night")document.documentElement.setAttribute("data-theme",t);}catch(e){}
+    try{var b=localStorage.getItem("eve1Bg");document.documentElement.setAttribute("data-bg",["none","dots","waves","both"].indexOf(b)>-1?b:"both");}catch(e){document.documentElement.setAttribute("data-bg","both");}</script>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2376090c'/%3E%3Ctext x='32' y='42' text-anchor='middle' font-family='Segoe UI,Arial,sans-serif' font-weight='800' font-size='27' fill='%23ffffff'%3EEVE%3C/text%3E%3C/svg%3E">
     
     <style>
@@ -1735,6 +1736,44 @@ html[data-theme="night"] .dibs-ic.ok:disabled, html[data-theme="night"] .dibs-ic
 .ann-card .ann-titlewrap .new-tag {
     flex: none; margin-left: auto; position: static; align-self: center; white-space: nowrap;
 }
+
+/* ===== BACKGROUND DESIGN OPTIONS ===== */
+:root { --swave-a: rgba(118,9,12,.14); --swave-b: rgba(118,9,12,.02); }
+html[data-theme="night"] { --swave-a: rgba(163,23,30,.30); --swave-b: rgba(255,146,150,.03); }
+
+.theme-switch.bg-switch { margin-bottom: 8px; }
+
+/* Login screens: no dots when the option is None or Waves */
+html[data-bg="none"] .bg,
+html[data-bg="waves"] .bg { background: var(--bg-grad); }
+
+/* Login screens: no waves or moving glow when the option is None or Dots */
+html[data-bg="none"] .bg::before, html[data-bg="none"] .bg::after,
+html[data-bg="dots"] .bg::before, html[data-bg="dots"] .bg::after { display: none; }
+
+/* The site: no dots or corner glows when the option is None or Waves */
+html[data-bg="none"] .app,
+html[data-bg="waves"] .app { background: var(--bg); }
+
+/* The site: waves along the bottom when the option is Waves or Both */
+.content { position: relative; z-index: 1; }
+html[data-bg="waves"] .app::after,
+html[data-bg="both"] .app::after {
+    content: ""; position: fixed; left: 0; right: 0; bottom: 0; height: 34%;
+    pointer-events: none; z-index: 0;
+    background: linear-gradient(to top, var(--swave-a), var(--swave-b));
+    -webkit-mask-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 200' preserveAspectRatio='none'%3E%3Cpath d='M0 100C150 40 350 40 600 100S1050 160 1200 100V200H0Z'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 200' preserveAspectRatio='none'%3E%3Cpath d='M0 120C200 60 400 60 600 120S1000 180 1200 120V200H0Z'/%3E%3C/svg%3E");
+    mask-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 200' preserveAspectRatio='none'%3E%3Cpath d='M0 100C150 40 350 40 600 100S1050 160 1200 100V200H0Z'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 200' preserveAspectRatio='none'%3E%3Cpath d='M0 120C200 60 400 60 600 120S1000 180 1200 120V200H0Z'/%3E%3C/svg%3E");
+    -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
+    -webkit-mask-size: 1200px 100%, 1800px 80%; mask-size: 1200px 100%, 1800px 80%;
+    -webkit-mask-position: 0 100%, 0 100%; mask-position: 0 100%, 0 100%;
+    animation: waveFlow 28s linear infinite;
+}
+@media print { html[data-bg] .app::after { display: none !important; } }
     
     </style>
     
@@ -1799,8 +1838,13 @@ html[data-theme="night"] .dibs-ic.ok:disabled, html[data-theme="night"] .dibs-ic
         </div>
 
         <div class="auth-theme">
-            <div class="auth-theme-label">Appearance</div>
-            <div class="auth-theme-switch theme-switch" role="group" aria-label="Theme">
+           <div class="auth-theme-switch theme-switch bg-switch" role="group" aria-label="Background design">
+    <button type="button" data-bg="none">None</button>
+    <button type="button" data-bg="dots">Dots</button>
+    <button type="button" data-bg="waves">Waves</button>
+    <button type="button" data-bg="both">Both</button>
+</div>
+<div class="auth-theme-switch theme-switch" role="group" aria-label="Theme">
                 <button type="button" data-mode="light">Light</button>
                 <button type="button" data-mode="classic">Classic</button>
                 <button type="button" data-mode="night">Night</button>
@@ -1883,7 +1927,12 @@ html[data-theme="night"] .dibs-ic.ok:disabled, html[data-theme="night"] .dibs-ic
 </nav>
         <div class="drawer-foot">
 
-            <div class="theme-label">Appearance</div>
+<div class="theme-switch bg-switch" role="group" aria-label="Background design">
+    <button type="button" data-bg="none">None</button>
+    <button type="button" data-bg="dots">Dots</button>
+    <button type="button" data-bg="waves">Waves</button>
+    <button type="button" data-bg="both">Both</button>
+</div>
 <div class="theme-switch" id="theme-switch" role="group" aria-label="Theme">
     <button type="button" data-mode="light">Light</button>
     <button type="button" data-mode="classic">Classic</button>
@@ -5451,17 +5500,25 @@ setInterval(() => {
         if (t === "light") document.documentElement.removeAttribute("data-theme");
         else document.documentElement.setAttribute("data-theme", t);
         try { localStorage.setItem("eve1Theme", t); } catch (e) {}
-                document.querySelectorAll(".theme-switch button").forEach(b => b.classList.toggle("on", b.dataset.mode === t));
+        document.querySelectorAll(".theme-switch button[data-mode]").forEach(b => b.classList.toggle("on", b.dataset.mode === t));
     }
-    document.querySelectorAll(".theme-switch button").forEach(b => b.addEventListener("click", () => {
+    
+document.querySelectorAll(".theme-switch button[data-mode]").forEach(b => b.addEventListener("click", () => {
     const root = document.documentElement;
     root.classList.add("theme-anim");
     applyTheme(b.dataset.mode);
     clearTimeout(applyTheme._t);
     applyTheme._t = setTimeout(() => root.classList.remove("theme-anim"), 350);
 }));
-    applyTheme((() => { try { return localStorage.getItem("eve1Theme"); } catch (e) { return null; } })());
-
+function applyBg(v) {
+    if (["none", "dots", "waves", "both"].indexOf(v) < 0) v = "both";
+    document.documentElement.setAttribute("data-bg", v);
+    try { localStorage.setItem("eve1Bg", v); } catch (e) {}
+    document.querySelectorAll(".theme-switch button[data-bg]").forEach(b => b.classList.toggle("on", b.dataset.bg === v));
+}
+document.querySelectorAll(".theme-switch button[data-bg]").forEach(b => b.addEventListener("click", () => applyBg(b.dataset.bg)));
+applyBg((() => { try { return localStorage.getItem("eve1Bg"); } catch (e) { return null; } })());
+    
 /* ===== Music ===== */
 const MUSIC = {
     classical: ["music/classical1.mp3", "music/classical2.mp3"],
