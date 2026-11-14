@@ -6290,7 +6290,9 @@ function editStamp(s) {
     return prettyDate(m[1]) + " at " + pad(h) + ":" + m[3] + ":" + (m[4] || "00") + " " + ap;
 }
 
-const editKind = t => /\u2192/.test(t) ? ["Changed", "chg"]
+const editKind = t => /course unhidden/.test(t) ? ["Unhidden", "add"]
+    : /course hidden/.test(t) ? ["Hidden", "rem"]
+    : /\u2192/.test(t) ? ["Changed", "chg"]
     : (/: added |\(was vacant\)|added to this record/.test(t) ? ["Added", "add"] : ["Removed", "rem"]);
     
 function recordCard(r, withEye) {
@@ -6536,8 +6538,8 @@ function renderOfficerForm() {
     OF_TEAMS.forEach(([k, l]) => { box.appendChild(mk("div", "group-title", l)); box.appendChild(teamEditor(k)); });
 
     box.appendChild(mk("div", "group-title", "Course officers"));
-box.appendChild(mk("p", "hint off-hint", "Hidden courses are listed too. Their officers are kept so previous officers can always be checked."));
-    const courses = (officerData && officerData.courses) || [];
+    box.appendChild(mk("p", "hint off-hint", "Only visible courses are listed. Courses already in a record stay in that record even after they are hidden."));
+    const courses = ((officerData && officerData.courses) || []).filter(c => !c.hidden);
     if (!courses.length) {
         const e = mk("div", "empty"); e.appendChild(mk("b", "", "No courses to show")); e.appendChild(mk("p", "", "Add a course (or unhide one) and it will appear here."));
         box.appendChild(e);
@@ -6584,7 +6586,7 @@ btn.classList.remove("submitted"); btn.disabled = false; btn.textContent = "Upda
     let r = null;
     try { const out = await Promise.all([loadMentionUsers(), loadOfficers(true)]); r = out[1]; } catch (err) {}
     if (!r) { $("of-fields").textContent = ""; setMessage(m, "Couldn't load the officers. Try again.", ERR); return; }
-    buildOfState(r); setOfTerm(r.term); renderOfficerForm(); renderOfRecords(); renderOfficerArchive(r.archive || []);}
+    buildOfState(r); setOfTerm(r.term); renderOfficerForm(); renderOfRecords();}
 
 $("of-form").addEventListener("submit", async e => {
     e.preventDefault();
