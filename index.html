@@ -2131,6 +2131,24 @@ html[data-theme="night"] .org-kid::after { background: #d65d63; }
 
 @media (max-width: 520px) {
 }
+
+.org-course-head .hidden-chip, .off-course-head .hidden-chip { margin-left: auto; flex: none; background: rgba(0,0,0,.4); color: #fff; }
+.off-course-head .hidden-chip { background: var(--period); }
+
+/* Admin tools: clearly separate from user buttons */
+.nav-label[data-admin] { display: flex; align-items: center; gap: 8px; margin: 18px 4px 8px; padding: 8px 12px; border: 0; border-radius: var(--r-md); background: var(--dr-act-bg); color: var(--dr-act-ink); opacity: 1; letter-spacing: 1.6px; }
+.nav-label[data-admin]::before { content: ""; width: 14px; height: 14px; flex: none; background: currentColor;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z'/%3E%3C/svg%3E") center / contain no-repeat;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z'/%3E%3C/svg%3E") center / contain no-repeat; }
+.nav button[data-admin] { margin-left: 4px; width: calc(100% - 4px); background: var(--dr-hover); }
+.nav button[data-admin]:not(.active) { border-left-color: var(--accent2); }
+.nav button[data-admin]::after { content: "ADMIN"; margin-left: auto; padding: 1px 6px; font-size: .55rem; font-weight: 800; letter-spacing: 1px; border: 1px solid currentColor; border-radius: 999px; opacity: .7; }
+
+/* Background switch: equal columns, even spacing */
+.theme-switch.bg-switch { display: grid; grid-template-columns: 36px repeat(3, minmax(0, 1fr)) 36px; gap: 4px; margin-bottom: 0; }
+.bg-switch button { padding: 8px 2px; text-align: center; }
+.bg-switch .bg-add, .bg-switch button[data-bg="none"] { width: auto; display: grid; place-items: center; }
+.theme-switch + .theme-switch { margin-top: 8px; }
         
     </style>
     
@@ -2207,18 +2225,18 @@ html[data-theme="night"] .org-kid::after { background: #d65d63; }
         </div>
 
         <div class="auth-theme">
-           <div class="auth-theme-switch theme-switch bg-switch" role="group" aria-label="Background design">
+           <div class="auth-theme-switch theme-switch" role="group" aria-label="Theme">
+    <button type="button" data-mode="light">Light</button>
+    <button type="button" data-mode="classic">Classic</button>
+    <button type="button" data-mode="night">Night</button>
+</div>
+<div class="auth-theme-switch theme-switch bg-switch" role="group" aria-label="Background design">
     <button type="button" data-bg="none" title="None" aria-label="None"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg></button>
     <button type="button" data-bg="dots">Dots</button>
     <button type="button" data-bg="waves">Waves</button>
     <button type="button" data-bg="both">Both</button>
     <button type="button" class="bg-add" data-bg-add title="Add your own background" aria-label="Add your own background"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
 </div>
-<div class="auth-theme-switch theme-switch" role="group" aria-label="Theme">
-                <button type="button" data-mode="light">Light</button>
-                <button type="button" data-mode="classic">Classic</button>
-                <button type="button" data-mode="night">Night</button>
-            </div>
         </div>
     </div>
 </div>
@@ -2310,6 +2328,11 @@ html[data-theme="night"] .org-kid::after { background: #d65d63; }
 </nav>
         <div class="drawer-foot">
 
+<div class="theme-switch" id="theme-switch" role="group" aria-label="Theme">
+    <button type="button" data-mode="light">Light</button>
+    <button type="button" data-mode="classic">Classic</button>
+    <button type="button" data-mode="night">Night</button>
+</div>
 <div class="theme-switch bg-switch" role="group" aria-label="Background design">
     <button type="button" data-bg="none" title="None" aria-label="None"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg></button>
     <button type="button" data-bg="dots">Dots</button>
@@ -2317,11 +2340,7 @@ html[data-theme="night"] .org-kid::after { background: #d65d63; }
     <button type="button" data-bg="both">Both</button>
     <button type="button" class="bg-add" data-bg-add title="Add your own background" aria-label="Add your own background"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
 </div>
-<div class="theme-switch" id="theme-switch" role="group" aria-label="Theme">
-    <button type="button" data-mode="light">Light</button>
-    <button type="button" data-mode="classic">Classic</button>
-    <button type="button" data-mode="night">Night</button>
-</div>
+
 <div class="drawer-gap"></div>
             
             <button type="button" class="btn" id="logout-btn">Log Out</button>
@@ -6190,6 +6209,7 @@ function orgCourse(c) {
     const head = mk("div", "org-course-head");
     if (c.code) head.appendChild(mk("span", "link-code", c.code));
     head.appendChild(mk("span", "org-course-title", c.title));
+    if (c.hidden) head.appendChild(mk("span", "chip-soft hidden-chip", "Hidden"));
     box.appendChild(head);
     const body = mk("div", "org-course-body");
     body.appendChild(orgMini(c.beadle, "Beadle"));
@@ -6516,7 +6536,7 @@ function renderOfficerForm() {
     OF_TEAMS.forEach(([k, l]) => { box.appendChild(mk("div", "group-title", l)); box.appendChild(teamEditor(k)); });
 
     box.appendChild(mk("div", "group-title", "Course officers"));
-    box.appendChild(mk("p", "hint off-hint", "Only unhidden courses are listed. When a course is hidden, its officers are archived."));
+box.appendChild(mk("p", "hint off-hint", "Hidden courses are listed too. Their officers are kept so previous officers can always be checked."));
     const courses = (officerData && officerData.courses) || [];
     if (!courses.length) {
         const e = mk("div", "empty"); e.appendChild(mk("b", "", "No courses to show")); e.appendChild(mk("p", "", "Add a course (or unhide one) and it will appear here."));
@@ -6528,6 +6548,7 @@ function renderOfficerForm() {
         const head = mk("div", "off-course-head");
         if (c.code) head.appendChild(mk("span", "link-code", c.code));
         head.appendChild(mk("span", "org-course-title", c.title));
+        if (c.hidden) head.appendChild(mk("span", "chip-soft hidden-chip", "Hidden"));
         card.appendChild(head);
         card.appendChild(personField("Beadle", () => st.beadle, v => { st.beadle = v; }));
         card.appendChild(personField("Academic Officer 1", () => st.academic[0], v => { st.academic[0] = v; }));
