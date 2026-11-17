@@ -2412,8 +2412,12 @@ html[data-theme="night"] .fmt-bar .btn.add-course-btn[data-count]:not([data-coun
     border-color: var(--accent-text);
 }
 
-/* ===== Ended announcement cards: no dimming ===== */
-.ann-card.past { opacity: 1; }
+/* ===== Ended announcement cards: no dimming, dark grey left border (white in Night) ===== */
+.ann-card.past { opacity: 1; border-left-color: #3a3a3a; }
+html[data-theme="night"] .ann-card.past { border-left-color: #ffffff; }
+
+.ann-card.past:hover { border-left-color: #3a3a3a; }
+html[data-theme="night"] .ann-card.past:hover { border-left-color: #ffffff; }
 
 .logo svg { width: 34px; height: 34px; }
         
