@@ -2446,16 +2446,23 @@ html[data-theme="night"] .ann-card.past:hover { border-left-color: #ffffff; }
     --glow: 0 0 3px 1px var(--g);
 }
 
-/* ===== Glowing status circles: same small size everywhere + gentle pulse ===== */
+/* ===== Glowing status circles (announcement cards + pop-up only) ===== */
 
-/* The pop-up's circle matches the one on the announcement cards */
+/* Pop-up: same small size as on the cards */
 #ann-modal .st-btn {
     width: 11px; height: 11px;
     --glow: 0 0 3px 1px var(--g);
-    margin-left: 6px; vertical-align: -1px;
 }
 
-/* Pulse ring: only on .st-btn (cards + pop-up), never on calendar dots (.cal-st) */
+/* Pop-up: title text and circle on one row, circle centered vertically with the title */
+#ann-modal-title {
+    display: flex; align-items: center; gap: 8px;
+}
+#ann-modal-title .st-btn {
+    flex: none; margin: 0; vertical-align: baseline;
+}
+
+/* Only the circle pulses (a small ring), never the card or the title */
 .ann-card .st-btn,
 #ann-modal .st-btn { position: relative; }
 
@@ -2467,8 +2474,6 @@ html[data-theme="night"] .ann-card.past:hover { border-left-color: #ffffff; }
     animation: stPulse 1.8s ease-out infinite;
 }
 
-/* The ring only grows to about 1.8x the circle (roughly 20px wide),
-   so it stays clear of the title, NEW tag and pin icon */
 @keyframes stPulse {
     0%   { transform: scale(1);   opacity: .55; }
     70%  { transform: scale(1.8); opacity: 0; }
