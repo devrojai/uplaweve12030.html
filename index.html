@@ -3453,7 +3453,7 @@ const emptyProfile = () => ({ firstName: "", middleName: "", lastName: "", nickn
         try {
             const r = await authCall("profile_save", payload);
             if (r.status === "success") {
-                fillProfile(r.profile);
+                fillProfile(Object.assign({}, r.profile, { photo: pendingPhoto, header: pendingHeader, headerPos: pendingPos }));
                 setLoading(btn, false);
                 btn.textContent = "Changes Saved";
                 btn.classList.add("submitted");
@@ -6823,7 +6823,7 @@ function processHeaderImage(file) {
             const img = new Image();
             img.onerror = () => reject(new Error("That image couldn't be opened."));
             img.onload = () => {
-                for (const W of [640, 512, 400, 320, 256]) {
+                for (const W of [480, 400, 400, 320, 256]) {
                     const k = W / img.width;
                     const H = Math.min(Math.round(img.height * k), Math.round(W * 0.6));
                     const c = document.createElement("canvas"); c.width = W; c.height = H;
@@ -6833,7 +6833,7 @@ function processHeaderImage(file) {
                     ctx.drawImage(img, 0, (img.height - srcH) / 2, img.width, srcH, 0, 0, W, H);
                     for (let q = 0.85; q >= 0.3; q -= 0.1) {
                         const url = c.toDataURL("image/jpeg", q);
-                        if (url.length <= 45000) return resolve(url);
+                        if (url.length <= 25000) return resolve(url);
                     }
                 }
                 reject(new Error("Couldn't shrink that image enough. Try another one."));
