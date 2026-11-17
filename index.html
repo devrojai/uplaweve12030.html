@@ -2373,6 +2373,24 @@ html .cal-legend .k.pd { background: transparent; border: 2px solid var(--accent
 /* Night: Deadline white (filled), Period hollow with a white outline */
 html[data-theme="night"] .cal-legend .k.dl { background: #ffffff; }
 html[data-theme="night"] .cal-legend .k.pd { background: transparent; border-color: #ffffff; }
+
+/* ===== Calendar date chips: match the legend ===== */
+
+/* Light + Classic: Deadline filled, Period hollow with the same outline colour */
+.cal-cell .cal-chip.deadline { background: var(--accent); border: 0; }
+.cal-cell .cal-chip.period   { background: transparent; border: 2px solid var(--accent); }
+
+/* Status dot inside a filled chip keeps its lighter colour; inside a hollow chip it uses the darker one */
+.cal-cell .cal-chip.deadline .st-glow { --g: var(--g-for-dark);  --ic: var(--ic-for-dark); }
+.cal-cell .cal-chip.period .st-glow   { --g: var(--g-for-light); --ic: var(--ic-for-light); }
+
+/* Night: Deadline white (filled), Period hollow with a white outline */
+html[data-theme="night"] .cal-cell .cal-chip.deadline { background: #ffffff; border: 0; }
+html[data-theme="night"] .cal-cell .cal-chip.period   { background: transparent; border: 2px solid #ffffff; color: #ffffff; }
+
+/* Night: dots flip, since white is now the filled chip and black is the hollow one */
+html[data-theme="night"] .cal-cell .cal-chip.deadline .st-glow { --g: var(--g-for-light); --ic: var(--ic-for-light); }
+html[data-theme="night"] .cal-cell .cal-chip.period .st-glow   { --g: var(--g-for-dark);  --ic: var(--ic-for-dark); }
         
     </style>
     
