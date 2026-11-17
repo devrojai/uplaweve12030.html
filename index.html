@@ -2279,8 +2279,8 @@ html[data-theme="night"] { --hdr-veil: rgba(20,20,22,.86); }
 .accent-dot:focus-visible { outline: 2px solid var(--dr-ink); outline-offset: 3px; }
 
 /* palettes (maroon is the default, so it has none) */
-html[data-accent="ocean"]  { --p:#0b5c8a; --p-hover:#0f73ad; --p-deep:#08425f; --tint:#d6ebf7; --n-accent:#1f7fb8; --n-hover:#2a93d1; --n-text:#8fd0f5; --n-accent2:#4aa8dc; --n-deep:#0a3d5c; }
-html[data-accent="olive"]  { --p:#5b6b1f; --p-hover:#6f8226; --p-deep:#3f4a14; --tint:#e6edc9; --n-accent:#6f8226; --n-hover:#849a30; --n-text:#c5d97a; --n-accent2:#a3bb4a; --n-deep:#3a4512; }
+html[data-accent="ocean"]  { --p:#074467; --p-hover:#0a5a87; --p-deep:#052f48; --tint:#cfe3f0; --n-accent:#16608c; --n-hover:#1d76aa; --n-text:#7fc0e8; --n-accent2:#3590c4; --n-deep:#072f48; }
+        html[data-accent="olive"]  { --p:#5b6b1f; --p-hover:#6f8226; --p-deep:#3f4a14; --tint:#e6edc9; --n-accent:#6f8226; --n-hover:#849a30; --n-text:#c5d97a; --n-accent2:#a3bb4a; --n-deep:#3a4512; }
 html[data-accent="amber"]  { --p:#a86f00; --p-hover:#c28400; --p-deep:#6b4600; --tint:#fbe8bd; --n-accent:#a87000; --n-hover:#c28400; --n-text:#ffd166; --n-accent2:#f2b632; --n-deep:#5c3d00; }
 html[data-accent="violet"] { --p:#3b1f6e; --p-hover:#4e2a92; --p-deep:#26134a; --tint:#e4dcf7; --n-accent:#6a46c2; --n-hover:#7c58d8; --n-text:#c3b0ff; --n-accent2:#9a80ea; --n-deep:#2e1a5e; }
 
@@ -2363,6 +2363,16 @@ html[data-accent][data-theme="night"] .org-team-head,
 html[data-accent][data-theme="night"] .org-course-head {
     background: radial-gradient(circle, rgba(255,255,255,.10) 1.2px, transparent 1.7px) 0 0 / 18px 18px, linear-gradient(135deg, var(--n-hover), var(--n-deep));
 }
+
+/* ===== Calendar legend ===== */
+/* Light + Classic: Deadline filled, Period hollow with the same outline colour */
+html .cal-legend .k { width: 12px; height: 12px; box-sizing: border-box; vertical-align: -1px; }
+html .cal-legend .k.dl { background: var(--accent); }
+html .cal-legend .k.pd { background: transparent; border: 2px solid var(--accent); }
+
+/* Night: Deadline white (filled), Period hollow with a white outline */
+html[data-theme="night"] .cal-legend .k.dl { background: #ffffff; }
+html[data-theme="night"] .cal-legend .k.pd { background: transparent; border-color: #ffffff; }
         
     </style>
     
@@ -2471,7 +2481,7 @@ html[data-accent][data-theme="night"] .org-course-head {
     <aside class="drawer" id="drawer">
 <div class="drawer-head"><b>EVE1 2030</b><div class="accent-picker" id="accent-picker" role="group" aria-label="Accent color">
     <button type="button" class="accent-dot" data-acc="maroon" style="--sw:#76090c" title="Maroon" aria-label="Maroon"></button>
-    <button type="button" class="accent-dot" data-acc="ocean" style="--sw:#0b6fa8" title="Ocean blue" aria-label="Ocean blue"></button>
+    <button type="button" class="accent-dot" data-acc="ocean" style="--sw:#0a4f78" title="Ocean blue" aria-label="Ocean blue"></button>
     <button type="button" class="accent-dot" data-acc="olive" style="--sw:#6b7d1f" title="Olive green" aria-label="Olive green"></button>
     <button type="button" class="accent-dot" data-acc="amber" style="--sw:#e0a100" title="Amber yellow" aria-label="Amber yellow"></button>
     <button type="button" class="accent-dot" data-acc="violet" style="--sw:#3b1f6e" title="Midnight violet" aria-label="Midnight violet"></button>
