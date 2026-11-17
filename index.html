@@ -2214,7 +2214,7 @@ html[data-theme="night"] .org-sil .sil-body {
 .p-card-body { padding-bottom: 6px; }
 
 /* ===== Profile header (banner image) ===== */
-:root { --hdr-veil: rgba(255,255,255,.86); }
+:root { --hdr-veil: rgba(255,255,255,.75); }
 html[data-theme="night"] { --hdr-veil: rgba(20,20,22,.86); }
 
 .hdr-img { position: absolute; inset: 0; background-size: cover; background-repeat: no-repeat; pointer-events: none; }
@@ -3222,7 +3222,7 @@ const ADMIN_SECTIONS = ["bin", "directory", "addcourse", "hiddencourses", "dibss
         pending = null;
         resetProfileState();
         resetRequestForm();
-        annList = []; annShowArchive = false; annShowPinned = false; openAnnId = ""; annFilter = ""; annSearchTerm = ""; carIdx = 0; dlSel = todayIso(); mentionUsers = []; mentionSel = []; repoPhotos = {}; resetBinForm();
+        annList = []; annShowArchive = false; annShowPinned = false; openAnnId = ""; annFilter = ""; annSearchTerm = ""; carIdx = 0; dlSel = todayIso(); mentionUsers = []; mentionSel = []; repoPhotos = {}; repoHeaders = {}; resetBinForm();
         dibsList = []; dsysArchive = false; officerData = null; ofState = null; $("org-chart").textContent = ""; $("off-term").classList.add("hidden"); $("of-fields").textContent = ""; $("of-archive").textContent = "";        courseList = []; courseOpen = ""; courseSearchTerm = ""; $("course-search").value = ""; closeCourseModal(); resetCourseForm();
         isAdmin = false;
         adminPending = false;
@@ -3509,6 +3509,7 @@ if (courseAdminShown !== isAdmin) { courseAdminShown = isAdmin; renderCourses();
 
     let repoUsers = [];
     let repoPhotos = {};
+    let repoHeaders = {};
     let detailFor = "";
     const CSV_COLS = [
         ["Account Email", "email"], ["Verified", "verified"], ["Role", "role"],
@@ -3561,6 +3562,14 @@ if (courseAdminShown !== isAdmin) { courseAdminShown = isAdmin; renderCourses();
         repoUsers.forEach(u => {
             const row = mk("button", "user-row");
             row.type = "button";
+            const hd = repoHeaders[u.email];
+            if (hd && /^data:image\//.test(hd.img)) {
+                const bg = mk("div", "hdr-img u-hdr");
+                const p = String(hd.pos || "50,50").split(",");
+                bg.style.backgroundImage = 'url("' + hd.img + '")';
+                bg.style.backgroundPosition = p[0] + "% " + p[1] + "%";
+                row.appendChild(bg);
+            }
             const ava = mk("div", "u-ava");
             avatarInto(ava, u, repoPhotos[u.email] || "");
             const main = mk("div", "u-main");
@@ -3699,6 +3708,7 @@ function closeUser() {
                 });
                 renderRepoList();
                 loadRepoPhotos();
+                loadRepoHeaders();
             } else {
                 $("repo-list").textContent = "";
                 setMessage(rm, r.message, ERR);
@@ -3716,6 +3726,16 @@ function closeUser() {
         } catch (err) { if (err.message !== "auth") console.error(err); }
     }
 
+    async function loadRepoHeaders() {
+    try {
+        const r = await authCall("admin_headers");
+        if (r.status === "success") {
+            repoHeaders = r.headers || {};
+            if (!$("repo-list-view").classList.contains("hidden")) renderRepoList();
+        }
+    } catch (err) { if (err.message !== "auth") console.error(err); }
+}
+    
     function csvEscape(v) {
         let s = String(v == null ? "" : v);
         if (/^[=@\t\r]/.test(s) || (/^[+\-]/.test(s) && !/^[+\-]?[0-9()][0-9\s\-()]*$/.test(s))) s = "'" + s;
