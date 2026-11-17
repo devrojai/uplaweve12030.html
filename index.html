@@ -2414,11 +2414,39 @@ html[data-theme="night"] .fmt-bar .btn.add-course-btn[data-count]:not([data-coun
 
 /* ===== Ended announcement cards: no dimming ===== */
 .ann-card.past { opacity: 1; }
+
+/* ===== Login intro: the logo turns hollow and zooms in ===== */
+.logo svg { width: 34px; height: 34px; }
+
+#intro {
+    position: fixed; inset: 0; z-index: 200; pointer-events: none;
+    background: var(--accent);
+    --glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z' transform='translate(7.68 .18) scale(.36)'/%3E%3Crect x='11' y='9' width='2' height='13'/%3E%3Ccircle cx='12' cy='10' r='2.4'/%3E%3Crect x='4' y='9' width='16' height='2' rx='1'/%3E%3Crect x='7' y='21' width='10' height='2' rx='1'/%3E%3Cpath d='M5 10l-3 7M5 10l3 7M19 10l-3 7M19 10l3 7' fill='none' stroke='black' stroke-width='1.2' stroke-linecap='round'/%3E%3Cpath d='M2 17h6a3 3 0 0 1-6 0zM16 17h6a3 3 0 0 1-6 0z'/%3E%3C/svg%3E");
+    -webkit-mask-image: var(--glyph), linear-gradient(#000, #000);
+            mask-image: var(--glyph), linear-gradient(#000, #000);
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-position: center, center; mask-position: center, center;
+    -webkit-mask-size: 150px 150px, 100% 100%; mask-size: 150px 150px, 100% 100%;
+    -webkit-mask-composite: xor; mask-composite: exclude;
+}
+#intro.go { animation: introZoom 1.7s linear both; }
+
+@keyframes introZoom {
+    0%   { opacity: 0; -webkit-mask-size: 150px 150px, 100% 100%;   mask-size: 150px 150px, 100% 100%; }
+    10%  { opacity: 1; -webkit-mask-size: 150px 150px, 100% 100%;   mask-size: 150px 150px, 100% 100%; }
+    25%  {             -webkit-mask-size: 125px 125px, 100% 100%;   mask-size: 125px 125px, 100% 100%; }
+    50%  {             -webkit-mask-size: 700px 700px, 100% 100%;   mask-size: 700px 700px, 100% 100%; }
+    75%  {             -webkit-mask-size: 5000px 5000px, 100% 100%; mask-size: 5000px 5000px, 100% 100%; }
+    92%  { opacity: 1; }
+    100% { opacity: 0; -webkit-mask-size: 800vmax 800vmax, 100% 100%; mask-size: 800vmax 800vmax, 100% 100%; }
+}
         
     </style>
     
 </head>
 <body>
+
+<div id="intro" class="hidden" aria-hidden="true"></div>
 
 <div class="bg"><div class="waves" aria-hidden="true"><i></i><i></i><i></i></div></div>
 <input type="file" id="bg-file" accept="image/*" class="hidden">
@@ -2438,8 +2466,7 @@ html[data-theme="night"] .fmt-bar .btn.add-course-btn[data-count]:not([data-coun
 <div class="stage" id="stage">
     <div class="card" id="card">
         <div class="logo">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-        </div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" transform="translate(7.68 .18) scale(.36)" fill="currentColor" stroke="none"/><circle cx="12" cy="10" r="2.4" fill="currentColor" stroke="none"/><path d="M12 10v12M8 22h8M5 10h14M5 10l-3 7M5 10l3 7M19 10l-3 7M19 10l3 7"/><path d="M2 17h6a3 3 0 0 1-6 0zM16 17h6a3 3 0 0 1-6 0z" fill="currentColor"/></svg>        </div>
         <div class="brand">EVE1 2030</div>
 
         <div id="auth-view">
@@ -3292,7 +3319,7 @@ html[data-theme="night"] .fmt-bar .btn.add-course-btn[data-count]:not([data-coun
             const legacy = isSignup ? "" : await legacyHash(raw);
             pending = { email, hash, legacy };
             const result = await callScript({ action: isSignup ? "signup" : "login", email, password: hash, legacy });
-            if (result.status === "success") { sessionStorage.setItem("userEmail", email); sessionStorage.setItem("token", result.token || ""); sessionStorage.setItem("isAdmin", result.admin ? "1" : "0"); enterApp(email, result.token, !!result.admin); }
+            if (result.status === "success") { sessionStorage.setItem("userEmail", email); sessionStorage.setItem("token", result.token || ""); sessionStorage.setItem("isAdmin", result.admin ? "1" : "0"); enterApp(email, result.token, !!result.admin); playIntro(); }
             else if (result.status === "verify_sent") showVerify(email, "We sent a verification link to");
             else if (result.status === "unverified") showVerify(email, "Your email isn't verified yet. Check the link we sent to");
             else { setMessage(m, result.message, ERR); shakeCard(); }
@@ -6923,6 +6950,17 @@ $("of-form").addEventListener("submit", async e => {
     setLoading(btn, false);
     if (done) { btn.textContent = "Record Updated"; btn.classList.add("submitted"); btn.disabled = true; }
 });
+
+    function playIntro() {
+    const o = $("intro");
+    if (!o || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const done = () => { o.classList.add("hidden"); o.classList.remove("go"); };
+    o.classList.remove("hidden", "go");
+    void o.offsetWidth;
+    o.classList.add("go");
+    o.addEventListener("animationend", done, { once: true });
+    setTimeout(done, 2500);
+}
     
     // Event Bindings
     $("auth-form").addEventListener("submit", handleSubmit);
