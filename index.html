@@ -2420,6 +2420,31 @@ html[data-theme="night"] .ann-card.past { border-left-color: #ffffff; }
 html[data-theme="night"] .ann-card.past:hover { border-left-color: #ffffff; }
 
 .logo svg { width: 34px; height: 34px; }
+
+/* ===== Profile photo: camera on hover, X to remove ===== */
+.photo-preview:focus-visible .cam { opacity: 1; }
+.photo-preview:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 4px; }
+.photo-x {
+    position: absolute; right: 2px; bottom: 2px; z-index: 3;
+    width: 30px; height: 30px; padding: 0; display: grid; place-items: center;
+    color: #fff; background: #c62828; border: 3px solid var(--surface); border-radius: 50%;
+    cursor: pointer; opacity: 0; transform: scale(.8);
+    box-shadow: 0 2px 8px rgba(0,0,0,.35);
+    transition: opacity .2s, transform .2s var(--ease), background .2s;
+}
+.photo-x svg { width: 14px; height: 14px; pointer-events: none; }
+.photo-x:hover { background: #a31f1f; }
+.photo-x.hidden { display: none !important; }
+.photo-preview:hover .photo-x,
+.photo-preview:focus-within .photo-x { opacity: 1; transform: none; }
+/* touch screens have no hover, so keep the X visible when there is a photo */
+@media (hover: none) { .photo-x { opacity: 1; transform: none; } }
+
+/* ===== Announcement cards: smaller glowing circles ===== */
+.ann-card .st-btn {
+    width: 11px; height: 11px;
+    --glow: 0 0 3px 1px var(--g);
+}
         
     </style>
     
@@ -2640,21 +2665,20 @@ html[data-theme="night"] .ann-card.past:hover { border-left-color: #ffffff; }
         <button type="button" class="p-banner-btn pill" id="hdr-upload" title="Change header" aria-label="Change header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg><span>Header</span></button>
         <button type="button" class="p-banner-btn hidden" id="hdr-remove" title="Remove header" aria-label="Remove header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     </div>
-    <input type="file" id="hdr-file" accept="image/*" class="hidden">
-</div>
+        <input type="file" id="hdr-file" accept="image/*" class="hidden">
+    </div>
 
-                <div class="photo-box">
-                    <div class="photo-preview" id="photo-preview" tabindex="0" role="button" aria-label="Change photo">
-                        <span id="photo-inner"></span>
-                    </div>
-                    <div class="p-name" id="p-name">Your profile</div>
-                    <div class="p-pills">
-                        <span class="p-pill" id="p-role">User</span>
-                    </div>
-                    <div class="photo-actions">
-                        <button type="button" class="btn sm" id="photo-upload">Upload photo</button>
-                        <button type="button" class="btn sm ghost" id="photo-remove">Remove</button>
-                    </div>
+    <div class="photo-box">
+                    
+    <div class="photo-preview" id="photo-preview" tabindex="0" role="button" aria-label="Change photo" title="Change photo">
+        <span id="photo-inner"></span>
+        <span class="cam"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg></span>
+        <button type="button" class="photo-x hidden" id="photo-remove" title="Remove photo" aria-label="Remove photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="p-name" id="p-name">Your profile</div>
+    <div class="p-pills">
+        <span class="p-pill" id="p-role">User</span>
+    </div>
                     <input type="file" id="photo-file" accept="image/*" class="hidden">
                 </div>
 
@@ -3522,9 +3546,11 @@ const emptyProfile = () => ({ firstName: "", middleName: "", lastName: "", nickn
             el.textContent = initialsOf(profile);
         }
     }
+    function syncPhotoX() { $("photo-remove").classList.toggle("hidden", !pendingPhoto); }
     function renderAvatars() {
         renderAvatar($("avatar-inner"), profile.photo);
         renderAvatar($("photo-inner"), pendingPhoto);
+        syncPhotoX();
         $("chip").textContent = (profile.firstName || "").trim();
         $("p-name").textContent = [profile.firstName, profile.lastName].filter(Boolean).join(" ") || "Your profile";
     }
@@ -6981,8 +7007,10 @@ $("logout-btn").addEventListener("click", leaveApp);    $("delete-open").addEven
     $("p-form").addEventListener("submit", saveProfile);
     $("p-form").addEventListener("input", profileDirty);
     const pickPhoto = () => $("photo-file").click();
-    $("photo-upload").addEventListener("click", pickPhoto);
     $("photo-preview").addEventListener("click", pickPhoto);
+    $("photo-preview").addEventListener("keydown", (e) => {
+        if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); pickPhoto(); }
+    });
     $("photo-file").addEventListener("change", async (e) => {
         const file = e.target.files[0];
         e.target.value = "";
@@ -6990,18 +7018,21 @@ $("logout-btn").addEventListener("click", leaveApp);    $("delete-open").addEven
         try {
             pendingPhoto = await processImage(file);
             photoChanged = true;
-            renderAvatar($("photo-inner"), pendingPhoto);
+           renderAvatar($("photo-inner"), pendingPhoto);
+            syncPhotoX();
             profileDirty();
         } catch (err) {
             setMessage($("p-message"), err.message, ERR);
         }
     });
-    $("photo-remove").addEventListener("click", () => {
-        pendingPhoto = "";
-        photoChanged = true;
-        renderAvatar($("photo-inner"), "");
-        profileDirty();
-    });
+    $("photo-remove").addEventListener("click", (e) => {
+    e.stopPropagation();   // don't also open the file picker
+    pendingPhoto = "";
+    photoChanged = true;
+    renderAvatar($("photo-inner"), "");
+    syncPhotoX();
+    profileDirty();
+});
 
     /* ===== Profile header (banner) ===== */
 function renderHeader() {
