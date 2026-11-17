@@ -3018,7 +3018,7 @@ html[data-theme="night"] .org-kid::after { background: #d65d63; }
 
         if (!email || !raw) { setMessage(m, "Please fill in all fields.", ERR); return shakeCard(); }
         if (!EMAIL_RE.test(email)) { setMessage(m, "Please enter a valid email address.", ERR); return shakeCard(); }
-        if (isSignup && raw.length < 8) { setMessage(m, "Password must be at least 8 characters.", ERR); return shakeCard(); }
+        if (isSignup && raw.length < 10) { setMessage(m, "Password must be at least 8 characters.", ERR); return shakeCard(); }
 
         setLoading(btn, true);
         setMessage(m, "", "");
