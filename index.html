@@ -6236,22 +6236,15 @@ function personInitials(p) {
     
 const SIL_SVG = '<svg class="org-sil" viewBox="0 0 64 64" aria-hidden="true">'
     + '<path class="sil-body" d="M6 64c0-13 10-21 26-21s26 8 26 21z"/>'
-    + '<rect class="sil-body" x="28" y="32" width="8" height="14" rx="3"/>'
-    + '<circle class="sil-body" cx="32" cy="24" r="10"/>'
-    + '<path class="sil-shirt" d="M24.5 44 32 57l7.5-13z"/>'
-    + '<path class="sil-lapel" d="M24.5 44 19 64M39.5 44 45 64"/>'
-    + '<path class="sil-tie" d="M30 44h4l-.8 3.2 1.6 10.8-3.2 3-3.2-3 1.6-10.8z"/>'
-    + '</svg>';
-
-function orgAva(p) {
-    const a = mk("div", "org-ava" + (p ? "" : " vacant"));
-    if (!p) { a.innerHTML = const SIL_SVG = '<svg class="org-sil" viewBox="0 0 64 64" aria-hidden="true">'
-    + '<path class="sil-body" d="M6 64c0-13 10-21 26-21s26 8 26 21z"/>'
     + '<circle class="sil-body" cx="32" cy="27" r="13"/>'
     + '<path class="sil-shirt" d="M25 45 32 57l7-12z"/>'
     + '<path class="sil-lapel" d="M25 45 19 64M39 45 45 64"/>'
     + '<path class="sil-tie" d="M30 45h4l-.8 3 1.6 10-3.2 3-3.2-3 1.6-10z"/>'
-    + '</svg>';; return a; }
+    + '</svg>';
+
+function orgAva(p) {
+    const a = mk("div", "org-ava" + (p ? "" : " vacant"));
+    if (!p) { a.innerHTML = SIL_SVG; return a; }
     if (p.photo && /^data:image\//.test(p.photo)) {
         const img = document.createElement("img"); img.src = p.photo; img.alt = ""; a.appendChild(img);
     } else a.textContent = personInitials(p);
