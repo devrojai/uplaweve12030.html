@@ -3306,11 +3306,12 @@ document.addEventListener("input", (e) => {
         return r;
     }
 
-    const emptyProfile = () => ({ firstName: "", middleName: "", lastName: "", nickname: "", contact: "", upEmail: "", tg: "", fb: "", photo: "" });
+const emptyProfile = () => ({ firstName: "", middleName: "", lastName: "", nickname: "", contact: "", upEmail: "", tg: "", fb: "", photo: "", header: "", headerPos: "50,50" });
     let profile = emptyProfile();
     let profileLoaded = false;
     let pendingPhoto = "";
     let photoChanged = false;
+    let pendingHeader = "", pendingPos = "50,50", headerChanged = false, posChanged = false, headerDims = null;
 
     function initialsOf(p) {
         const a = (p.firstName || "").trim()[0] || "", b = (p.lastName || "").trim()[0] || "";
@@ -3345,6 +3346,10 @@ document.addEventListener("input", (e) => {
         $("p-fb").value = profile.fb;
         pendingPhoto = profile.photo;
         photoChanged = false;
+        pendingHeader = profile.header || "";
+        pendingPos = profile.headerPos || "50,50";
+        headerChanged = posChanged = false;
+        renderHeader();
         $("p-save").classList.remove("shine");
         renderAvatars();
         syncFields();
@@ -3439,6 +3444,8 @@ document.addEventListener("input", (e) => {
 
         const payload = Object.assign({}, res.values);
         if (photoChanged) payload.photo = pendingPhoto;
+        if (headerChanged) payload.header = pendingHeader;
+        if (headerChanged || posChanged) payload.headerPos = pendingPos;
 
         setLoading(btn, true);
         setMessage(pm, "", "");
@@ -6785,6 +6792,107 @@ $("logout-btn").addEventListener("click", leaveApp);    $("delete-open").addEven
         renderAvatar($("photo-inner"), "");
         profileDirty();
     });
+
+    /* ===== Profile header (banner) ===== */
+function renderHeader() {
+    const img = $("p-banner-img"), has = !!pendingHeader && /^data:image\//.test(pendingHeader);
+    $("p-banner").classList.toggle("has-img", has);
+    $("hdr-remove").classList.toggle("hidden", !has);
+    $("p-banner-hint").classList.toggle("hidden", !has);
+    if (has) {
+        const [x, y] = pendingPos.split(",");
+        img.style.backgroundImage = 'url("' + pendingHeader + '")';
+        img.style.backgroundPosition = x + "% " + y + "%";
+        const im = new Image();
+        im.onload = () => { headerDims = { w: im.width, h: im.height }; };
+        im.src = pendingHeader;
+    } else {
+        img.style.backgroundImage = "";
+        headerDims = null;
+    }
+}
+
+function processHeaderImage(file) {
+    return new Promise((resolve, reject) => {
+        if (!file.type.startsWith("image/")) return reject(new Error("Please choose an image file."));
+        if (file.size > 20 * 1024 * 1024) return reject(new Error("That image is too large (max 20 MB)."));
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error("Couldn't read that file."));
+        reader.onload = () => {
+            const img = new Image();
+            img.onerror = () => reject(new Error("That image couldn't be opened."));
+            img.onload = () => {
+                for (const W of [640, 512, 400, 320, 256]) {
+                    const k = W / img.width;
+                    const H = Math.min(Math.round(img.height * k), Math.round(W * 0.6));
+                    const c = document.createElement("canvas"); c.width = W; c.height = H;
+                    const ctx = c.getContext("2d");
+                    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
+                    const srcH = H / k;
+                    ctx.drawImage(img, 0, (img.height - srcH) / 2, img.width, srcH, 0, 0, W, H);
+                    for (let q = 0.85; q >= 0.3; q -= 0.1) {
+                        const url = c.toDataURL("image/jpeg", q);
+                        if (url.length <= 45000) return resolve(url);
+                    }
+                }
+                reject(new Error("Couldn't shrink that image enough. Try another one."));
+            };
+            img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+$("hdr-upload").addEventListener("click", () => $("hdr-file").click());
+$("hdr-file").addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    e.target.value = "";
+    if (!file) return;
+    try {
+        pendingHeader = await processHeaderImage(file);
+        pendingPos = "50,50";
+        headerChanged = true;
+        renderHeader();
+        setMessage($("p-message"), "", "");
+        profileDirty();
+    } catch (err) {
+        setMessage($("p-message"), err.message, ERR);
+    }
+});
+$("hdr-remove").addEventListener("click", () => {
+    pendingHeader = ""; pendingPos = "50,50";
+    headerChanged = true; posChanged = false;
+    renderHeader();
+    profileDirty();
+});
+
+// Drag to reposition
+(function () {
+    const ban = $("p-banner");
+    let drag = null;
+    ban.addEventListener("pointerdown", (e) => {
+        if (!pendingHeader || !headerDims || e.target.closest("button")) return;
+        const r = ban.getBoundingClientRect();
+        const s = Math.max(r.width / headerDims.w, r.height / headerDims.h);
+        const [px, py] = pendingPos.split(",").map(Number);
+        drag = { x: e.clientX, y: e.clientY, px, py, ox: headerDims.w * s - r.width, oy: headerDims.h * s - r.height };
+        ban.setPointerCapture(e.pointerId);
+        ban.classList.add("dragging");
+    });
+    ban.addEventListener("pointermove", (e) => {
+        if (!drag) return;
+        const clamp = v => Math.round(Math.max(0, Math.min(100, v)) * 10) / 10;
+        const nx = drag.ox > 1 ? clamp(drag.px - (e.clientX - drag.x) / drag.ox * 100) : drag.px;
+        const ny = drag.oy > 1 ? clamp(drag.py - (e.clientY - drag.y) / drag.oy * 100) : drag.py;
+        pendingPos = nx + "," + ny;
+        $("p-banner-img").style.backgroundPosition = nx + "% " + ny + "%";
+        posChanged = true;
+        profileDirty();
+    });
+    const end = () => { drag = null; ban.classList.remove("dragging"); };
+    ban.addEventListener("pointerup", end);
+    ban.addEventListener("pointercancel", end);
+})();
 
     function fmtFire(ta) { ta.focus(); ta.dispatchEvent(new Event("input", { bubbles: true })); }
     function fmtWrap(open, close, def) {
