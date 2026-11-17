@@ -2237,6 +2237,32 @@ html[data-theme="night"] { --hdr-veil: rgba(20,20,22,.86); }
 
 /* User popup banner */
 .um-banner { position: relative; overflow: hidden; }
+
+/* ===== Profile panel: smaller inputs ===== */
+.pdrawer .field { margin: 10px 0; }
+.pdrawer .field input {
+    padding: 18px 12px 6px;
+    font-size: .875rem;
+}
+.pdrawer .field label {
+    left: 13px; top: 12px;
+    font-size: .875rem;
+}
+.pdrawer .field input:focus ~ label,
+.pdrawer .field input:not(:placeholder-shown) ~ label,
+.pdrawer .field.filled label {
+    top: 3px;
+    font-size: .7rem;
+}
+.pdrawer .field input:-webkit-autofill ~ label,
+.pdrawer .field input:autofill ~ label {
+    top: 3px;
+    font-size: .7rem;
+}
+
+@media (max-width: 520px) {
+    .pdrawer .field input { font-size: 16px; }
+}
         
     </style>
     
