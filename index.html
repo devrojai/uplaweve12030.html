@@ -2402,6 +2402,15 @@ html[data-theme="night"] .cal-cell .cal-chip.period .st-glow   { --g: var(--g-fo
 }
 .nav button:hover,
 .nav button[data-admin]:hover { padding-left: 26px; }
+
+/* ===== Night: coloured text as light as the page headings ===== */
+html[data-theme="night"],
+html[data-accent][data-theme="night"] { --okmsg: var(--accent-text); }
+
+html[data-theme="night"] .fmt-bar .btn.add-course-btn[data-count]:not([data-count=""])::after {
+    color: var(--accent-text);
+    border-color: var(--accent-text);
+}
         
     </style>
     
