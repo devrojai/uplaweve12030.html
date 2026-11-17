@@ -2212,6 +2212,31 @@ html[data-theme="night"] .org-sil .sil-body {
 }
 
 .p-card-body { padding-bottom: 6px; }
+
+/* ===== Profile header (banner image) ===== */
+:root { --hdr-veil: rgba(255,255,255,.86); }
+html[data-theme="night"] { --hdr-veil: rgba(20,20,22,.86); }
+
+.hdr-img { position: absolute; inset: 0; background-size: cover; background-repeat: no-repeat; pointer-events: none; }
+
+.p-banner { position: relative; overflow: hidden; }
+.p-banner.has-img { cursor: grab; touch-action: none; user-select: none; }
+.p-banner.dragging { cursor: grabbing; }
+.p-banner-tools { position: absolute; top: 10px; right: 10px; z-index: 2; display: flex; gap: 8px; }
+.p-banner-btn { height: 34px; min-width: 34px; padding: 0; display: inline-flex; align-items: center; justify-content: center; gap: 6px; color: #fff; background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.35); border-radius: 999px; cursor: pointer; font-size: var(--fs-n1); font-weight: 700; transition: background .2s, transform .2s var(--ease); }
+.p-banner-btn.pill { padding: 0 12px; }
+.p-banner-btn:hover { background: rgba(0,0,0,.65); transform: scale(1.05); }
+.p-banner-btn svg { width: 18px; height: 18px; }
+.p-banner-hint { position: absolute; left: 10px; top: 12px; z-index: 2; padding: 3px 10px; font-size: var(--fs-n1); font-weight: 700; color: #fff; background: rgba(0,0,0,.45); border-radius: 999px; pointer-events: none; }
+
+/* Directory cards: faint header under a near-white veil */
+.user-row { position: relative; overflow: hidden; }
+.user-row > :not(.u-hdr) { position: relative; z-index: 1; }
+.u-hdr { z-index: 0; }
+.u-hdr::after { content: ""; position: absolute; inset: 0; background: var(--hdr-veil); }
+
+/* User popup banner */
+.um-banner { position: relative; overflow: hidden; }
         
     </style>
     
@@ -2420,7 +2445,15 @@ html[data-theme="night"] .org-sil .sil-body {
         </div>
         <form class="pform" id="p-form" novalidate>
             <div class="pbody">
-                <div class="p-banner"></div>
+                <div class="p-banner" id="p-banner">
+    <div class="hdr-img" id="p-banner-img"></div>
+    <span class="p-banner-hint hidden" id="p-banner-hint">Drag to reposition</span>
+    <div class="p-banner-tools">
+        <button type="button" class="p-banner-btn pill" id="hdr-upload" title="Change header" aria-label="Change header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg><span>Header</span></button>
+        <button type="button" class="p-banner-btn hidden" id="hdr-remove" title="Remove header" aria-label="Remove header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <input type="file" id="hdr-file" accept="image/*" class="hidden">
+</div>
 
                 <div class="photo-box">
                     <div class="photo-preview" id="photo-preview" tabindex="0" role="button" aria-label="Change photo">
