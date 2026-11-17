@@ -2391,6 +2391,17 @@ html[data-theme="night"] .cal-cell .cal-chip.period   { background: transparent;
 /* Night: dots flip, since white is now the filled chip and black is the hollow one */
 html[data-theme="night"] .cal-cell .cal-chip.deadline .st-glow { --g: var(--g-for-light); --ic: var(--ic-for-light); }
 html[data-theme="night"] .cal-cell .cal-chip.period .st-glow   { --g: var(--g-for-dark);  --ic: var(--ic-for-dark); }
+
+/* ===== Side menu: no left border on buttons ===== */
+.nav button,
+.nav button.active,
+.nav button[data-admin],
+.nav button[data-admin].active {
+    border-left: 0 !important;
+    padding-left: 20px;
+}
+.nav button:hover,
+.nav button[data-admin]:hover { padding-left: 26px; }
         
     </style>
     
