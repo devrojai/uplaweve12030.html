@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; connect-src https://script.google.com https://script.googleusercontent.com; frame-src data:; object-src 'none'; base-uri 'none'">
     <title>EVE1 2030</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -3028,10 +3029,17 @@ html[data-theme="night"] { --hdr-veil: rgba(20,20,22,.86); }
     function shakeCard() { const c = $("card"); c.classList.remove("shake"); void c.offsetWidth; c.classList.add("shake"); }
     function setLoading(btn, on) { btn.disabled = on; btn.classList.toggle("loading", on); }
 
-    async function hashPassword(password) {
+    const toHex = (buf) => Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+    async function legacyHash(password) {
         if (!window.crypto || !window.crypto.subtle) throw new Error("Secure hashing requires HTTPS or localhost.");
-        const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(password));
-        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+        return toHex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(password)));
+    }
+    async function hashPassword(password, email) {
+        if (!window.crypto || !window.crypto.subtle) throw new Error("Secure hashing requires HTTPS or localhost.");
+        const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]);
+        const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256",
+            salt: new TextEncoder().encode("eve1-v2:" + String(email).trim().toLowerCase()), iterations: 310000 }, key, 256);
+        return toHex(bits);
     }
     async function callScript(payload) {
         const res = await fetch(SCRIPT_URL, {
@@ -3124,10 +3132,10 @@ html[data-theme="night"] { --hdr-veil: rgba(20,20,22,.86); }
         setLoading(btn, true);
         setMessage(m, "", "");
         try {
-            const hash = await hashPassword(raw);
-            pending = { email, hash };
-            const result = await callScript({ action: isSignup ? "signup" : "login", email, password: hash });
-
+            const hash = await hashPassword(raw, email);
+            const legacy = isSignup ? "" : await legacyHash(raw);
+            pending = { email, hash, legacy };
+            const result = await callScript({ action: isSignup ? "signup" : "login", email, password: hash, legacy });
             if (result.status === "success") { sessionStorage.setItem("userEmail", email); sessionStorage.setItem("token", result.token || ""); sessionStorage.setItem("isAdmin", result.admin ? "1" : "0"); enterApp(email, result.token, !!result.admin); }
             else if (result.status === "verify_sent") showVerify(email, "We sent a verification link to");
             else if (result.status === "unverified") showVerify(email, "Your email isn't verified yet. Check the link we sent to");
@@ -3145,8 +3153,7 @@ html[data-theme="night"] { --hdr-veil: rgba(20,20,22,.86); }
         const btn = $("resend-btn"), vm = $("verify-message");
         setLoading(btn, true);
         try {
-            const r = await callScript({ action: "resend", email: pending.email, password: pending.hash });
-            if (r.status === "verify_sent") { setMessage(vm, r.message, OK); setLoading(btn, false); startCooldown(60); return; }
+const r = await callScript({ action: "resend", email: pending.email, password: pending.hash, legacy: pending.legacy || "" });            if (r.status === "verify_sent") { setMessage(vm, r.message, OK); setLoading(btn, false); startCooldown(60); return; }
             setMessage(vm, r.message, r.status === "success" ? OK : ERR);
         } catch (err) {
             setMessage(vm, "Couldn't reach the server. Try again.", ERR);
@@ -3194,8 +3201,9 @@ html[data-theme="night"] { --hdr-veil: rgba(20,20,22,.86); }
         if (!raw) return setMessage(dm, "Enter your password to confirm.", ERR);
         setLoading(btn, true);
         try {
-            const hash = await hashPassword(raw);
-            const r = await callScript({ action: "delete", email: currentEmail, password: hash });
+                        const hash = await hashPassword(raw, currentEmail);
+            const legacy = await legacyHash(raw);
+            const r = await callScript({ action: "delete", email: currentEmail, password: hash, legacy });
             if (r.status === "success") {
                 closeDelete();
                 token = null;
@@ -4335,7 +4343,7 @@ function mentionHandleFor(u, q) {
             body.appendChild(img);
         } else if (mime === "application/pdf" || (file.name && /\.pdf$/i.test(file.name))) {
             const iframe = document.createElement("iframe");
-            iframe.src = dataUrl;
+            iframe.src = "data:application/pdf;base64," + String(file.data).replace(/^data:[^,]*,/, "");
             body.appendChild(iframe);
         } else if (mime.startsWith("text/") || (file.name && /\.(txt|json|csv|md|js|html|css)$/i.test(file.name))) {
            const pre = document.createElement("pre");
