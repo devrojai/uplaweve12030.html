@@ -1632,6 +1632,12 @@ html[data-theme="night"] .dibs-ic.ok:disabled, html[data-theme="night"] .dibs-ic
     flex: 1 1 auto; min-width: 0; display: flex; flex-direction: row;
     flex-wrap: nowrap; align-items: center; gap: 10px;
 }
+
+/* Hidden-course eye icon, sits just left of the course code */
+.link-hidden-ico { flex: none; margin-left: auto; display: inline-grid; place-items: center; color: var(--muted); }
+.link-hidden-ico svg { width: 18px; height: 18px; display: block; }
+.link-hidden-ico + .link-code { margin-left: 0 !important; }
+        
 #link-modal-list .link-row > .link-text .link-title {
     display: block; flex: 1 1 auto; min-width: 0; max-width: 100%;
     white-space: nowrap !important; word-break: normal !important;
@@ -5210,11 +5216,20 @@ async function syncBinCourses(annId, sel) {
 
 function linkRowText(c) {
     const box = mk("div", "link-text");
-    const t = mk("span", "link-title", c.title + (c.hidden ? " \u2014 hidden" : ""));
+    const t = mk("span", "link-title", c.title);
     t.addEventListener("click", ev => { ev.preventDefault(); ev.stopPropagation(); });
     box.appendChild(t);
+    if (c.hidden) {
+        const eye = mk("span", "link-hidden-ico");
+        eye.title = "Hidden course";
+        eye.setAttribute("role", "img");
+        eye.setAttribute("aria-label", "Hidden course");
+        eye.innerHTML = eyeSvg(true);
+        box.appendChild(eye);
+    }
     box.appendChild(mk("span", "link-code", c.code));
     return box;
+
 }
     
 function openBinCourses() {
