@@ -2469,6 +2469,63 @@ html[data-theme="night"] .ann-card.past:hover { border-left-color: #ffffff; }
     70%  { box-shadow: 0 0 3px 1px var(--g), 0 0 0 5px transparent; }
     100% { box-shadow: 0 0 3px 1px var(--g), 0 0 0 5px transparent; }
 }
+
+/* ===== Drawer footer: Background / Mode / Theme ===== */
+.foot-menu { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+
+.foot-tab {
+    padding: 9px 4px; font-size: .75rem; font-weight: 700; color: var(--dr-muted);
+    background: transparent; border: 1px solid var(--dr-line); border-radius: var(--r-md); cursor: pointer;
+    transition: transform .28s cubic-bezier(.34, 1.56, .64, 1), background .2s, color .2s, border-color .2s;
+}
+.foot-tab:hover, .foot-tab.open { color: var(--dr-ink); background: var(--dr-hover); border-color: var(--dr-btn); }
+@media (hover: hover) { .foot-tab:hover { transform: scale(1.06); } }
+.foot-tab:active { transform: scale(.97); }
+
+/* Pop-up bubble with a triangle pointing at the clicked button */
+.foot-pop {
+    position: absolute; left: -8px; right: -8px; bottom: calc(100% + 12px); z-index: 5;
+    padding: 10px 8px; color: var(--ink); background: var(--surface);
+    border: 1px solid var(--line-strong); border-radius: var(--r-lg);
+    box-shadow: 0 12px 30px rgba(0,0,0,.35);
+    transform-origin: var(--ax, 50%) 100%;
+}
+.foot-pop.anim { animation: footPopIn .24s var(--ease); }
+@keyframes footPopIn { from { opacity: 0; transform: translateY(8px) scale(.9); } to { opacity: 1; transform: none; } }
+.foot-pop::after {
+    content: ""; position: absolute; left: var(--ax, 50%); bottom: -8px; width: 14px; height: 14px; margin-left: -7px;
+    background: var(--surface); border-right: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong);
+    transform: rotate(45deg); pointer-events: none;
+    transition: left .25s var(--ease);
+}
+
+.pop-row { display: flex; align-items: center; justify-content: center; gap: 2px; }
+.pop-row.pop-dots { justify-content: space-evenly; gap: 0; padding: 4px 0; }
+
+/* Options: grow smoothly (with a slight spring) on hover */
+.pop-opt {
+    position: relative; min-width: 34px; height: 34px; padding: 0 9px; display: inline-grid; place-items: center;
+    font-size: .78rem; font-weight: 700; color: var(--ink); background: transparent; border: 0; border-radius: var(--r-md); cursor: pointer;
+    transition: transform .28s cubic-bezier(.34, 1.56, .64, 1), background .2s, color .2s;
+    will-change: transform;
+}
+.pop-opt svg { width: 17px; height: 17px; display: block; }
+@media (hover: hover) {
+    .pop-opt:hover { transform: scale(1.18); z-index: 1; }
+    .pop-opt:not(.on):hover { background: var(--hover); }
+}
+.pop-opt:active { transform: scale(.95); }
+.pop-opt.on { background: var(--accent); color: var(--on-accent); }
+.pop-opt.bg-add svg { transition: transform .3s var(--ease); }
+.pop-opt.bg-add.has-bg svg { transform: rotate(45deg); }
+
+/* Accent color circles inside the pop-up */
+.pop-dot.accent-dot {
+    width: 26px; height: 26px; border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--line-strong);
+    transition: transform .28s cubic-bezier(.34, 1.56, .64, 1), box-shadow .2s;
+}
+@media (hover: hover) { .pop-dot.accent-dot:hover { transform: scale(1.3); } }
+.pop-dot.accent-dot.on { box-shadow: 0 0 0 2px var(--ink); }
         
     </style>
     
@@ -2574,14 +2631,8 @@ html[data-theme="night"] .ann-card.past:hover { border-left-color: #ffffff; }
     <div class="overlay" id="overlay"></div>
 
     <aside class="drawer" id="drawer">
-<div class="drawer-head"><b>EVE1 2030</b><div class="accent-picker" id="accent-picker" role="group" aria-label="Accent color">
-    <button type="button" class="accent-dot" data-acc="maroon" style="--sw:#76090c" title="Maroon" aria-label="Maroon"></button>
-    <button type="button" class="accent-dot" data-acc="ocean" style="--sw:#0a4f78" title="Ocean blue" aria-label="Ocean blue"></button>
-    <button type="button" class="accent-dot" data-acc="olive" style="--sw:#6b7d1f" title="Olive green" aria-label="Olive green"></button>
-    <button type="button" class="accent-dot" data-acc="amber" style="--sw:#e0a100" title="Amber yellow" aria-label="Amber yellow"></button>
-    <button type="button" class="accent-dot" data-acc="violet" style="--sw:#3b1f6e" title="Midnight violet" aria-label="Midnight violet"></button>
-</div>
-    <button type="button" class="music-btn" id="music-btn" data-state="off" title="Music: off" aria-label="Music: off. Click for the next option">
+<div class="drawer-head"><b>EVE1 2030</b>
+    <button type="button" class="music-btn" id="music-btn"
         <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13" fill="none"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/><line class="m-slash" x1="3" y1="3" x2="21" y2="21" fill="none"/></svg>
     </button>
 <div class="music-vol hidden" id="music-vol-panel">
@@ -2654,17 +2705,32 @@ html[data-theme="night"] .ann-card.past:hover { border-left-color: #ffffff; }
         
         <div class="drawer-foot">
 
-<div class="theme-switch" id="theme-switch" role="group" aria-label="Theme">
-    <button type="button" data-mode="light">Light</button>
-    <button type="button" data-mode="classic">Classic</button>
-    <button type="button" data-mode="night">Night</button>
-</div>
-<div class="theme-switch bg-switch" role="group" aria-label="Background design">
-    <button type="button" data-bg="none" title="None" aria-label="None"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg></button>
-    <button type="button" data-bg="dots">Dots</button>
-    <button type="button" data-bg="waves">Waves</button>
-    <button type="button" data-bg="both">Both</button>
-    <button type="button" class="bg-add" data-bg-add title="Add your own background" aria-label="Add your own background"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+<div class="foot-menu" id="foot-menu">
+    <button type="button" class="foot-tab" data-pop="bg" aria-expanded="false">Background</button>
+    <button type="button" class="foot-tab" data-pop="mode" aria-expanded="false">Mode</button>
+    <button type="button" class="foot-tab" data-pop="theme" aria-expanded="false">Theme</button>
+
+    <div class="foot-pop hidden" id="foot-pop">
+        <div class="pop-row hidden" data-for="bg">
+            <button type="button" class="pop-opt" data-bg="none" title="None" aria-label="None"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg></button>
+            <button type="button" class="pop-opt" data-bg="dots">Dots</button>
+            <button type="button" class="pop-opt" data-bg="waves">Waves</button>
+            <button type="button" class="pop-opt" data-bg="both">Both</button>
+            <button type="button" class="pop-opt bg-add" data-bg-add title="Add your own background" aria-label="Add your own background"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+        </div>
+        <div class="pop-row hidden" data-for="mode">
+            <button type="button" class="pop-opt" data-mode="light">Light</button>
+            <button type="button" class="pop-opt" data-mode="classic">Classic</button>
+            <button type="button" class="pop-opt" data-mode="night">Night</button>
+        </div>
+        <div class="pop-row pop-dots hidden" data-for="theme" id="accent-picker" role="group" aria-label="Accent color">
+            <button type="button" class="accent-dot pop-dot" data-acc="maroon" style="--sw:#76090c" title="Maroon" aria-label="Maroon"></button>
+            <button type="button" class="accent-dot pop-dot" data-acc="ocean" style="--sw:#0a4f78" title="Ocean blue" aria-label="Ocean blue"></button>
+            <button type="button" class="accent-dot pop-dot" data-acc="olive" style="--sw:#6b7d1f" title="Olive green" aria-label="Olive green"></button>
+            <button type="button" class="accent-dot pop-dot" data-acc="amber" style="--sw:#e0a100" title="Amber yellow" aria-label="Amber yellow"></button>
+            <button type="button" class="accent-dot pop-dot" data-acc="violet" style="--sw:#3b1f6e" title="Midnight violet" aria-label="Midnight violet"></button>
+        </div>
+    </div>
 </div>
 
             <div class="foot-actions">
@@ -3486,9 +3552,8 @@ const ADMIN_SECTIONS = ["bin", "directory", "addcourse", "hiddencourses", "dibss
         $("burger").classList.add("open");
     }
     function closeMenu() {
-        hideVol();
-        $("drawer").classList.remove("open"); $("overlay").classList.remove("show");
-        $("burger").classList.remove("open");
+        hideVol(); hideFootPop();
+        $("drawer").classList.remove("open"); $("overlay").classList.remove("show");        $("burger").classList.remove("open");
     }
     let curSection = "";
 function showSection(name, fromPop) {
@@ -6290,10 +6355,10 @@ setInterval(() => {
         if (t === "light") document.documentElement.removeAttribute("data-theme");
         else document.documentElement.setAttribute("data-theme", t);
         try { localStorage.setItem("eve1Theme", t); } catch (e) {}
-        document.querySelectorAll(".theme-switch button[data-mode]").forEach(b => b.classList.toggle("on", b.dataset.mode === t));
+        document.querySelectorAll("button[data-mode]").forEach(b => b.classList.toggle("on", b.dataset.mode === t));
     }
     
-document.querySelectorAll(".theme-switch button[data-mode]").forEach(b => b.addEventListener("click", () => applyTheme(b.dataset.mode)));
+document.querySelectorAll("button[data-mode]").forEach(b => b.addEventListener("click", () => applyTheme(b.dataset.mode)));
 
 const ACCENTS = ["maroon", "ocean", "olive", "amber", "violet"];
 function applyAccent(a) {
@@ -6329,9 +6394,9 @@ function applyBg(v) {
     if (v === "custom" && !bgImage()) v = "both";
     document.documentElement.setAttribute("data-bg", v);
     try { localStorage.setItem("eve1Bg", v); } catch (e) {}
-    document.querySelectorAll(".theme-switch button[data-bg]").forEach(b => b.classList.toggle("on", b.dataset.bg === v));
+    document.querySelectorAll("button[data-bg]").forEach(b => b.classList.toggle("on", b.dataset.bg === v));
 }
-document.querySelectorAll(".theme-switch button[data-bg]").forEach(b => b.addEventListener("click", () => applyBg(b.dataset.bg)));
+document.querySelectorAll("button[data-bg]").forEach(b => b.addEventListener("click", () => applyBg(b.dataset.bg)));
 
 /* Resize and compress the picture so it fits in browser storage */
 function processBgImage(file) {
@@ -6978,6 +7043,30 @@ $("of-form").addEventListener("submit", async e => {
     if (done) { btn.textContent = "Record Updated"; btn.classList.add("submitted"); btn.disabled = true; }
 });
 
+/* ===== Drawer footer pop-ups (Background / Mode / Theme) ===== */
+let footOpen = "";
+function hideFootPop() {
+    footOpen = "";
+    $("foot-pop").classList.add("hidden");
+    document.querySelectorAll(".foot-tab").forEach(b => { b.classList.remove("open"); b.setAttribute("aria-expanded", "false"); });
+}
+function showFootPop(btn) {
+    const pop = $("foot-pop"), key = btn.dataset.pop;
+    if (footOpen === key) return hideFootPop();
+    footOpen = key;
+    pop.querySelectorAll(".pop-row").forEach(r => r.classList.toggle("hidden", r.dataset.for !== key));
+    pop.classList.remove("hidden", "anim");
+    // point the triangle at the middle of the clicked button
+    const x = btn.offsetLeft + btn.offsetWidth / 2 - pop.offsetLeft;
+    pop.style.setProperty("--ax", x + "px");
+    void pop.offsetWidth; pop.classList.add("anim");
+    document.querySelectorAll(".foot-tab").forEach(b => {
+        const on = b === btn;
+        b.classList.toggle("open", on); b.setAttribute("aria-expanded", String(on));
+    });
+}
+document.querySelectorAll(".foot-tab").forEach(b => b.addEventListener("click", () => showFootPop(b)));
+document.addEventListener("pointerdown", e => { if (!e.target.closest("#foot-menu")) hideFootPop(); });
     
     // Event Bindings
     $("auth-form").addEventListener("submit", handleSubmit);
