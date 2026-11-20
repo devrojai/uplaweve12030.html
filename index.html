@@ -5461,7 +5461,7 @@ function mentionPick(u) {
 }
         if (!!binStart !== !!binEnd) return setMessage(bm, "A period needs both a beginning date and an end date.", ERR);
         if (binStart && binEnd < binStart) return setMessage(bm, "The end date can't be before the beginning date.", ERR);
-        if (binStart && binEnd === binStart && (binEndT || "23:59") < (binStartT || "00:00")) return setMessage(bm, "The end time can't be before the beginning time.", ERR);
+        if (binStart && binEnd === binStart && (binEndT || "23:59") < (binStartT || "23:59")) return setMessage(bm, "The end time can't be before the beginning time.", ERR);
         const wasEdit = !!editingId;
         let posted = false;
         setLoading(btn, true);
@@ -5475,7 +5475,7 @@ function mentionPick(u) {
             }
             const payload = { title, course, deadline: binDeadline, periodStart: binStart, periodEnd: binEnd,
                 deadlineTime: binDeadline ? (binDeadlineT || "23:59") : "",
-                periodStartTime: binStart ? (binStartT || "00:00") : "",
+                periodStartTime: binStart ? (binStartT || "23:59") : "",
                 periodEndTime: binEnd ? (binEndT || "23:59") : "",
                 message: text, mentions, everyone, courseIds, mode: binStatus };
             if (poll) payload.poll = poll;
