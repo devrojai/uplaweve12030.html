@@ -3359,6 +3359,13 @@ html[data-theme="night"] .cal-cell.today.sel { background: #2b2620; }
         <button type="button" class="btn sm" id="poll-add-opt">Add Options</button>
         <div class="group-title">Poll settings</div>
         <div class="poll-settings" id="poll-settings"></div>
+        <div id="poll-max-wrap" class="hidden">
+    <div class="stepper-row">
+        <label for="poll-max">Max options a voter can select</label>
+        <div class="stepper"><input type="number" id="poll-max" min="0" max="20" value="0" inputmode="numeric"></div>
+    </div>
+    <p class="hint">Use 0 for no limit. Needs at least 2.</p>
+</div>
         <div id="poll-limit-wrap" class="hidden">
             <div class="group-title">Closes on</div>
             <div class="field has-peek">
@@ -4730,8 +4737,7 @@ let binPoll = null; // null = no poll on this announcement
 const optNum = id => Number(String(id).replace(/\D/g, "")) || 0;
 function newPoll() {
     return { q: "", desc: "", options: [{ id: "o1", t: "" }, { id: "o2", t: "" }], maxId: 2,
-        showVoters: false, multiple: false, allowAdd: false, revote: false, shuffle: false,
-        setCorrect: false, correct: [], limit: false, closes: 0, origCloses: 0 };
+        showVoters: false, multiple: false, maxSel: 0, allowAdd: false, revote: false, shuffle: false, setCorrect: false, correct: [], limit: false, closes: 0, origCloses: 0 };
 }
 function toLocalInput(ms) {
     const d = new Date(ms);
@@ -4744,6 +4750,7 @@ function loadPollIntoForm(p) {
     c.options = p.options.map(o => ({ id: o.id, t: o.t }));
     c.maxId = Math.max(2, ...p.options.map(o => optNum(o.id)));
     ["showVoters", "multiple", "allowAdd", "revote", "shuffle"].forEach(k => { c[k] = !!p[k]; });
+    c.maxSel = p.maxSel || 0;
     c.correct = (p.correctAll || []).slice(); c.setCorrect = c.correct.length > 0;
     c.limit = p.closes > 0; c.closes = p.closes || 0; c.origCloses = c.closes;
     binPoll = c; renderPollForm();
@@ -4801,6 +4808,8 @@ function renderPollOpts() {
 function pollVis() {
     $("poll-correct-wrap").classList.toggle("hidden", !binPoll.setCorrect);
     $("poll-limit-wrap").classList.toggle("hidden", !binPoll.limit);
+    $("poll-max-wrap").classList.toggle("hidden", !binPoll.multiple);
+    $("poll-max").value = String(binPoll.maxSel || 0);
 }
 function renderPollSettings() {
     const box = $("poll-settings"); box.textContent = "";
@@ -4809,8 +4818,7 @@ function renderPollSettings() {
         cb.type = "checkbox"; cb.checked = !!binPoll[k]; cb.setAttribute("role", "switch");
         cb.addEventListener("change", () => {
             binPoll[k] = cb.checked;
-            if (k === "multiple" && !cb.checked) binPoll.correct = binPoll.correct.slice(0, 1);
-            pollVis(); renderPollCorrect(); binDirty();
+            if (k === "multiple" && !cb.checked) { binPoll.correct = binPoll.correct.slice(0, 1); binPoll.maxSel = 0; }            pollVis(); renderPollCorrect(); binDirty();
         });
         lab.append(cb, mk("span", "switch-label", label), mk("span", "switch"));
         box.appendChild(lab);
@@ -4843,14 +4851,21 @@ function readPoll() {
         if (!p.closes) return { error: "Choose when the poll closes." };
         if (p.closes <= Date.now() && p.closes !== p.origCloses) return { error: "The poll's closing time must be in the future." };
     }
+    
+    let maxSel = 0;
+    if (p.multiple) {
+        maxSel = Math.max(0, Math.min(opts.length, Math.floor(Number(p.maxSel) || 0)));
+        if (maxSel === 1) return { error: "The limit must be at least 2, or turn off Allow Multiple Answers." };
+    }
     let correct = [];
     if (p.setCorrect) {
         correct = p.correct.filter(id => opts.some(o => o.id === id));
         if (!correct.length) return { error: "Choose the correct answer, or turn off Set Correct Answer." };
+        if (maxSel && correct.length > maxSel) return { error: "There are more correct answers than the voter limit allows." };
     }
-    return { q, desc: p.desc.trim(), options: opts, showVoters: p.showVoters, multiple: p.multiple, allowAdd: p.allowAdd,
-        revote: p.revote, shuffle: p.shuffle, correct, closes: p.limit ? p.closes : 0 };
-}
+    return { q, desc: p.desc.trim(), options: opts, showVoters: p.showVoters, multiple: p.multiple, maxSel, allowAdd: p.allowAdd,
+       revote: p.revote, shuffle: p.shuffle, correct, closes: p.limit ? p.closes : 0 };}
+
 $("poll-toggle").addEventListener("click", openPoll);
 $("poll-close").addEventListener("click", closePoll);
 $("poll-done").addEventListener("click", closePoll);
@@ -4858,6 +4873,13 @@ $("poll-clear").addEventListener("click", () => { binPoll = newPoll(); renderPol
 $("poll-form").addEventListener("click", e => { if (e.target === $("poll-form")) closePoll(); });
 $("poll-add-opt").addEventListener("click", addPollOpt);
 $("poll-q").addEventListener("keydown", e => { if (e.key === "Enter") e.preventDefault(); });
+$("poll-max").addEventListener("change", () => {
+    if (!binPoll) return;
+    const n = Math.max(0, Math.min(20, parseInt($("poll-max").value, 10) || 0));
+    binPoll.maxSel = n;
+    $("poll-max").value = String(n);
+    binDirty();
+});
 $("poll-q").addEventListener("input", () => { if (binPoll) binPoll.q = $("poll-q").value; });
 $("poll-desc").addEventListener("input", () => { if (binPoll) binPoll.desc = $("poll-desc").value; });
 
@@ -4882,7 +4904,7 @@ function renderPoll(box, a) {
     wrap.appendChild(top);
     wrap.appendChild(mk("div", "poll-q", p.q));
     if (p.desc) wrap.appendChild(mk("div", "poll-desc", p.desc));
-    const info = [p.multiple ? "Select all that apply" : "Select one", p.total + (p.total === 1 ? " voter" : " voters")];    wrap.appendChild(mk("div", "poll-info", info.join(" \u00b7 ")));
+    const info = [p.multiple ? (p.maxSel ? "Select up to " + p.maxSel : "Select all that apply") : "Select one", p.total + (p.total === 1 ? " voter" : " voters")];    wrap.appendChild(mk("div", "poll-info", info.join(" \u00b7 ")));
 
     const msg = mk("div", "msg"), btn = mk("button", "btn sm", "Vote"); btn.type = "button";
     const sameAsSaved = () => draft.size === p.mine.length && p.mine.every(id => draft.has(id));
@@ -4897,8 +4919,17 @@ function renderPoll(box, a) {
         const inp = mk("input"); inp.type = p.multiple ? "checkbox" : "radio"; inp.name = "poll-" + a.id;
         inp.checked = draft.has(o.id); inp.disabled = !p.canVote;
         inp.addEventListener("change", () => {
-            if (p.multiple) { if (inp.checked) draft.add(o.id); else draft.delete(o.id); }
-            else { draft.clear(); draft.add(o.id); }
+            if (p.multiple) {
+                if (inp.checked) {
+                    if (p.maxSel && draft.size >= p.maxSel) {
+                        inp.checked = false;
+                        setMessage(msg, "You can select up to " + p.maxSel + " options.", ERR);
+                        return;
+                    }
+                    draft.add(o.id);
+                } else draft.delete(o.id);
+                setMessage(msg, "", "");
+            } else { draft.clear(); draft.add(o.id); }
             paintBtn();
         });
         const text = mk("span", "poll-text", o.t);
