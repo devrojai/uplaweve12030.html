@@ -2964,6 +2964,9 @@ html[data-theme="night"] .field.invalid #b-editor ~ label { color: #ff6b6b; }
 }
 .dp-day { font-size: var(--fs-0); }
 .dp-foot .linkish { font-size: var(--fs-0); padding: 8px 14px; }
+
+/* All calendar pop-ups use the wider size (they now include the time row) */
+.datepop { width: 340px; }
         
     </style>
     
@@ -4727,8 +4730,8 @@ function closeUser() {
         sel.value = String(y);
     }
 
-    let binDeadline = "", binStart = "", binEnd = "", editingId = "", binCourseIds = [], binStatus = "";
-    function updateBinCourseBtn() {
+let binDeadline = "", binStart = "", binEnd = "", editingId = "", binCourseIds = [], binStatus = "";
+let binDeadlineT = "", binStartT = "", binEndT = "";    function updateBinCourseBtn() {
         const b = $("b-addcourse");
         if (!b) return;
         const n = binCourseIds.length;
@@ -5057,17 +5060,27 @@ document.addEventListener("keydown", e => {
         pickers.forEach(p => p.close());
     }
 }, true);
+
+// Times are stored as 24-hour "HH:MM" text
+function normTime(v) { const m = /^(\d{1,2}):(\d{2})/.exec(String(v || "")); return m ? pad(+m[1]) + ":" + m[2] : ""; }
+function t24to12(t) { const [h, m] = String(t).split(":").map(Number); return { hr: (h % 12) || 12, mn: m, ap: h >= 12 ? "PM" : "AM" }; }
+function t12to24(hr, mn, ap) { return pad((hr % 12) + (ap === "PM" ? 12 : 0)) + ":" + pad(mn); }
+function prettyTime(t) { t = normTime(t); if (!t) return ""; const x = t24to12(t); return x.hr + ":" + pad(x.mn) + " " + x.ap; }
     
     const pickers = [];
     const CHEV = {
         l: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>',
         r: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>'
     };
-    function makePicker(key, get, set, minFn) {
+    function makePicker(key, get, set, minFn, getT, setT, defT) {
         const input = $(key), pop = $(key + "-pop"), btn = $(key + "-btn");
-        let y = 0, m = 0, ms, ys, gridBox;
-        const show = () => { input.value = get() ? prettyDate(get()) : ""; syncFields(); binDirty(); };
+        let y = 0, m = 0, ms, ys, gridBox, hs, ns, apw, ap = "PM";
+        const show = () => {
+            input.value = get() ? prettyDate(get()) + (getT() ? " \u00b7 " + prettyTime(getT()) : "") : "";
+            syncFields(); binDirty();
+        };
         const close = () => dpClose(pop);
+        const ensureTime = () => { if (!getT()) setT(defT); };
         function days() {
             gridBox.textContent = "";
             const sel = get(), min = minFn ? minFn() : "", t = todayIso();
@@ -5079,11 +5092,21 @@ document.addEventListener("keydown", e => {
                 const b = mk("button", "dp-day" + (iso === sel ? " sel" : "") + (iso === t ? " today" : ""), String(d));
                 b.type = "button";
                 if (min && iso < min) b.disabled = true;
-                else b.onclick = () => { set(iso); show(); close(); };
+                else b.onclick = () => { set(iso); ensureTime(); show(); days(); syncTime(); };
                 gridBox.appendChild(b);
             }
         }
-        function sync() { ms.value = String(m); fillYears(ys, y); days(); }
+        function syncTime() {
+            const x = t24to12(getT() || defT);
+            hs.value = String(x.hr); ns.value = String(x.mn); ap = x.ap;
+            apw.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.textContent === ap));
+        }
+        function timeChanged() {
+            if (!get()) set(todayIso());
+            setT(t12to24(Number(hs.value), Number(ns.value), ap));
+            show(); days();
+        }
+        function sync() { ms.value = String(m); fillYears(ys, y); days(); syncTime(); }
         function build() {
             pop.textContent = "";
             const prev = mk("button", "dp-nav"), next = mk("button", "dp-nav");
@@ -5099,12 +5122,30 @@ document.addEventListener("keydown", e => {
             const mid = mk("div", "dp-mid"); mid.append(ms, ys);
             const head = mk("div", "dp-head"); head.append(prev, mid, next);
             gridBox = mk("div", "dp-grid");
-            const bt = mk("button", "linkish", "Today"), bc = mk("button", "linkish", "Clear");
-            bt.type = bc.type = "button";
-            bt.onclick = () => { const t = todayIso(); if (minFn && minFn() && t < minFn()) return; set(t); show(); close(); };
-            bc.onclick = () => { set(""); show(); close(); };
-            const foot = mk("div", "dp-foot"); foot.append(bt, bc);
-            pop.append(head, gridBox, foot);
+
+            hs = mk("select", "dp-sel"); ns = mk("select", "dp-sel");
+            for (let i = 1; i <= 12; i++) { const o = mk("option", "", pad(i)); o.value = String(i); hs.appendChild(o); }
+            for (let i = 0; i < 60; i++) { const o = mk("option", "", pad(i)); o.value = String(i); ns.appendChild(o); }
+            hs.onchange = ns.onchange = timeChanged;
+            apw = mk("div", "dt-ap");
+            ["AM", "PM"].forEach(v => {
+                const b = mk("button", "dt-ap-btn", v); b.type = "button";
+                b.onclick = () => { ap = v; apw.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); timeChanged(); };
+                apw.appendChild(b);
+            });
+            const tr = mk("div", "dt-time");
+            tr.append(mk("span", "dt-label", "Time"), hs, mk("span", "dt-colon", ":"), ns, apw);
+
+            const bt = mk("button", "linkish", "Today"), bc = mk("button", "linkish", "Clear"), bd = mk("button", "linkish", "Done");
+            bt.type = bc.type = bd.type = "button";
+            bt.onclick = () => {
+                const t = todayIso(); if (minFn && minFn() && t < minFn()) return;
+                set(t); ensureTime(); show(); y = +t.slice(0, 4); m = +t.slice(5, 7) - 1; sync();
+            };
+            bc.onclick = () => { set(""); setT(""); show(); close(); };
+            bd.onclick = close;
+            const foot = mk("div", "dp-foot"); foot.append(bt, bc, bd);
+            pop.append(head, gridBox, tr, foot);
         }
         function open() {
             pickers.forEach(p => p.close());
@@ -5122,9 +5163,13 @@ document.addEventListener("keydown", e => {
         pickers.push(api);
         return api;
     }
-    const pkDeadline = makePicker("b-deadline", () => binDeadline, v => { binDeadline = v; });
-    const pkStart = makePicker("b-pstart", () => binStart, v => { binStart = v; if (v && binEnd && binEnd < v) { binEnd = ""; pkEnd.show(); } });
-    const pkEnd = makePicker("b-pend", () => binEnd, v => { binEnd = v; }, () => binStart);
+    const pkDeadline = makePicker("b-deadline", () => binDeadline, v => { binDeadline = v; }, null,
+        () => binDeadlineT, v => { binDeadlineT = v; }, "23:59");
+    const pkStart = makePicker("b-pstart", () => binStart, v => { binStart = v; if (v && binEnd && binEnd < v) { binEnd = ""; binEndT = ""; pkEnd.show(); } }, null,
+        () => binStartT, v => { binStartT = v; }, "00:00");
+    const pkEnd = makePicker("b-pend", () => binEnd, v => { binEnd = v; }, () => binStart,
+        () => binEndT, v => { binEndT = v; }, "23:59");
+    
     document.addEventListener("click", (e) => { pickers.forEach(p => { if (!p.field.contains(e.target)) p.close(); }); });
     const pkCloses = (() => {
     const input = $("poll-closes"), pop = $("poll-closes-pop"), btn = $("poll-closes-btn");
@@ -5357,7 +5402,7 @@ function mentionPick(u) {
     function resetBinForm() {
         ["b-title", "b-text"].forEach(id => { $(id).value = ""; });
         fillBinCourses("");
-        binDeadline = binStart = binEnd = ""; editingId = ""; binStatus = ""; renderBinStatus(); mentionSel = []; binFiles = []; binCourseIds = []; updateBinCourseBtn();        renderFileList("b-file-list", binFiles, (idx) => { binFiles.splice(idx, 1); resetBinFormFileRender(); });
+        binDeadline = binStart = binEnd = ""; binDeadlineT = binStartT = binEndT = ""; editingId = ""; binStatus = ""; renderBinStatus(); mentionSel = []; binFiles = []; binCourseIds = []; updateBinCourseBtn();        renderFileList("b-file-list", binFiles, (idx) => { binFiles.splice(idx, 1); resetBinFormFileRender(); });
         pkDeadline.show(); pkStart.show(); pkEnd.show();
         pickers.forEach(p => p.close());
         binPoll = null; renderPollForm();
@@ -5369,7 +5414,8 @@ function mentionPick(u) {
         resetBinForm();
         editingId = a.id;
                 $("b-title").value = a.title; $("b-text").value = a.message;
-        binDeadline = a.deadline || ""; binStart = a.periodStart || ""; binEnd = a.periodEnd || ""; binStatus = a.mode || ""; renderBinStatus();
+        binDeadline = a.deadline || ""; binStart = a.periodStart || ""; binEnd = a.periodEnd || "";
+        binDeadlineT = a.deadline ? normTime(a.deadlineTime) : ""; binStartT = a.periodStart ? normTime(a.periodStartTime) : ""; binEndT = a.periodEnd ? normTime(a.periodEndTime) : ""; binStatus = a.mode || ""; renderBinStatus();
         binFiles = (a.files || []).map(f => f.id ? { id: f.id, name: f.name, type: f.type, size: f.size } : { name: f.name, type: f.type, size: f.size, data: f.data });
         renderFileList("b-file-list", binFiles, (idx) => { binFiles.splice(idx, 1); resetBinFormFileRender(); binDirty(); });
         pkDeadline.show(); pkStart.show(); pkEnd.show();
@@ -5415,6 +5461,7 @@ function mentionPick(u) {
 }
         if (!!binStart !== !!binEnd) return setMessage(bm, "A period needs both a beginning date and an end date.", ERR);
         if (binStart && binEnd < binStart) return setMessage(bm, "The end date can't be before the beginning date.", ERR);
+        if (binStart && binEnd === binStart && (binEndT || "23:59") < (binStartT || "00:00")) return setMessage(bm, "The end time can't be before the beginning time.", ERR);
         const wasEdit = !!editingId;
         let posted = false;
         setLoading(btn, true);
@@ -5426,7 +5473,11 @@ function mentionPick(u) {
                 await loadMentionUsers();
                 mentions = Array.from(new Set(mentions.concat(mentionUsers.map(u => u.email))));
             }
-            const payload = { title, course, deadline: binDeadline, periodStart: binStart, periodEnd: binEnd, message: text, mentions, everyone, courseIds, mode: binStatus };            
+            const payload = { title, course, deadline: binDeadline, periodStart: binStart, periodEnd: binEnd,
+                deadlineTime: binDeadline ? (binDeadlineT || "23:59") : "",
+                periodStartTime: binStart ? (binStartT || "00:00") : "",
+                periodEndTime: binEnd ? (binEndT || "23:59") : "",
+                message: text, mentions, everyone, courseIds, mode: binStatus };
             if (poll) payload.poll = poll;
             if (binFiles.length) payload.files = binFiles;
             if (wasEdit) payload.id = editingId;
@@ -5631,9 +5682,9 @@ pre.className = "file-text";
             d.appendChild(document.createTextNode(" " + text));
             el.appendChild(d);
         };
-        if (a.deadline) line("deadline", "Deadline:", prettyDate(a.deadline));
-        if (a.periodStart && a.periodEnd) line("period", "Period:", prettyDate(a.periodStart) + " – " + prettyDate(a.periodEnd));
-        let posted = "Posted by " + a.author + " on " + longDate(a.created);
+        const tm = v => { const t = prettyTime(v); return t ? " \u00b7 " + t : ""; };
+        if (a.deadline) line("deadline", "Deadline:", prettyDate(a.deadline) + tm(a.deadlineTime));
+        if (a.periodStart && a.periodEnd) line("period", "Period:", prettyDate(a.periodStart) + tm(a.periodStartTime) + " – " + prettyDate(a.periodEnd) + tm(a.periodEndTime));        let posted = "Posted by " + a.author + " on " + longDate(a.created);
         if (withFiles && a.files && a.files.length) posted += " · 📎 " + a.files.length + " file" + (a.files.length > 1 ? "s" : "");
                 const pd = mk("div", "ann-posted");
         pd.insertAdjacentHTML("afterbegin", PENCIL_SVG);
