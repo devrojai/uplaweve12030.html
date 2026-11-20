@@ -2900,6 +2900,19 @@ html[data-theme="night"] .cal-cell.today.sel { background: #2b2620; }
     border-color: var(--accent-hover);
     color: var(--on-accent);
 }
+
+/* ===== Spacing after removing hints ===== */
+
+/* Add Course: keep sections apart */
+#sec-addcourse .group-title { margin-top: 26px; }
+#sec-addcourse .file-upload-area { margin: 12px 0 8px; }
+#sec-addcourse #course-form .field + .group-title { margin-top: 26px; }
+
+/* Add Officers: Records list no longer starts with a hint, so give it room */
+#of-records .coll-body { margin-top: 14px; }
+#of-records .coll-body > .empty,
+#of-records .coll-body > .org-recs { margin-top: 0; }
+#of-records { margin-top: 12px; }
         
     </style>
     
@@ -3429,7 +3442,6 @@ html[data-theme="night"] .cal-cell.today.sel { background: #2b2620; }
         <div class="group-title">Links</div>
         <div class="field"><input type="url" id="c-cases" placeholder=" " maxlength="500"><label for="c-cases">Cases link</label></div>
         <div class="field"><input type="url" id="c-digests" placeholder=" " maxlength="500"><label for="c-digests">Digests link</label></div>
-        <p class="hint">Optional. Example: https://drive.google.com/...</p>
         
         <div class="group-title">Syllabus</div>
         <div class="file-upload-area">
@@ -3441,7 +3453,6 @@ html[data-theme="night"] .cal-cell.today.sel { background: #2b2620; }
         <div class="file-upload-area">
             <div class="file-row">
                 <button type="button" class="btn sm" id="c-doc-btn">Upload Other Documents</button>
-                <span class="hint">Optional. Up to 5 files per upload (max 10 MB across both uploads).</span>
             </div>
             <input type="file" id="c-doc" class="hidden" multiple>
             <div class="file-list" id="c-doc-list"></div>
@@ -7874,7 +7885,7 @@ async function toggleRecordHidden(r) {
 function renderOfRecords() {
     const box = $("of-records"); box.textContent = "";
     const list = (officerData && officerData.records) || [];
-    const nodes = [mk("p", "hint off-hint", "Latest semester first. Hide a record with the eye icon and non-admin users can no longer see it. Records can be hidden but never deleted.")];
+    const nodes = [];
     if (!list.length) {
         const e = mk("div", "empty");
         e.appendChild(mk("b", "", "No Records Yet"));
