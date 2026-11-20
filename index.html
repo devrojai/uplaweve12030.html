@@ -389,7 +389,7 @@ html[data-theme="night"] { --sb-track: #0b0b0c; --sb-thumb: #5a2226; --sb-thumb-
 
         /* Date Picker Component */
         .field input[readonly] { cursor: pointer; }
-        .datepop { position: absolute; left: 0; top: calc(100% + 6px); z-index: 25; width: 300px; max-width: 92vw; padding: 12px; background: var(--white); border-radius: 14px; border-top: 5px solid var(--maroon); box-shadow: 0 18px 40px rgba(0,0,0,.3); animation: swap .25s var(--ease); }
+        .datepop { position: absolute; left: 0; top: auto; bottom: calc(100% + 6px); z-index: 25; width: 300px; max-width: 92vw; padding: 12px; background: var(--white); border-radius: 14px; border-top: 5px solid var(--maroon); box-shadow: 0 18px 40px rgba(0,0,0,.3); animation: swap .25s var(--ease); }
         .dp-head { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
         .dp-mid { flex: 1; display: flex; gap: 6px; justify-content: center; min-width: 0; }
         .dp-sel { min-width: 0; padding: 5px 4px; color: var(--maroon); font-weight: 700; background: var(--white); border: 2px solid rgba(118,9,12,.35); border-radius: var(--r-lg); outline: none; cursor: pointer; font-size: var(--fs-n1); }
@@ -901,7 +901,10 @@ html[data-theme="night"] .drawer-foot .btn-danger:hover {
 @keyframes shimmer { to { background-position: -200% 0; } }
 
 /* ================= NEW: inline field errors ================= */
-.field.invalid input, .field.invalid textarea { border-color: var(--err); box-shadow: 0 0 0 3px var(--accent-soft); }
+.field.invalid input, .field.invalid textarea { border-color: #c62828; box-shadow: 0 0 0 3px rgba(198,40,40,.18); }
+.field.invalid input ~ label, .field.invalid textarea ~ label { color: #c62828; }
+html[data-theme="night"] .field.invalid input { border-color: #ff6b6b; box-shadow: 0 0 0 3px rgba(255,107,107,.2); }
+html[data-theme="night"] .field.invalid input ~ label { color: #ff6b6b; }
 .field-err { margin: 4px 2px 0; font-size: var(--fs-n1); font-weight: 600; color: var(--err); }
 
 /* ================= NEW: modal helper classes ================= */
@@ -1707,7 +1710,17 @@ html[data-theme="night"] .drawer-foot .btn-danger:hover { background: var(--acce
 
 /* ===== Polls ===== */
 .poll-box { margin: 6px 0 24px; }
-#poll-form { margin-top: 14px; padding: 4px 16px 16px; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: var(--r-lg); }
+/* ===== Poll pop-up ===== */
+#poll-form.modal { z-index: 80; }
+.poll-card { width: 520px; max-width: 100%; max-height: 90vh; padding: 0; display: flex; flex-direction: column; overflow: hidden; background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--accent); border-radius: var(--r-lg); box-shadow: 0 24px 60px rgba(0,0,0,.35); }
+.poll-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px 12px; border-bottom: 1px solid var(--line); }
+#poll-form .poll-head h3 { margin: 0; font-size: 1.05rem; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--accent-text); }
+.poll-x { width: 34px; height: 34px; padding: 0; display: grid; place-items: center; color: var(--muted); background: transparent; border: 0; border-radius: var(--r-md); cursor: pointer; transition: background .2s, color .2s; }
+.poll-x:hover { color: var(--accent-text); background: var(--accent-soft); }
+.poll-x svg { width: 18px; height: 18px; }
+.poll-body { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 20px 18px; }
+.poll-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 20px; border-top: 1px solid var(--line); background: var(--surface2); }
+.poll-foot .btn { margin: 0; }
 .poll-settings { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; }
 .poll-settings .link-row { margin: 0; }
 #poll-opts .peek:disabled { opacity: .35; cursor: not-allowed; }
@@ -2632,8 +2645,6 @@ html[data-theme="night"] .ann-card.past:hover { border-left-color: #ffffff; }
 .cmt-ico svg { width: 20px; height: 20px; pointer-events: none; }
 .cmt-ico:hover { background: var(--accent-soft); }
 .cmt-ico:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 1px; }
-.cmt-ico.cmt-x { color: var(--muted); }
-.cmt-ico.cmt-x:hover { color: var(--err); background: var(--accent-soft); }
 .cmt-compose.sending .cmt-bar { opacity: .6; }
 .cmt-compose .msg { margin: 6px 0 0; min-height: 0; text-align: left; }
 .cmt-compose .file-list { margin-top: 8px; }
@@ -2661,6 +2672,26 @@ html[data-theme="night"] .field.invalid textarea ~ label { color: #ff6b6b; }
 .switch-row input:checked ~ .switch::after { transform: translateX(20px); }
 .switch-row input:focus-visible ~ .switch { outline: 2px solid var(--accent-text); outline-offset: 2px; }
 
+/* ===== Quieter comments ===== */
+#ann-modal-comments { font-size: .8rem; }
+#ann-modal-comments .cm-sec-title { font-size: .65rem; margin-bottom: 4px; }
+#ann-modal-comments .cm-count { min-width: 18px; height: 18px; font-size: .6rem; }
+#ann-modal-comments .cmt { gap: 8px; margin-top: 10px; }
+#ann-modal-comments .cmt-ava { width: 24px; height: 24px; font-size: .58rem; }
+#ann-modal-comments .cmt.reply .cmt-ava { width: 20px; height: 20px; font-size: .5rem; }
+#ann-modal-comments .cmt-meta b { font-size: .75rem; }
+#ann-modal-comments .cmt-time { font-size: .65rem; }
+#ann-modal-comments .cmt-text { font-size: .78rem; line-height: 1.4; }
+#ann-modal-comments .cmt-acts { margin-top: 2px; gap: 12px; }
+#ann-modal-comments .cmt-acts .linkish { font-size: .7rem; }
+#ann-modal-comments .cmt-empty { font-size: .72rem; }
+#ann-modal-comments .attach-btn { font-size: .7rem; }
+#ann-modal-comments .cmt-bar textarea,
+#ann-modal-comments .cmt-bar textarea:focus { font-size: .78rem; padding: 6px 8px; scrollbar-width: none; }
+#ann-modal-comments .cmt-bar textarea::-webkit-scrollbar { display: none; }
+#ann-modal-comments .cmt-ico { width: 30px; height: 30px; }
+#ann-modal-comments .cmt-ico svg { width: 17px; height: 17px; }
+        
 /* Date + time picker (Limit Duration) */
 .dtpop { width: 330px; }
 .dt-time { display: flex; align-items: center; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
@@ -2670,6 +2701,7 @@ html[data-theme="night"] .field.invalid textarea ~ label { color: #ff6b6b; }
 .dt-ap { display: flex; padding: 2px; border: 1px solid var(--line-strong); border-radius: var(--r-md); }
 .dt-ap-btn { padding: 5px 10px; font-size: var(--fs-n1); font-weight: 700; color: var(--muted); background: transparent; border: 0; border-radius: var(--r-sm); cursor: pointer; }
 .dt-ap-btn.on { color: var(--on-accent); background: var(--accent); }
+select.invalid { border-color: #c62828 !important; box-shadow: 0 0 0 3px rgba(198,40,40,.18); }
         
     </style>
     
@@ -3100,8 +3132,16 @@ html[data-theme="night"] .field.invalid textarea ~ label { color: #ff6b6b; }
     <input type="file" id="b-file" class="hidden" multiple>
     <div class="file-list" id="b-file-list"></div>
 
-    <div id="poll-form" class="hidden">
-        <div class="field"><input type="text" id="poll-q" placeholder=" " maxlength="200"><label for="poll-q">Ask a Question</label></div>
+    <div class="modal hidden" id="poll-form" role="dialog" aria-modal="true" aria-label="Poll">
+  <div class="modal-card poll-card">
+    <div class="poll-head">
+        <h3>Poll</h3>
+        <button type="button" class="poll-x" id="poll-close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+
+      
+    <div class="poll-body">
+      <div class="field"><input type="text" id="poll-q" placeholder=" " maxlength="200"><label for="poll-q">Ask a Question</label></div>
         <div class="field"><textarea id="poll-desc" placeholder=" " maxlength="500" style="min-height:80px"></textarea><label for="poll-desc">Add a Description (optional)</label></div>
         <div class="group-title">Options</div>
         <div id="poll-opts"></div>
@@ -3121,12 +3161,19 @@ html[data-theme="night"] .field.invalid textarea ~ label { color: #ff6b6b; }
             <div class="poll-settings" id="poll-correct"></div>
         </div>
     </div>
+      
+    <div class="poll-foot">
+        <button type="button" class="btn ghost sm" id="poll-clear">Clear all fields</button>
+        <button type="button" class="btn sm" id="poll-done">Done</button>
+    </div>
+      </div>
+    </div>
 </div>
-                <button type="submit" class="btn" id="b-send">Post announcement</button>
-                <button type="button" class="btn ghost hidden" id="b-cancel">Cancel editing</button>
-                <div class="msg" id="b-message"></div>
-            </form>
-        </section>
+        <button type="submit" class="btn" id="b-send">Post announcement</button>
+        <button type="button" class="btn ghost hidden" id="b-cancel">Cancel editing</button>
+        <div class="msg" id="b-message"></div>
+    </form>
+</section>
 
 <!-- Directory Section -->
 <section class="section hidden" id="sec-directory">
@@ -3577,8 +3624,7 @@ html[data-theme="night"] .field.invalid textarea ~ label { color: #ff6b6b; }
         const btn = $("submit-btn");
         const m = $("message");
 
-        if (!email || !raw) { setMessage(m, "Please fill in all fields.", ERR); return shakeCard(); }
-        if (!EMAIL_RE.test(email)) { setMessage(m, "Please enter a valid email address.", ERR); return shakeCard(); }
+        if (!email || !raw) { $("email").closest(".field").classList.toggle("invalid", !email); $("password").closest(".field").classList.toggle("invalid", !raw); return shakeCard(); }        if (!EMAIL_RE.test(email)) { setMessage(m, "Please enter a valid email address.", ERR); return shakeCard(); }
         if (isSignup && raw.length < 10) { setMessage(m, "Password must be at least 8 characters.", ERR); return shakeCard(); }
 
         setLoading(btn, true);
@@ -3757,15 +3803,18 @@ function showSection(name, fromPop) {
     }
     document.addEventListener("input", syncFields);
     document.addEventListener("change", syncFields);
-    function fieldError(id, text) {
+    
+function fieldError(id, text) {
     const f = $(id).closest(".field");
     let e = f.nextElementSibling;
     const has = e && e.classList.contains("field-err");
     if (!text) { f.classList.remove("invalid"); if (has) e.remove(); return; }
     f.classList.add("invalid");
+    if (text === "Required") { if (has) e.remove(); return; }   // red only, no text
     if (!has) { e = mk("div", "field-err"); f.after(e); }
     e.textContent = text;
 }
+    
 function clearFieldErrors(root) {
     root.querySelectorAll(".field.invalid").forEach(f => f.classList.remove("invalid"));
     root.querySelectorAll(".field-err").forEach(e => e.remove());
@@ -3778,7 +3827,8 @@ document.addEventListener("input", (e) => {
     if (n && n.classList.contains("field-err")) n.remove();
 });
     window.addEventListener("load", () => [50, 300, 800, 1500].forEach(ms => setTimeout(syncFields, ms)));
-
+    document.addEventListener("change", e => { if (e.target.matches && e.target.matches("select.invalid")) e.target.classList.remove("invalid"); });
+    
     async function authCall(action, extra) {
         const r = await callScript(Object.assign({ action, email: currentEmail, token }, extra || {}));
         if (r.status === "auth") {
@@ -4488,14 +4538,28 @@ function loadPollIntoForm(p) {
     c.limit = p.closes > 0; c.closes = p.closes || 0; c.origCloses = c.closes;
     binPoll = c; renderPollForm();
 }
+function pollHasInput(p) {
+    return !!p && !!(p.q.trim() || p.desc.trim() || p.options.some(o => o.t.trim()));
+}
+function updatePollBtn() { $("poll-toggle").textContent = pollHasInput(binPoll) ? "Edit Poll" : "Add a Poll"; }
 function renderPollForm() {
-    const on = !!binPoll;
-    $("poll-form").classList.toggle("hidden", !on);
-    $("poll-toggle").textContent = on ? "Remove Poll" : "Add a Poll";
-    if (!on) return;
+    updatePollBtn();
+    if (!binPoll) { $("poll-form").classList.add("hidden"); return; }
     $("poll-q").value = binPoll.q; $("poll-desc").value = binPoll.desc;
     pkCloses.show();
     renderPollOpts(); renderPollSettings(); renderPollCorrect(); syncFields();
+}
+function openPoll() {
+    if (!binPoll) binPoll = newPoll();
+    renderPollForm();
+    $("poll-form").classList.remove("hidden");
+    $("poll-q").focus();
+}
+function closePoll() {
+    $("poll-form").classList.add("hidden");
+    if (!pollHasInput(binPoll)) binPoll = null;   // empty poll = no poll
+    updatePollBtn();
+    binDirty();
 }
 function addPollOpt() {
     if (!binPoll || binPoll.options.length >= 20) return;
@@ -4577,11 +4641,17 @@ function readPoll() {
     return { q, desc: p.desc.trim(), options: opts, showVoters: p.showVoters, multiple: p.multiple, allowAdd: p.allowAdd,
         revote: p.revote, shuffle: p.shuffle, correct, closes: p.limit ? p.closes : 0 };
 }
-$("poll-toggle").addEventListener("click", () => { binPoll = binPoll ? null : newPoll(); renderPollForm(); binDirty(); });
+$("poll-toggle").addEventListener("click", openPoll);
+$("poll-close").addEventListener("click", closePoll);
+$("poll-done").addEventListener("click", closePoll);
+$("poll-clear").addEventListener("click", () => { binPoll = newPoll(); renderPollForm(); binDirty(); $("poll-q").focus(); });
+$("poll-form").addEventListener("click", e => { if (e.target === $("poll-form")) closePoll(); });
 $("poll-add-opt").addEventListener("click", addPollOpt);
 $("poll-q").addEventListener("keydown", e => { if (e.key === "Enter") e.preventDefault(); });
 $("poll-q").addEventListener("input", () => { if (binPoll) binPoll.q = $("poll-q").value; });
 $("poll-desc").addEventListener("input", () => { if (binPoll) binPoll.desc = $("poll-desc").value; });
+
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("poll-form").classList.contains("hidden")) closePoll(); });
 
 /* ---- Showing the poll to users ---- */
 function seededOrder(list, seed) {
@@ -4826,6 +4896,7 @@ function renderPoll(box, a) {
         vy = base[0]; vm = base[1] - 1;
         build(); sync();
         pop.classList.remove("hidden");
+        pop.scrollIntoView({ block: "nearest" });
     }
     const toggle = () => pop.classList.contains("hidden") ? open() : close();
     input.addEventListener("click", toggle);
@@ -4989,13 +5060,21 @@ function mentionHandleFor(u, q) {
   let bad = false;
   if (!title) { fieldError("b-title", "Required"); bad = true; }
   if (!text) { $("b-text").closest(".field").classList.add("invalid"); bad = true; }
-    if (!course) { setMessage(bm, "Choose a course.", ERR); bad = true; }
+    if (!course) { $("b-course").classList.add("invalid"); bad = true; }
   else if (binStatus && !selCourseId) { setMessage(bm, "Pick a course from the list so only its students can see this class status.", ERR); bad = true; }
   if (bad) return;
   const courseIds = binCourseIds.slice();
   if (binStatus && selCourseId && !courseIds.includes(selCourseId)) courseIds.push(selCourseId);        
         const poll = readPoll();
-        if (poll && poll.error) return setMessage(bm, poll.error, ERR);
+        if (poll && poll.error) {
+    openPoll();
+    const e = poll.error;
+    if (/question/i.test(e)) $("poll-q").closest(".field").classList.add("invalid");
+    else if (/two options/i.test(e)) $("poll-opts").querySelectorAll(".field").forEach(f => { if (!f.querySelector("input").value.trim()) f.classList.add("invalid"); });
+    else if (/clos/i.test(e)) $("poll-closes").closest(".field").classList.add("invalid");
+    else setMessage(bm, e, ERR);
+    return;
+}
         if (!!binStart !== !!binEnd) return setMessage(bm, "A period needs both a beginning date and an end date.", ERR);
         if (binStart && binEnd < binStart) return setMessage(bm, "The end date can't be before the beginning date.", ERR);
         const wasEdit = !!editingId;
@@ -5459,12 +5538,6 @@ function cmtComposer(annId, parentId, placeholder, onSent, onCancel) {
     };
     const attach = iconBtn("cmt-clip", "Attach files", '<path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>');
     bar.append(ta, attach);
-    if (onCancel) {
-        const cx = iconBtn("cmt-x", "Cancel", '<path d="M18 6L6 18M6 6l12 12"/>');
-        cx.addEventListener("click", onCancel);
-        bar.appendChild(cx);
-    }
-
     const list = mk("div", "file-list");
     const fi = mk("input"); fi.type = "file"; fi.multiple = true; fi.className = "hidden";
     fi.accept = "image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv";
@@ -6424,8 +6497,8 @@ async function postCourse(e) {
   clearFieldErrors($("course-form")); setMessage(cm, "", "");
   let bad = false;
   [["c-title", title], ["c-code", code], ["c-prof", prof]].forEach(([id, v]) => { if (!v) { fieldError(id, "Required"); bad = true; } });
-  if (!sem || !ay) { setMessage(cm, "Choose a semester and academic year.", ERR); bad = true; }
-  if (bad) return;        const rawCases = $("c-cases").value.trim(), rawDigests = $("c-digests").value.trim();
+  if (!sem) { $("c-sem").classList.add("invalid"); bad = true; }
+  if (!ay) { $("c-ay").classList.add("invalid"); bad = true; }  if (bad) return;        const rawCases = $("c-cases").value.trim(), rawDigests = $("c-digests").value.trim();
     const casesLink = safeUrl(rawCases), digestsLink = safeUrl(rawDigests);
     if ((rawCases && !casesLink) || (rawDigests && !digestsLink)) return setMessage(cm, "Enter valid links (e.g. https://...).", ERR);
     const total = cSyl.concat(cDocs).reduce((s, f) => s + f.size, 0);
@@ -6894,7 +6967,7 @@ $("d-form").addEventListener("submit", async e => {
     let bad = false;
     if (!topic) { fieldError("d-topic", "Required"); bad = true; }
     if (!text.trim()) { fieldError("d-text", "Required"); bad = true; }
-    if (!courseId) { setMessage(m, "Choose a course.", ERR); bad = true; }
+    if (!courseId) { $("d-course").classList.add("invalid"); bad = true; }
     const maxPer = $("d-max").value.trim();
     if (maxPer !== "" && (!/^\d+$/.test(maxPer) || Number(maxPer) > 50)) { setMessage(m, "Max cases per student must be a whole number from 0 to 50.", ERR); bad = true; }
     if (bad) return;
