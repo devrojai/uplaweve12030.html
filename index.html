@@ -4877,7 +4877,7 @@ function renderPoll(box, a) {
     const wrap = mk("section", "poll");
     const top = mk("div", "poll-top");
     top.appendChild(mk("div", "poll-label", "Poll"));
-    if (p.closes) top.appendChild(mk("div", "poll-deadline", (p.closed ? "Closed " : "Closes ") +
+    if (p.closes) top.appendChild(mk("div", "poll-deadline", (p.closed ? "Closed " : "Closes on ") +
         new Date(p.closes).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })));
     wrap.appendChild(top);
     wrap.appendChild(mk("div", "poll-q", p.q));
