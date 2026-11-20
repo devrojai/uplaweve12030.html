@@ -3362,9 +3362,8 @@ html[data-theme="night"] .cal-cell.today.sel { background: #2b2620; }
         <div id="poll-max-wrap" class="hidden">
     <div class="stepper-row">
         <label for="poll-max">Max options a voter can select</label>
-        <div class="stepper"><input type="number" id="poll-max" min="0" max="20" value="0" inputmode="numeric"></div>
+        <div class="stepper"><input type="text" id="poll-max" min="0" max="20" value="0" inputmode="numeric"></div>
     </div>
-    <p class="hint">Use 0 for no limit. Needs at least 2.</p>
 </div>
         <div id="poll-limit-wrap" class="hidden">
             <div class="group-title">Closes on</div>
@@ -3490,8 +3489,7 @@ html[data-theme="night"] .cal-cell.today.sel { background: #2b2620; }
     <label for="d-max">Max cases per student</label>
     <div class="stepper"><input type="number" id="d-max" min="0" max="50" value="1" inputmode="numeric"></div>
 </div>
-<p class="hint">How many cases one student may dibs in this table. Use 0 for no limit.</p>   
-        <div class="field"><textarea id="d-text" placeholder=" " maxlength="30000"></textarea><label for="d-text">Paste the list of cases here</label></div>
+<p class="hint">How many cases one student may dibs in this table. ∞ means no limit.</p>        <div class="field"><textarea id="d-text" placeholder=" " maxlength="30000"></textarea><label for="d-text">Paste the list of cases here</label></div>
         <p class="hint" id="d-count">One case per line. Numbering such as "1." is removed automatically.</p>
         <button type="submit" class="btn" id="d-send">Create table</button>
         <div class="msg" id="d-message"></div>
@@ -3657,8 +3655,7 @@ html[data-theme="night"] .cal-cell.today.sel { background: #2b2620; }
     <label for="dibs-e-max">Max cases per student</label>
     <div class="stepper"><input type="number" id="dibs-e-max" min="0" max="50" inputmode="numeric"></div>
 </div>
-<p class="hint">Use 0 for no limit.</p>
-            
+<p class="hint">∞ means no limit.</p>            
             <div id="dibs-e-assign">
                 <div class="group-title">Taken by</div>
                 <select id="dibs-e-by" class="dibs-select" aria-label="Taken by" data-avatar="1"></select>
@@ -4809,8 +4806,7 @@ function pollVis() {
     $("poll-correct-wrap").classList.toggle("hidden", !binPoll.setCorrect);
     $("poll-limit-wrap").classList.toggle("hidden", !binPoll.limit);
     $("poll-max-wrap").classList.toggle("hidden", !binPoll.multiple);
-    $("poll-max").value = String(binPoll.maxSel || 0);
-}
+    $("poll-max").value = stepShow(binPoll.maxSel || 0);}
 function renderPollSettings() {
     const box = $("poll-settings"); box.textContent = "";
     POLL_SETTINGS.forEach(([k, label]) => {
@@ -4875,9 +4871,9 @@ $("poll-add-opt").addEventListener("click", addPollOpt);
 $("poll-q").addEventListener("keydown", e => { if (e.key === "Enter") e.preventDefault(); });
 $("poll-max").addEventListener("change", () => {
     if (!binPoll) return;
-    const n = Math.max(0, Math.min(20, parseInt($("poll-max").value, 10) || 0));
+    const n = Math.min(20, stepNum($("poll-max").value));
     binPoll.maxSel = n;
-    $("poll-max").value = String(n);
+    $("poll-max").value = stepShow(n);
     binDirty();
 });
 $("poll-q").addEventListener("input", () => { if (binPoll) binPoll.q = $("poll-q").value; });
@@ -7160,13 +7156,29 @@ function renderDibsPage() {
     if (window.scrollY !== y) window.scrollTo(0, y);
 }
 
+// 0 means "no limit" and is shown as an infinity sign
+const INF = "\u221e";
+function stepNum(v) { const n = parseInt(String(v == null ? "" : v).trim(), 10); return Number.isFinite(n) && n > 0 ? n : 0; }
+function stepShow(n) { return n > 0 ? String(n) : INF; }
+
 function initStepper(wrap) {
     const input = wrap.querySelector("input");
+    input.type = "text"; input.inputMode = "numeric"; input.autocomplete = "off";
+    const max = Number(input.getAttribute("max")) || 50;
+    const fix = () => { input.value = stepShow(Math.min(max, stepNum(input.value))); };
+    fix();
+    input.addEventListener("focus", () => input.select());
+    input.addEventListener("input", () => {
+        const v = input.value, d = v.replace(/\D/g, "");
+        input.value = d || (v.indexOf(INF) !== -1 ? INF : "");
+    });
+    input.addEventListener("change", fix);
+    input.addEventListener("blur", fix);
     const btn = (txt, d, label) => {
         const b = mk("button", "", txt); b.type = "button"; b.setAttribute("aria-label", label);
         b.addEventListener("click", () => {
-            const v = Math.max(0, Math.min(50, (parseInt(input.value, 10) || 0) + d));
-            input.value = String(v);
+            const v = Math.max(0, Math.min(max, stepNum(input.value) + d));
+            input.value = stepShow(v);
             input.dispatchEvent(new Event("change", { bubbles: true }));
         });
         return b;
@@ -7199,7 +7211,7 @@ function renderDibsSystem() {
         main.appendChild(mk("div", "dibs-officers", t.cases.length + " cases \u00b7 " + taken + " taken \u00b7 " + appr + " approved"));
 
         const limRow = mk("div", "dibs-limit-row");
-        limRow.appendChild(mk("span", "", "Max cases per student (0 = no limit)"));
+        limRow.appendChild(mk("span", "", "Max cases per student (\u221e = no limit)"));
         const lim = mk("input"); lim.type = "number"; lim.min = "0"; lim.max = "50"; lim.value = String(t.maxPer);
         lim.setAttribute("aria-label", "Max cases per student");
         const stp = mk("div", "stepper"); stp.appendChild(lim); initStepper(stp);
@@ -7207,9 +7219,7 @@ function renderDibsSystem() {
         lim.addEventListener("change", () => {
             clearTimeout(limTimer);
             limTimer = setTimeout(() => {
-                const n = lim.value.trim();
-                if (!/^\d+$/.test(n) || Number(n) > 50) { lim.value = String(t.maxPer); return; }
-                t.maxPer = Number(n);
+                const n = String(Math.min(50, stepNum(lim.value)));                t.maxPer = Number(n);
                 dibsAct("dibs_limit", { id: t.id, maxPer: Number(n) }, null);
             }, 500);
         });
@@ -7295,7 +7305,7 @@ $("d-form").addEventListener("submit", async e => {
     if (!topic) { fieldError("d-topic", "Required"); bad = true; }
     if (!text.trim()) { fieldError("d-text", "Required"); bad = true; }
     if (!courseId) { dropError("d-course", true); bad = true; }
-    const maxPer = $("d-max").value.trim();
+    const maxPer = String(Math.min(50, stepNum($("d-max").value)));
     if (maxPer !== "" && (!/^\d+$/.test(maxPer) || Number(maxPer) > 50)) { setMessage(m, "Max cases per student must be a whole number from 0 to 50.", ERR); bad = true; }
     if (bad) return;
     setLoading(btn, true);
@@ -7314,7 +7324,7 @@ function openDibsEdit(t, k) {
     dibsEditing = { t, k };
     $("dibs-e-heading").textContent = k ? "Edit case" : "Add case";
     $("dibs-e-title").value = k ? k.t : "";
-    $("dibs-e-max").value = String(t.maxPer);
+    $("dibs-e-max").value = stepShow(t.maxPer);
     $("dibs-e-assign").classList.toggle("hidden", !k);
     $("dibs-e-remove").classList.toggle("hidden", !k);
     if (k) {
@@ -7343,7 +7353,7 @@ $("dibs-edit-form").addEventListener("submit", async e => {
     const { t, k } = dibsEditing, btn = $("dibs-e-save"), m = $("dibs-e-msg");
     const title = $("dibs-e-title").value.replace(/\s+/g, " ").trim();
     if (!title) return setMessage(m, "Enter the case title.", ERR);
-    const mx = $("dibs-e-max").value.trim();
+    const mx = String(Math.min(50, stepNum($("dibs-e-max").value)));
     if (mx !== "" && (!/^\d+$/.test(mx) || Number(mx) > 50)) return setMessage(m, "Max cases per student must be a whole number from 0 to 50.", ERR);
     const payload = k ? { id: t.id, caseId: k.i, title, by: $("dibs-e-by").value } : { id: t.id, op: "add", title };
     if (mx !== "") payload.maxPer = Number(mx);
