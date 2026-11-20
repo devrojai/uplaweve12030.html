@@ -2701,8 +2701,10 @@ html[data-theme="night"] .field.invalid textarea ~ label { color: #ff6b6b; }
 .dt-ap { display: flex; padding: 2px; border: 1px solid var(--line-strong); border-radius: var(--r-md); }
 .dt-ap-btn { padding: 5px 10px; font-size: var(--fs-n1); font-weight: 700; color: var(--muted); background: transparent; border: 0; border-radius: var(--r-sm); cursor: pointer; }
 .dt-ap-btn.on { color: var(--on-accent); background: var(--accent); }
-select.invalid { border-color: #c62828 !important; box-shadow: 0 0 0 3px rgba(198,40,40,.18); }
-        
+.sdrop.invalid .sdrop-btn, .sdrop.invalid .sdrop-btn:hover { border-color: #c62828; box-shadow: 0 0 0 3px rgba(198,40,40,.18); }
+.sdrop.invalid .sdrop-label, .sdrop.invalid .sdrop-chev { color: #c62828; }
+html[data-theme="night"] .sdrop.invalid .sdrop-btn { border-color: #ff6b6b; box-shadow: 0 0 0 3px rgba(255,107,107,.2); }
+html[data-theme="night"] .sdrop.invalid .sdrop-label, html[data-theme="night"] .sdrop.invalid .sdrop-chev { color: #ff6b6b; }        
     </style>
     
 </head>
@@ -3814,8 +3816,9 @@ function fieldError(id, text) {
     if (!has) { e = mk("div", "field-err"); f.after(e); }
     e.textContent = text;
 }
-    
+function dropError(id, on) { const w = $(id).closest(".sdrop"); if (w) w.classList.toggle("invalid", !!on); }    
 function clearFieldErrors(root) {
+    root.querySelectorAll(".sdrop.invalid").forEach(d => d.classList.remove("invalid"));
     root.querySelectorAll(".field.invalid").forEach(f => f.classList.remove("invalid"));
     root.querySelectorAll(".field-err").forEach(e => e.remove());
 }
@@ -3827,8 +3830,8 @@ document.addEventListener("input", (e) => {
     if (n && n.classList.contains("field-err")) n.remove();
 });
     window.addEventListener("load", () => [50, 300, 800, 1500].forEach(ms => setTimeout(syncFields, ms)));
-    document.addEventListener("change", e => { if (e.target.matches && e.target.matches("select.invalid")) e.target.classList.remove("invalid"); });
-    
+    document.addEventListener("change", e => { const w = e.target.closest && e.target.closest(".sdrop.invalid"); if (w) w.classList.remove("invalid"); });    
+   
     async function authCall(action, extra) {
         const r = await callScript(Object.assign({ action, email: currentEmail, token }, extra || {}));
         if (r.status === "auth") {
@@ -5060,8 +5063,8 @@ function mentionHandleFor(u, q) {
   let bad = false;
   if (!title) { fieldError("b-title", "Required"); bad = true; }
   if (!text) { $("b-text").closest(".field").classList.add("invalid"); bad = true; }
-    if (!course) { $("b-course").classList.add("invalid"); bad = true; }
-  else if (binStatus && !selCourseId) { setMessage(bm, "Pick a course from the list so only its students can see this class status.", ERR); bad = true; }
+    if (!course) { dropError("b-course", true); bad = true; }
+  else if (binStatus && !selCourseId) { dropError("b-course", true); setMessage(bm, "Pick a course from the list so only its students can see this class status.", ERR); bad = true; }
   if (bad) return;
   const courseIds = binCourseIds.slice();
   if (binStatus && selCourseId && !courseIds.includes(selCourseId)) courseIds.push(selCourseId);        
@@ -6497,8 +6500,8 @@ async function postCourse(e) {
   clearFieldErrors($("course-form")); setMessage(cm, "", "");
   let bad = false;
   [["c-title", title], ["c-code", code], ["c-prof", prof]].forEach(([id, v]) => { if (!v) { fieldError(id, "Required"); bad = true; } });
-  if (!sem) { $("c-sem").classList.add("invalid"); bad = true; }
-  if (!ay) { $("c-ay").classList.add("invalid"); bad = true; }  if (bad) return;        const rawCases = $("c-cases").value.trim(), rawDigests = $("c-digests").value.trim();
+  if (!sem) { dropError("c-sem", true); bad = true; }
+  if (!ay) { dropError("c-ay", true); bad = true; }  if (bad) return;        const rawCases = $("c-cases").value.trim(), rawDigests = $("c-digests").value.trim();
     const casesLink = safeUrl(rawCases), digestsLink = safeUrl(rawDigests);
     if ((rawCases && !casesLink) || (rawDigests && !digestsLink)) return setMessage(cm, "Enter valid links (e.g. https://...).", ERR);
     const total = cSyl.concat(cDocs).reduce((s, f) => s + f.size, 0);
@@ -6967,7 +6970,7 @@ $("d-form").addEventListener("submit", async e => {
     let bad = false;
     if (!topic) { fieldError("d-topic", "Required"); bad = true; }
     if (!text.trim()) { fieldError("d-text", "Required"); bad = true; }
-    if (!courseId) { $("d-course").classList.add("invalid"); bad = true; }
+    if (!courseId) { dropError("d-course", true); bad = true; }
     const maxPer = $("d-max").value.trim();
     if (maxPer !== "" && (!/^\d+$/.test(maxPer) || Number(maxPer) > 50)) { setMessage(m, "Max cases per student must be a whole number from 0 to 50.", ERR); bad = true; }
     if (bad) return;
@@ -7769,8 +7772,7 @@ $("of-form").addEventListener("submit", async e => {
     const btn = $("of-record"), m = $("of-message");
     if (!ofState || btn.classList.contains("submitted")) return;
     const semester = $("of-sem").value, ay = $("of-ay").value;
-    if (!semester || !ay) return setMessage(m, "Choose a semester and an academic year.", ERR);
-    setLoading(btn, true); setMessage(m, "", "");
+    dropError("of-sem", !semester); dropError("of-ay", !ay); if (!semester || !ay) return;    setLoading(btn, true); setMessage(m, "", "");
     let done = false;
     try {
         const r = await authCall("officers_record", { core: ofState.core, courses: ofState.courses, semester, ay });
