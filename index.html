@@ -1704,6 +1704,64 @@ html[data-theme="night"] .drawer-foot .btn,
 html[data-theme="night"] .drawer-foot .btn-danger { background: var(--accent); color: var(--on-accent); border: 1px solid var(--accent); }
 html[data-theme="night"] .drawer-foot .btn:hover:not(:disabled),
 html[data-theme="night"] .drawer-foot .btn-danger:hover { background: var(--accent-hover); color: #fff; border-color: var(--accent-hover); }
+
+/* ===== Polls ===== */
+.poll-box { margin: 6px 0 24px; }
+#poll-form { margin-top: 14px; padding: 4px 16px 16px; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: var(--r-lg); }
+.poll-settings { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; }
+.poll-settings .link-row { margin: 0; }
+#poll-opts .peek:disabled { opacity: .35; cursor: not-allowed; }
+#poll-add-opt { margin-top: 4px; }
+#poll-closes { margin: 4px 0 10px; }
+
+.poll { margin-top: 4px; padding: 14px 16px; background: var(--surface2); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: var(--r-lg); }
+.poll-label { font-size: .7rem; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--accent-text); }
+.poll-q { margin-top: 4px; font-size: 1.1rem; font-weight: 700; line-height: 1.3; color: var(--ink); word-break: break-word; }
+.poll-desc { margin-top: 4px; white-space: pre-wrap; word-break: break-word; color: var(--muted); }
+.poll-info { margin: 6px 0 4px; font-size: var(--fs-n1); font-weight: 600; color: var(--muted); }
+.poll-item { margin-top: 8px; }
+.poll-opt { position: relative; display: flex; align-items: center; gap: 10px; padding: 10px 12px; overflow: hidden; cursor: pointer; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-md); }
+.poll-opt.locked { cursor: default; }
+.poll-opt input { position: relative; z-index: 1; flex: none; width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
+.poll-bar { position: absolute; top: 0; bottom: 0; left: 0; background: var(--accent-soft); transition: width .4s var(--ease); }
+.poll-text { position: relative; z-index: 1; flex: 1; min-width: 0; font-weight: 600; word-break: break-word; }
+.poll-n { position: relative; z-index: 1; flex: none; font-size: var(--fs-n1); font-weight: 700; color: var(--muted); }
+.poll-ok { margin-left: 8px; padding: 1px 8px; font-size: .65rem; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; color: #fff; background: #2e7d32; border-radius: 999px; white-space: nowrap; }
+.poll-opt.correct { border-color: #2e7d32; }
+.poll-opt.correct .poll-bar { background: color-mix(in srgb, #2e7d32 20%, transparent); }
+.poll-voters { margin: 4px 2px 0; font-size: var(--fs-n1); color: var(--muted); word-break: break-word; }
+.poll-add { display: flex; gap: 8px; margin-top: 12px; }
+.poll-add input { flex: 1; min-width: 0; padding: 8px 12px; color: var(--ink); background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-md); }
+.poll-add .btn, .poll-actions .btn { margin: 0; width: auto; }
+.poll-actions { margin-top: 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.poll-note { font-size: var(--fs-n1); color: var(--muted); }
+
+/* ===== Comments ===== */
+#ann-modal-poll:empty, #ann-modal-comments:empty { display: none; }
+.cmt-sec { margin-top: 18px; }
+.cmt { display: flex; gap: 10px; margin-top: 14px; }
+.cmt-ava { flex: none; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; background: var(--accent); color: var(--on-accent); font-size: .7rem; font-weight: 800; }
+.cmt.reply .cmt-ava { width: 26px; height: 26px; font-size: .6rem; }
+.cmt-body { flex: 1; min-width: 0; }
+.cmt-meta { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 10px; }
+.cmt-meta b { color: var(--accent-text); }
+.cmt-time { font-size: var(--fs-n1); color: var(--muted); }
+.cmt-text { margin-top: 2px; white-space: pre-wrap; word-break: break-word; }
+.cmt-files { margin-top: 6px; flex-direction: column; align-items: flex-start; }
+.cmt-files .attach-btn { max-width: 100%; text-align: left; word-break: break-word; }
+.cmt-acts { display: flex; align-items: center; gap: 14px; margin-top: 4px; }
+.cmt-acts .cmt-del { color: var(--err); }
+.cmt-replies { margin-top: 4px; padding-left: 12px; border-left: 2px solid var(--line); }
+.cmt-empty { margin-top: 12px; font-size: var(--fs-n1); color: var(--muted); font-style: italic; }
+.cmt-compose { margin-top: 14px; }
+.cmt-compose textarea { width: 100%; min-height: 70px; padding: 10px 12px; resize: vertical; font-family: inherit; font-size: var(--fs-0); line-height: var(--lh); color: var(--ink); background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-md); outline: none; }
+.cmt-compose textarea:focus { border-color: var(--accent-text); box-shadow: 0 0 0 3px var(--accent-soft); }
+.cmt-compose .file-list { margin-top: 8px; }
+.cmt-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.cmt-actions .btn { margin: 0; }
+.cmt-actions .msg { margin: 0 0 0 auto; text-align: right; min-height: 0; }
+.cmt-reply-slot:empty { display: none; }
+.cmt-reply-slot { margin-top: 6px; }
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
@@ -2987,7 +3045,26 @@ html[data-theme="night"] .ann-card.past:hover { border-left-color: #ffffff; }
                 </div>
                 <div class="st-group" id="b-status" role="group" aria-label="Class status"></div>
                 <p class="hint">Type @ followed by a first name, surname or nickname (e.g. @juan) to tag a user, or @everyone to notify all users. They'll be notified by email.</p>
-
+                <div class="poll-box">
+    <button type="button" class="btn sm ghost" id="poll-toggle">Add a poll</button>
+    <div id="poll-form" class="hidden">
+        <div class="field"><input type="text" id="poll-q" placeholder=" " maxlength="200"><label for="poll-q">Ask a Question</label></div>
+        <div class="field"><textarea id="poll-desc" placeholder=" " maxlength="500" style="min-height:80px"></textarea><label for="poll-desc">Add a Description (optional)</label></div>
+        <div class="group-title">Options</div>
+        <div id="poll-opts"></div>
+        <button type="button" class="btn sm" id="poll-add-opt">Add Options</button>
+        <div class="group-title">Poll settings</div>
+        <div class="poll-settings" id="poll-settings"></div>
+        <div id="poll-limit-wrap" class="hidden">
+            <div class="group-title">Closes on</div>
+            <input type="datetime-local" id="poll-closes" class="dibs-select" aria-label="Poll closing time">
+        </div>
+        <div id="poll-correct-wrap" class="hidden">
+            <div class="group-title">Correct answer</div>
+            <div class="poll-settings" id="poll-correct"></div>
+        </div>
+    </div>
+</div>
                 <div class="file-upload-area">
                     <div class="file-row">
                         <button type="button" class="btn sm" id="b-file-btn">Attach Files</button>
@@ -3158,6 +3235,7 @@ html[data-theme="night"] .ann-card.past:hover { border-left-color: #ffffff; }
             </div>
             <div id="ann-modal-meta" class="ann-meta modal-gap"></div>
             <div id="ann-modal-body" class="ann-modal-body modal-gap"></div>
+            <div id="ann-modal-poll" class="modal-gap"></div>
             
             <div id="ann-modal-attach" class="attach-section hidden">
                 <button type="button" class="attach-toggle" id="ann-modal-attach-toggle" aria-expanded="false" aria-controls="ann-modal-files">
@@ -3168,6 +3246,7 @@ html[data-theme="night"] .ann-card.past:hover { border-left-color: #ffffff; }
             </div>
             <div id="ann-modal-edited" class="ann-edited modal-gap"></div>
             <div id="ann-modal-status" class="modal-gap"></div>
+            <div id="ann-modal-comments" class="cmt-sec"></div>
             
             <div id="ann-modal-actions" class="ann-actions modal-actions-end">
                 <button type="button" class="btn ghost sm" id="ann-modal-close" >Close</button>
@@ -4334,6 +4413,222 @@ function placeBinStatus() {
 }
 placeBinStatus();
 binStatusMq.addEventListener("change", placeBinStatus);
+/* ===== POLLS ===== */
+const POLL_SETTINGS = [
+    ["showVoters", "Show Who Voted"], ["multiple", "Allow Multiple Answers"], ["allowAdd", "Allow Adding Options"],
+    ["revote", "Allow Revoting"], ["shuffle", "Shuffle Options"], ["setCorrect", "Set Correct Answer"], ["limit", "Limit Duration"]
+];
+let binPoll = null; // null = no poll on this announcement
+const optNum = id => Number(String(id).replace(/\D/g, "")) || 0;
+function newPoll() {
+    return { q: "", desc: "", options: [{ id: "o1", t: "" }, { id: "o2", t: "" }], maxId: 2,
+        showVoters: false, multiple: false, allowAdd: false, revote: false, shuffle: false,
+        setCorrect: false, correct: [], limit: false, closes: 0, origCloses: 0 };
+}
+function toLocalInput(ms) {
+    const d = new Date(ms);
+    return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) + "T" + pad(d.getHours()) + ":" + pad(d.getMinutes());
+}
+function loadPollIntoForm(p) {
+    if (!p) { binPoll = null; return renderPollForm(); }
+    const c = newPoll();
+    c.q = p.q; c.desc = p.desc || "";
+    c.options = p.options.map(o => ({ id: o.id, t: o.t }));
+    c.maxId = Math.max(2, ...p.options.map(o => optNum(o.id)));
+    ["showVoters", "multiple", "allowAdd", "revote", "shuffle"].forEach(k => { c[k] = !!p[k]; });
+    c.correct = (p.correctAll || []).slice(); c.setCorrect = c.correct.length > 0;
+    c.limit = p.closes > 0; c.closes = p.closes || 0; c.origCloses = c.closes;
+    binPoll = c; renderPollForm();
+}
+function renderPollForm() {
+    const on = !!binPoll;
+    $("poll-form").classList.toggle("hidden", !on);
+    $("poll-toggle").textContent = on ? "Remove poll" : "Add a poll";
+    if (!on) return;
+    $("poll-q").value = binPoll.q; $("poll-desc").value = binPoll.desc;
+    $("poll-closes").value = binPoll.closes ? toLocalInput(binPoll.closes) : "";
+    renderPollOpts(); renderPollSettings(); renderPollCorrect(); syncFields();
+}
+function addPollOpt() {
+    if (!binPoll || binPoll.options.length >= 20) return;
+    binPoll.options.push({ id: "o" + (++binPoll.maxId), t: "" });
+    renderPollOpts(); renderPollCorrect();
+    const last = $("poll-opts").lastElementChild;
+    if (last) last.querySelector("input").focus();
+}
+function renderPollOpts() {
+    const box = $("poll-opts"); box.textContent = "";
+    binPoll.options.forEach((o, i) => {
+        const f = mk("div", "field has-peek");
+        const inp = mk("input"); inp.type = "text"; inp.placeholder = " "; inp.maxLength = 120; inp.value = o.t;
+        inp.addEventListener("input", () => { o.t = inp.value; renderPollCorrect(); });
+        inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); addPollOpt(); } });
+        const x = mk("button", "peek"); x.type = "button"; x.title = "Remove option"; x.setAttribute("aria-label", "Remove option " + (i + 1));
+        x.disabled = binPoll.options.length <= 2;
+        x.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+        x.addEventListener("click", () => {
+            binPoll.options.splice(i, 1);
+            binPoll.correct = binPoll.correct.filter(c => c !== o.id);
+            renderPollOpts(); renderPollCorrect(); binDirty();
+        });
+        f.append(inp, mk("label", "", "Option " + (i + 1)), x);
+        box.appendChild(f);
+    });
+    syncFields();
+}
+function pollVis() {
+    $("poll-correct-wrap").classList.toggle("hidden", !binPoll.setCorrect);
+    $("poll-limit-wrap").classList.toggle("hidden", !binPoll.limit);
+}
+function renderPollSettings() {
+    const box = $("poll-settings"); box.textContent = "";
+    POLL_SETTINGS.forEach(([k, label]) => {
+        const lab = mk("label", "link-row"), cb = mk("input"); cb.type = "checkbox"; cb.checked = !!binPoll[k];
+        cb.addEventListener("change", () => {
+            binPoll[k] = cb.checked;
+            if (k === "multiple" && !cb.checked) binPoll.correct = binPoll.correct.slice(0, 1);
+            pollVis(); renderPollCorrect(); binDirty();
+        });
+        lab.append(cb, mk("span", "link-title", label));
+        box.appendChild(lab);
+    });
+    pollVis();
+}
+function renderPollCorrect() {
+    if (!binPoll) return;
+    const box = $("poll-correct"); box.textContent = "";
+    binPoll.options.filter(o => o.t.trim()).forEach(o => {
+        const lab = mk("label", "link-row"), cb = mk("input");
+        cb.type = binPoll.multiple ? "checkbox" : "radio"; cb.name = "poll-correct"; cb.checked = binPoll.correct.includes(o.id);
+        cb.addEventListener("change", () => {
+            if (binPoll.multiple) binPoll.correct = cb.checked ? binPoll.correct.concat(o.id) : binPoll.correct.filter(c => c !== o.id);
+            else binPoll.correct = [o.id];
+            binDirty();
+        });
+        lab.append(cb, mk("span", "link-title", o.t));
+        box.appendChild(lab);
+    });
+}
+// Returns null (no poll), { error }, or the payload to send
+function readPoll() {
+    if (!binPoll) return null;
+    const p = binPoll, q = p.q.replace(/\s+/g, " ").trim();
+    if (!q) return { error: "Enter the poll question." };
+    const opts = p.options.map(o => ({ id: o.id, t: o.t.replace(/\s+/g, " ").trim() })).filter(o => o.t);
+    if (opts.length < 2) return { error: "A poll needs at least two options." };
+    if (p.limit) {
+        if (!p.closes) return { error: "Choose when the poll closes." };
+        if (p.closes <= Date.now() && p.closes !== p.origCloses) return { error: "The poll's closing time must be in the future." };
+    }
+    let correct = [];
+    if (p.setCorrect) {
+        correct = p.correct.filter(id => opts.some(o => o.id === id));
+        if (!correct.length) return { error: "Choose the correct answer, or turn off Set Correct Answer." };
+    }
+    return { q, desc: p.desc.trim(), options: opts, showVoters: p.showVoters, multiple: p.multiple, allowAdd: p.allowAdd,
+        revote: p.revote, shuffle: p.shuffle, correct, closes: p.limit ? p.closes : 0 };
+}
+$("poll-toggle").addEventListener("click", () => { binPoll = binPoll ? null : newPoll(); renderPollForm(); binDirty(); });
+$("poll-add-opt").addEventListener("click", addPollOpt);
+$("poll-q").addEventListener("keydown", e => { if (e.key === "Enter") e.preventDefault(); });
+$("poll-q").addEventListener("input", () => { if (binPoll) binPoll.q = $("poll-q").value; });
+$("poll-desc").addEventListener("input", () => { if (binPoll) binPoll.desc = $("poll-desc").value; });
+$("poll-closes").addEventListener("input", () => {
+    const v = $("poll-closes").value;
+    if (binPoll) binPoll.closes = v ? new Date(v).getTime() : 0;
+    binDirty();
+});
+
+/* ---- Showing the poll to users ---- */
+function seededOrder(list, seed) {
+    const h = s => { let x = 2166136261; for (let i = 0; i < s.length; i++) { x ^= s.charCodeAt(i); x = Math.imul(x, 16777619); } return x >>> 0; };
+    return list.slice().sort((a, b) => h(seed + a.id) - h(seed + b.id));
+}
+function renderPoll(box, a) {
+    box.textContent = "";
+    const p = a.poll;
+    if (!p) return;
+    if (!a._pollDraft) a._pollDraft = new Set(p.mine);
+    const draft = a._pollDraft;
+    const wrap = mk("section", "poll");
+    wrap.appendChild(mk("div", "poll-label", "Poll"));
+    wrap.appendChild(mk("div", "poll-q", p.q));
+    if (p.desc) wrap.appendChild(mk("div", "poll-desc", p.desc));
+    const info = [p.multiple ? "Select all that apply" : "Select one", p.total + (p.total === 1 ? " voter" : " voters")];
+    if (p.closed) info.push("Poll closed");
+    else if (p.closes) info.push("Closes " + new Date(p.closes).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" }));
+    wrap.appendChild(mk("div", "poll-info", info.join(" \u00b7 ")));
+
+    const msg = mk("div", "msg"), btn = mk("button", "btn sm", "Vote"); btn.type = "button";
+    const sameAsSaved = () => draft.size === p.mine.length && p.mine.every(id => draft.has(id));
+    const paintBtn = () => { btn.textContent = p.mine.length ? "Change vote" : "Vote"; btn.disabled = !draft.size || sameAsSaved(); };
+
+    const opts = p.shuffle ? seededOrder(p.options, currentEmail + a.id) : p.options;
+    opts.forEach(o => {
+        const item = mk("div", "poll-item");
+        const row = mk("label", "poll-opt" + (p.correct.includes(o.id) ? " correct" : "") + (p.canVote ? "" : " locked"));
+        const pct = p.total ? Math.round(o.n / p.total * 100) : 0;
+        const bar = mk("span", "poll-bar"); bar.style.width = pct + "%";
+        const inp = mk("input"); inp.type = p.multiple ? "checkbox" : "radio"; inp.name = "poll-" + a.id;
+        inp.checked = draft.has(o.id); inp.disabled = !p.canVote;
+        inp.addEventListener("change", () => {
+            if (p.multiple) { if (inp.checked) draft.add(o.id); else draft.delete(o.id); }
+            else { draft.clear(); draft.add(o.id); }
+            paintBtn();
+        });
+        const text = mk("span", "poll-text", o.t);
+        if (p.correct.includes(o.id)) text.appendChild(mk("span", "poll-ok", "Correct"));
+        row.append(bar, inp, text, mk("span", "poll-n", o.n + " (" + pct + "%)"));
+        item.appendChild(row);
+        if (p.showVoters && o.voters && o.voters.length) {
+            item.appendChild(mk("div", "poll-voters", "Voted: " + o.voters.map(v => v.mine ? "You" : shortName(v.name)).join(", ")));
+        }
+        wrap.appendChild(item);
+    });
+
+    if (p.allowAdd && !p.closed) {
+        const add = mk("div", "poll-add");
+        const ai = mk("input"); ai.type = "text"; ai.placeholder = "Add an option"; ai.maxLength = 120;
+        const ab = mk("button", "btn sm ghost", "Add"); ab.type = "button";
+        const doAdd = async () => {
+            const t = ai.value.replace(/\s+/g, " ").trim();
+            if (!t) return;
+            setLoading(ab, true); setMessage(msg, "", "");
+            try {
+                const r = await authCall("poll_option", { id: a.id, text: t });
+                if (r.status === "success") { a.poll = r.poll; renderPoll(box, a); return; }
+                setMessage(msg, r.message, ERR);
+            } catch (err) { if (err.message !== "auth") setMessage(msg, netError(err), ERR); }
+            setLoading(ab, false);
+        };
+        ab.addEventListener("click", doAdd);
+        ai.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); doAdd(); } });
+        add.append(ai, ab);
+        wrap.appendChild(add);
+    }
+
+    const actions = mk("div", "poll-actions");
+    if (p.canVote) {
+        paintBtn();
+        btn.addEventListener("click", async () => {
+            setLoading(btn, true); setMessage(msg, "", "");
+            try {
+                const r = await authCall("poll_vote", { id: a.id, options: Array.from(draft) });
+                if (r.status === "success") { a.poll = r.poll; a._pollDraft = new Set(r.poll.mine); renderPoll(box, a); return; }
+                setMessage(msg, r.message, ERR);
+            } catch (err) { if (err.message !== "auth") setMessage(msg, netError(err), ERR); }
+            setLoading(btn, false); paintBtn();
+        });
+        actions.appendChild(btn);
+        if (p.mine.length && p.revote) actions.appendChild(mk("span", "poll-note", "You can change your vote until the poll closes."));
+    } else if (p.mine.length && !p.closed) {
+        actions.appendChild(mk("span", "poll-note", "Your vote is saved. Revoting is turned off for this poll."));
+    }
+    wrap.appendChild(actions);
+    wrap.appendChild(msg);
+    box.appendChild(wrap);
+}
+    
     
     const pickers = [];
     const CHEV = {
@@ -4521,8 +4816,8 @@ function mentionHandleFor(u, q) {
         binDeadline = binStart = binEnd = ""; editingId = ""; binStatus = ""; renderBinStatus(); mentionSel = []; binFiles = []; binCourseIds = []; updateBinCourseBtn();        renderFileList("b-file-list", binFiles, (idx) => { binFiles.splice(idx, 1); resetBinFormFileRender(); });
         pkDeadline.show(); pkStart.show(); pkEnd.show();
         pickers.forEach(p => p.close());
-        hideMention(); binMode(); setMessage($("b-message"), "", ""); syncFields();
-    }
+        binPoll = null; renderPollForm();
+        hideMention(); binMode(); setMessage($("b-message"), "", ""); syncFields();    }
     function resetBinFormFileRender() {
         renderFileList("b-file-list", binFiles, (idx) => { binFiles.splice(idx, 1); resetBinFormFileRender(); binDirty(); });
     }
@@ -4539,6 +4834,7 @@ function mentionHandleFor(u, q) {
         const sameTitle = courseList.filter(c => c.title === a.course);
         const pickC = sameTitle.find(c => binCourseIds.includes(c.id)) || sameTitle[0];
         fillBinCourses(pickC ? pickC.id : (a.course ? "txt:" + a.course : ""));
+        loadPollIntoForm(a.poll);
         binMode(); syncFields();
         showSection("bin");
         window.scrollTo(0, 0);
@@ -4561,6 +4857,8 @@ function mentionHandleFor(u, q) {
   if (bad) return;
   const courseIds = binCourseIds.slice();
   if (binStatus && selCourseId && !courseIds.includes(selCourseId)) courseIds.push(selCourseId);        
+        const poll = readPoll();
+        if (poll && poll.error) return setMessage(bm, poll.error, ERR);
         if (!!binStart !== !!binEnd) return setMessage(bm, "A period needs both a beginning date and an end date.", ERR);
         if (binStart && binEnd < binStart) return setMessage(bm, "The end date can't be before the beginning date.", ERR);
         const wasEdit = !!editingId;
@@ -4575,6 +4873,7 @@ function mentionHandleFor(u, q) {
                 mentions = Array.from(new Set(mentions.concat(mentionUsers.map(u => u.email))));
             }
             const payload = { title, course, deadline: binDeadline, periodStart: binStart, periodEnd: binEnd, message: text, mentions, everyone, courseIds, mode: binStatus };            
+            if (poll) payload.poll = poll;
             if (binFiles.length) payload.files = binFiles;
             if (wasEdit) payload.id = editingId;
             const r = await authCall(wasEdit ? "edit_announcement" : "post_announcement", payload);
@@ -4796,6 +5095,8 @@ pre.className = "file-text";
        
         fillAnnMeta($("ann-modal-meta"), a, false);
        
+        a._pollDraft = null;
+        renderPoll($("ann-modal-poll"), a);
         const body = $("ann-modal-body");
         body.textContent = "";
         richText(body, a.message, a.mentions);
@@ -4825,7 +5126,7 @@ pre.className = "file-text";
         }
 
         const edited = $("ann-modal-edited");
-setEdited(edited, a.edited ? "Edited by the author on " + longDate(a.edited) : "");        
+        setEdited(edited, a.edited ? "Edited by the author on " + longDate(a.edited) : "");        
         const actions = $("ann-modal-actions");
         actions.textContent = "";
         
@@ -4853,9 +5154,9 @@ setEdited(edited, a.edited ? "Edited by the author on " + longDate(a.edited) : "
         openAnnId = a.id;
         renderAnnModalStatus(a);
         if (!a.myRead) setAnnStatus(a, { read: true });
+        loadComments(a);
     }
-        function closeAnnModal() { $("ann-modal").classList.add("hidden"); openAnnId = ""; }
-        function setAttachOpen(open) {
+        function closeAnnModal() { $("ann-modal").classList.add("hidden"); openAnnId = ""; cmtAnnId = ""; }        function setAttachOpen(open) {
         $("ann-modal-files").classList.toggle("hidden", !open);
         $("ann-modal-attach-toggle").setAttribute("aria-expanded", String(open));
     }
@@ -4989,6 +5290,150 @@ function isNewAnn(a) {
     const posted = new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]).getTime();
     return Date.now() - posted <= 72 * 60 * 60 * 1000;
 }
+
+/* ===== COMMENTS ===== */
+let cmtAnnId = "";
+
+function cmtTime(s) {
+    const m = /^(\d{4}-\d{2}-\d{2})[ T](\d{2}):(\d{2})/.exec(String(s || ""));
+    if (!m) return longDate(s);
+    let h = Number(m[2]);
+    const ap = h >= 12 ? "PM" : "AM";
+    h = h % 12 || 12;
+    return prettyDate(m[1]) + " \u00b7 " + h + ":" + m[3] + " " + ap;
+}
+
+// Text box + attach button. parentId "" = new comment, otherwise a reply.
+function cmtComposer(annId, parentId, placeholder, onSent, onCancel) {
+    const box = mk("div", "cmt-compose"), files = [];
+    const ta = mk("textarea"); ta.placeholder = placeholder; ta.maxLength = 1000;
+    if (parentId) ta.style.minHeight = "56px";
+    const list = mk("div", "file-list");
+    const fi = mk("input"); fi.type = "file"; fi.multiple = true; fi.className = "hidden";
+    fi.accept = "image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv";
+    const attach = mk("button", "btn sm ghost", "Attach"); attach.type = "button";
+    const send = mk("button", "btn sm", parentId ? "Reply" : "Comment"); send.type = "button";
+    const msg = mk("div", "msg");
+    const row = mk("div", "cmt-actions");
+    row.append(attach, send);
+    if (onCancel) { const cx = mk("button", "btn sm ghost", "Cancel"); cx.type = "button"; cx.addEventListener("click", onCancel); row.appendChild(cx); }
+    row.appendChild(msg);
+    box.append(ta, list, fi, row);
+
+    const paint = () => {
+        list.textContent = "";
+        files.forEach((f, i) => {
+            const chip = mk("div", "file-chip");
+            chip.append(mk("span", "fname", f.name), mk("span", "fsize", formatFileSize(f.size)));
+            const rm = mk("button", "fremove", "Remove"); rm.type = "button";
+            rm.addEventListener("click", () => { files.splice(i, 1); paint(); });
+            chip.appendChild(rm);
+            list.appendChild(chip);
+        });
+    };
+    attach.addEventListener("click", () => fi.click());
+    fi.addEventListener("change", async () => {
+        const picked = Array.from(fi.files); fi.value = "";
+        if (!picked.length) return;
+        if (files.length + picked.length > 5) return setMessage(msg, "Up to 5 files per comment.", ERR);
+        if (files.concat(picked).reduce((s, f) => s + f.size, 0) > MAX_TOTAL_FILE_SIZE) return setMessage(msg, "Files exceed the 10 MB limit.", ERR);
+        try { files.push(...await Promise.all(picked.map(readFileAsBase64))); setMessage(msg, "", ""); paint(); }
+        catch (err) { setMessage(msg, err.message, ERR); }
+    });
+    send.addEventListener("click", async () => {
+        const text = ta.value.trim();
+        if (!text && !files.length) return setMessage(msg, "Write a comment or attach a file.", ERR);
+        setLoading(send, true); setMessage(msg, "", "");
+        try {
+            const r = await authCall("comment_add", { id: annId, parentId, message: text, files });
+            if (r.status === "success") { onSent(r.comments || []); return; }
+            setMessage(msg, r.message, ERR);
+        } catch (err) { if (err.message !== "auth") setMessage(msg, netError(err), ERR); }
+        setLoading(send, false);
+    });
+    return box;
+}
+
+function renderComments(a, list) {
+    if (cmtAnnId !== a.id) return;
+    const box = $("ann-modal-comments"); box.textContent = "";
+    const top = list.filter(c => !c.parentId), replies = {};
+    list.filter(c => c.parentId).forEach(c => { (replies[c.parentId] = replies[c.parentId] || []).push(c); });
+
+    const head = mk("div", "cm-sec-title", "Comments");
+    head.appendChild(mk("span", "cm-count", String(list.length)));
+    box.appendChild(head);
+
+    function item(c, isReply) {
+        const el = mk("div", "cmt" + (isReply ? " reply" : ""));
+        el.appendChild(mk("div", "cmt-ava", personInitials({ name: c.author })));
+        const body = mk("div", "cmt-body");
+        const meta = mk("div", "cmt-meta");
+        meta.appendChild(mk("b", "", c.mine ? "You" : shortName(c.author)));
+        meta.appendChild(mk("span", "cmt-time", cmtTime(c.created)));
+        body.appendChild(meta);
+        if (c.message) body.appendChild(mk("div", "cmt-text", c.message));
+        if (c.files && c.files.length) {
+            const fl = mk("div", "attach-list cmt-files");
+            c.files.forEach(f => {
+                const b = mk("button", "attach-btn", ((f.type || "").indexOf("image/") === 0 ? "\uD83D\uDDBC " : "\uD83D\uDCCE ") + f.name);
+                b.type = "button";
+                b.addEventListener("click", e => { e.stopPropagation(); openFileModal(Object.assign({}, f, { action: "comment_file" })); });
+                fl.appendChild(b);
+            });
+            body.appendChild(fl);
+        }
+        const acts = mk("div", "cmt-acts"), slot = mk("div", "cmt-reply-slot");
+        if (!isReply) {
+            const rb = mk("button", "linkish", "Reply"); rb.type = "button";
+            rb.addEventListener("click", () => {
+                if (slot.firstChild) { slot.textContent = ""; return; }
+                const comp = cmtComposer(a.id, c.id, "Write a reply\u2026", cs => renderComments(a, cs), () => { slot.textContent = ""; });
+                slot.appendChild(comp);
+                comp.querySelector("textarea").focus();
+            });
+            acts.appendChild(rb);
+        }
+        if (c.canDelete) {
+            const db = mk("button", "linkish cmt-del", "Delete"); db.type = "button";
+            db.addEventListener("click", async () => {
+                if (!(await askConfirm("Delete comment?", isReply ? "This reply will be permanently deleted." : "This comment and all its replies will be permanently deleted."))) return;
+                db.disabled = true;
+                try {
+                    const r = await authCall("comment_delete", { id: c.id });
+                    if (r.status === "success") { renderComments(a, r.comments || []); return; }
+                    notify(r.message || "Couldn't delete the comment.");
+                } catch (err) { if (err.message !== "auth") notify(netError(err)); }
+                db.disabled = false;
+            });
+            acts.appendChild(db);
+        }
+        body.append(acts, slot);
+        const rl = replies[c.id] || [];
+        if (rl.length) { const rw = mk("div", "cmt-replies"); rl.forEach(r => rw.appendChild(item(r, true))); body.appendChild(rw); }
+        el.appendChild(body);
+        return el;
+    }
+
+    if (!top.length) box.appendChild(mk("div", "cmt-empty", "No comments yet. Start the discussion."));
+    top.forEach(c => box.appendChild(item(c, false)));
+    box.appendChild(cmtComposer(a.id, "", "Write a comment\u2026", cs => renderComments(a, cs)));
+}
+
+async function loadComments(a) {
+    const box = $("ann-modal-comments"), id = a.id;
+    cmtAnnId = id;
+    box.textContent = "";
+    box.appendChild(mk("div", "skeleton row-sk"));
+    try {
+        const r = await authCall("comments_list", { id });
+        if (cmtAnnId !== id) return;
+        if (r.status === "success") renderComments(a, r.comments || []);
+        else { box.textContent = ""; box.appendChild(mk("p", "repo-count", r.message)); }
+    } catch (err) {
+        if (err.message !== "auth" && cmtAnnId === id) { box.textContent = ""; box.appendChild(mk("p", "repo-count", netError(err))); }
+    }
+}
     
     function annCard(a) {
         const ref = a.deadline || a.periodEnd || "";
@@ -5009,6 +5454,7 @@ if (isNewAnn(a)) titleWrap.appendChild(mk("span", "new-tag", "NEW"));
 
         const tags = mk("div", "ann-tags");
         tags.appendChild(mk("span", "badge", a.course));
+        if (a.poll) tags.appendChild(mk("span", "badge", "Poll"));
         const due = dueLabel(a);
         if (due) tags.appendChild(mk("span", "badge " + due.cls, due.text));
         const per = periodLabel(a);
