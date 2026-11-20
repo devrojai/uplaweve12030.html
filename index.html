@@ -2937,6 +2937,33 @@ html[data-theme="night"] .cal-cell.today.sel { background: #2b2620; }
 html[data-theme="night"] .field.invalid #b-editor,
 html[data-theme="night"] .field.invalid #b-editor:focus { border-color: #ff6b6b; box-shadow: 0 0 0 3px rgba(255,107,107,.2); }
 html[data-theme="night"] .field.invalid #b-editor ~ label { color: #ff6b6b; }
+
+/* ===== Calendar menus as centered pop-up windows ===== */
+.dp-backdrop {
+    position: fixed; inset: 0; z-index: 99;
+    background: rgba(15,12,11,.55); backdrop-filter: blur(2px);
+    animation: fade .2s;
+}
+.datepop {
+    position: fixed !important;
+    left: 50% !important; top: 50% !important;
+    right: auto !important; bottom: auto !important;
+    transform: translate(-50%, -50%);
+    z-index: 100;
+    width: 320px; max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px);
+    overflow-y: auto; padding: 16px;
+    border-radius: var(--r-xl);
+    box-shadow: 0 24px 60px rgba(0,0,0,.45);
+    animation: dpPop .22s var(--ease);
+}
+.datepop.dtpop { width: 340px; }
+@keyframes dpPop {
+    from { opacity: 0; transform: translate(-50%, -46%) scale(.96); }
+    to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+.dp-day { font-size: var(--fs-0); }
+.dp-foot .linkish { font-size: var(--fs-0); padding: 8px 14px; }
         
     </style>
     
@@ -4796,6 +4823,7 @@ function openPoll() {
     $("poll-q").focus();
 }
 function closePoll() {
+    pickers.forEach(p => p.close());
     $("poll-form").classList.add("hidden");
     if (!pollHasInput(binPoll)) binPoll = null;   // empty poll = no poll
     updatePollBtn();
@@ -5005,7 +5033,30 @@ function renderPoll(box, a) {
     wrap.appendChild(msg);
     box.appendChild(wrap);
 }
-    
+
+/* Calendar menus: shown as a centered pop-up with a backdrop */
+const dpBackdrop = document.createElement("div");
+dpBackdrop.className = "dp-backdrop hidden";
+document.body.appendChild(dpBackdrop);
+
+function dpOpen(pop) {
+    if (!pop._home) pop._home = pop.parentNode;
+    document.body.appendChild(pop);          // lifted to <body> so nothing can clip or cover it
+    pop.classList.remove("hidden");
+    dpBackdrop.classList.remove("hidden");
+}
+function dpClose(pop) {
+    pop.classList.add("hidden");
+    if (pop._home && pop.parentNode !== pop._home) pop._home.appendChild(pop);
+    if (!document.querySelector(".datepop:not(.hidden)")) dpBackdrop.classList.add("hidden");
+}
+// Esc closes the calendar first (and nothing else)
+document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && document.querySelector(".datepop:not(.hidden)")) {
+        e.stopImmediatePropagation();
+        pickers.forEach(p => p.close());
+    }
+}, true);
     
     const pickers = [];
     const CHEV = {
@@ -5016,7 +5067,7 @@ function renderPoll(box, a) {
         const input = $(key), pop = $(key + "-pop"), btn = $(key + "-btn");
         let y = 0, m = 0, ms, ys, gridBox;
         const show = () => { input.value = get() ? prettyDate(get()) : ""; syncFields(); binDirty(); };
-        const close = () => pop.classList.add("hidden");
+        const close = () => dpClose(pop);
         function days() {
             gridBox.textContent = "";
             const sel = get(), min = minFn ? minFn() : "", t = todayIso();
@@ -5061,7 +5112,7 @@ function renderPoll(box, a) {
             const parts = base.split("-").map(Number);
             y = parts[0]; m = parts[1] - 1;
             build(); sync();
-            pop.classList.remove("hidden");
+            dpOpen(pop);
         }
         const toggle = () => pop.classList.contains("hidden") ? open() : close();
         input.addEventListener("click", toggle);
@@ -5095,7 +5146,7 @@ function renderPoll(box, a) {
         syncFields();
     };
     const commit = () => { if (binPoll) binPoll.closes = stamp(); show(); binDirty(); };
-    const close = () => pop.classList.add("hidden");
+    const close = () => dpClose(pop);
 
     function days() {
         gridBox.textContent = "";
@@ -5158,8 +5209,7 @@ function renderPoll(box, a) {
         const base = (sel || todayIso()).split("-").map(Number);
         vy = base[0]; vm = base[1] - 1;
         build(); sync();
-        pop.classList.remove("hidden");
-        pop.scrollIntoView({ block: "nearest" });
+        dpOpen(pop);
     }
     const toggle = () => pop.classList.contains("hidden") ? open() : close();
     input.addEventListener("click", toggle);
