@@ -5166,7 +5166,7 @@ function prettyTime(t) { t = normTime(t); if (!t) return ""; const x = t24to12(t
     const pkDeadline = makePicker("b-deadline", () => binDeadline, v => { binDeadline = v; }, null,
         () => binDeadlineT, v => { binDeadlineT = v; }, "23:59");
     const pkStart = makePicker("b-pstart", () => binStart, v => { binStart = v; if (v && binEnd && binEnd < v) { binEnd = ""; binEndT = ""; pkEnd.show(); } }, null,
-        () => binStartT, v => { binStartT = v; }, "00:00");
+        () => binStartT, v => { binStartT = v; }, "23:59");
     const pkEnd = makePicker("b-pend", () => binEnd, v => { binEnd = v; }, () => binStart,
         () => binEndT, v => { binEndT = v; }, "23:59");
     
