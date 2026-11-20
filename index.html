@@ -2718,6 +2718,93 @@ html[data-theme="night"] .field.invalid textarea ~ label { color: #ff6b6b; }
 .sdrop.invalid .sdrop-label, .sdrop.invalid .sdrop-chev { color: #c62828; }
 html[data-theme="night"] .sdrop.invalid .sdrop-btn { border-color: #ff6b6b; box-shadow: 0 0 0 3px rgba(255,107,107,.2); }
 html[data-theme="night"] .sdrop.invalid .sdrop-label, html[data-theme="night"] .sdrop.invalid .sdrop-chev { color: #ff6b6b; }        
+
+/* ===== Poll: circular, color-filled ticks ===== */
+.poll-opt input {
+    -webkit-appearance: none; appearance: none;
+    width: 22px; height: 22px; margin: 0; flex: none;
+    display: grid; place-items: center; cursor: pointer;
+    background: var(--surface); border: 2px solid var(--line-strong); border-radius: 50%;
+    transition: background .2s, border-color .2s, box-shadow .2s;
+}
+.poll-opt input::after {
+    content: ""; width: 10px; height: 5px; margin-top: -2px;
+    border-left: 2.5px solid var(--on-accent); border-bottom: 2.5px solid var(--on-accent);
+    transform: rotate(-45deg) scale(0); transition: transform .18s var(--ease);
+}
+.poll-opt input:checked { background: var(--accent); border-color: var(--accent); }
+.poll-opt input:checked::after { transform: rotate(-45deg) scale(1); }
+.poll-opt input:disabled { cursor: default; opacity: 1; }
+.poll-opt input:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+
+/* ===== Poll header: label left, deadline right ===== */
+.poll-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.poll-deadline { font-size: .72rem; font-weight: 700; text-align: right; color: var(--muted); }
+
+/* ===== Poll "Closing date and time" field: smaller text ===== */
+#poll-closes { font-size: .8rem; text-overflow: ellipsis; }
+
+/* ===== Remove dashed line above "Edited" ===== */
+#ann-modal-edited { border-top: none; padding-top: 0; }
+
+/* ===== Date picker: selected day stays filled, no hover effect ===== */
+.dp-day.sel,
+.dp-day.sel:hover:not(:disabled) { background: var(--accent); color: var(--on-accent); }
+
+/* ===== Comments: refined ===== */
+#ann-modal-comments { margin-top: 8px; padding-top: 16px; border-top: 1px solid var(--line); font-size: .85rem; }
+#ann-modal-comments .cm-sec-title { font-size: .72rem; margin-bottom: 4px; }
+#ann-modal-comments .cm-count { min-width: 20px; height: 20px; font-size: .65rem; }
+
+/* each comment is a card */
+#ann-modal-comments .cmt { gap: 10px; margin-top: 12px; }
+#ann-modal-comments .cmt:not(.reply) {
+    padding: 12px 14px; background: var(--surface2);
+    border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: var(--r-lg);
+    box-shadow: 0 1px 2px rgba(0,0,0,.05);
+}
+#ann-modal-comments .cmt.reply {
+    margin-top: 10px; padding: 8px 10px; background: var(--surface);
+    border: 1px solid var(--line); border-radius: var(--r-md);
+}
+#ann-modal-comments .cmt-replies { margin-top: 6px; padding-left: 0; border-left: 0; }
+
+/* avatars with a ring, like the rest of the site */
+#ann-modal-comments .cmt-ava { width: 32px; height: 32px; font-size: .65rem; box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--accent); }
+#ann-modal-comments .cmt.reply .cmt-ava { width: 26px; height: 26px; font-size: .55rem; }
+
+#ann-modal-comments .cmt-meta { gap: 0 10px; }
+#ann-modal-comments .cmt-meta b { font-size: .82rem; font-weight: 700; color: var(--accent-text); }
+#ann-modal-comments .cmt-time { font-size: .68rem; color: var(--muted); }
+#ann-modal-comments .cmt-text { margin-top: 3px; font-size: .85rem; line-height: 1.5; color: var(--ink); }
+
+/* Reply / Delete as small pills */
+#ann-modal-comments .cmt-acts { gap: 6px; margin-top: 6px; }
+#ann-modal-comments .cmt-acts .linkish {
+    padding: 2px 10px; font-size: .65rem; font-weight: 800; letter-spacing: .8px; text-transform: uppercase;
+    color: var(--accent-text); background: transparent; border: 1px solid var(--badge-line); border-radius: 999px;
+    transition: background .2s, color .2s, border-color .2s;
+}
+#ann-modal-comments .cmt-acts .linkish::after { display: none; }
+#ann-modal-comments .cmt-acts .linkish:hover { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+#ann-modal-comments .cmt-acts .cmt-del { color: var(--err); border-color: var(--err); }
+#ann-modal-comments .cmt-acts .cmt-del:hover { background: var(--err); border-color: var(--err); color: var(--surface); }
+
+#ann-modal-comments .cmt-empty {
+    margin-top: 12px; padding: 18px 14px; text-align: center; font-size: .78rem; font-style: normal;
+    color: var(--muted); border: 1px dashed var(--line-strong); border-radius: var(--r-lg); background: var(--surface2);
+}
+
+/* composer */
+#ann-modal-comments .cmt-compose { margin-top: 16px; }
+#ann-modal-comments .cmt-bar { padding: 4px 6px 4px 8px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 22px; }
+#ann-modal-comments .cmt-bar textarea,
+#ann-modal-comments .cmt-bar textarea:focus { font-size: .82rem; padding: 8px 8px; }
+#ann-modal-comments .cmt-ico { width: 32px; height: 32px; border-radius: 50%; }
+#ann-modal-comments .cmt-ico svg { width: 18px; height: 18px; }
+#ann-modal-comments .cmt-send { color: var(--on-accent); background: var(--accent); }
+#ann-modal-comments .cmt-send:hover { background: var(--accent-hover); transform: scale(1.06); }
+    
     </style>
     
 </head>
@@ -4681,13 +4768,14 @@ function renderPoll(box, a) {
     if (!a._pollDraft) a._pollDraft = new Set(p.mine);
     const draft = a._pollDraft;
     const wrap = mk("section", "poll");
-    wrap.appendChild(mk("div", "poll-label", "Poll"));
+    const top = mk("div", "poll-top");
+    top.appendChild(mk("div", "poll-label", "Poll"));
+    if (p.closes) top.appendChild(mk("div", "poll-deadline", (p.closed ? "Closed " : "Closes ") +
+        new Date(p.closes).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })));
+    wrap.appendChild(top);
     wrap.appendChild(mk("div", "poll-q", p.q));
     if (p.desc) wrap.appendChild(mk("div", "poll-desc", p.desc));
-    const info = [p.multiple ? "Select all that apply" : "Select one", p.total + (p.total === 1 ? " voter" : " voters")];
-    if (p.closed) info.push("Poll closed");
-    else if (p.closes) info.push("Closes " + new Date(p.closes).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" }));
-    wrap.appendChild(mk("div", "poll-info", info.join(" \u00b7 ")));
+    const info = [p.multiple ? "Select all that apply" : "Select one", p.total + (p.total === 1 ? " voter" : " voters")];    wrap.appendChild(mk("div", "poll-info", info.join(" \u00b7 ")));
 
     const msg = mk("div", "msg"), btn = mk("button", "btn sm", "Vote"); btn.type = "button";
     const sameAsSaved = () => draft.size === p.mine.length && p.mine.every(id => draft.has(id));
@@ -4719,7 +4807,7 @@ function renderPoll(box, a) {
     if (p.allowAdd && !p.closed) {
         const add = mk("div", "poll-add");
         const ai = mk("input"); ai.type = "text"; ai.placeholder = "Add an option"; ai.maxLength = 120;
-        const ab = mk("button", "btn sm ghost", "Add"); ab.type = "button";
+        const ab = mk("button", "btn sm", "Add"); ab.type = "button";
         const doAdd = async () => {
             const t = ai.value.replace(/\s+/g, " ").trim();
             if (!t) return;
@@ -4750,7 +4838,6 @@ function renderPoll(box, a) {
             setLoading(btn, false); paintBtn();
         });
         actions.appendChild(btn);
-        if (p.mine.length && p.revote) actions.appendChild(mk("span", "poll-note", "You can change your vote until the poll closes."));
     } else if (p.mine.length && !p.closed) {
         actions.appendChild(mk("span", "poll-note", "Your vote is saved. Revoting is turned off for this poll."));
     }
@@ -5568,7 +5655,9 @@ function cmtComposer(annId, parentId, placeholder, onSent, onCancel, prefill) {
         return b;
     };
     const attach = iconBtn("cmt-clip", "Attach files", '<path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>');
-    bar.append(ta, attach);
+    const sendB = iconBtn("cmt-send", "Send", '<path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/>');
+    sendB.addEventListener("click", () => send());
+    bar.append(ta, attach, sendB);
 
     const list = mk("div", "file-list");
     const fi = mk("input"); fi.type = "file"; fi.multiple = true; fi.className = "hidden";
