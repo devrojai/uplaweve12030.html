@@ -2741,9 +2741,6 @@ html[data-theme="night"] .sdrop.invalid .sdrop-label, html[data-theme="night"] .
 .poll-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .poll-deadline { font-size: .72rem; font-weight: 700; text-align: right; color: var(--muted); }
 
-/* ===== Poll "Closing date and time" field: smaller text ===== */
-#poll-closes { font-size: .8rem; text-overflow: ellipsis; }
-
 /* ===== Remove dashed line above "Edited" ===== */
 #ann-modal-edited { border-top: none; padding-top: 0; }
 
@@ -2804,7 +2801,37 @@ html[data-theme="night"] .sdrop.invalid .sdrop-label, html[data-theme="night"] .
 #ann-modal-comments .cmt-ico svg { width: 18px; height: 18px; }
 #ann-modal-comments .cmt-send { color: var(--on-accent); background: var(--accent); }
 #ann-modal-comments .cmt-send:hover { background: var(--accent-hover); transform: scale(1.06); }
-    
+
+/* ===== Closing date field: original text size, more space under the label ===== */
+#poll-closes { font-size: var(--fs-0); text-overflow: clip; padding-top: 29px; padding-bottom: 8px; }
+
+/* ===== Picker footer (Today / Clear / Done): no line, rectangle hover like the dates ===== */
+.dp-foot { align-items: center; }
+.dp-foot .linkish {
+    padding: 6px 12px; font-size: var(--fs-n1);
+    border-radius: var(--r-md); transition: background .15s;
+}
+.dp-foot .linkish::after { display: none; }
+.dp-foot .linkish:hover { background: var(--hover); }
+
+/* ===== No left border on comments and polls ===== */
+#ann-modal-comments .cmt:not(.reply) { border-left: 1px solid var(--line); }
+.poll { border-left: 1px solid var(--line); }
+
+/* ===== Mention lists with profile pictures ===== */
+.m-item { display: flex; align-items: center; gap: 12px; }
+.m-item .m-text { min-width: 0; flex: 1; }
+.m-ava {
+    flex: none; width: 34px; height: 34px; overflow: hidden;
+    display: grid; place-items: center; border-radius: 50%;
+    background: var(--avatar); color: #fff; font-size: .7rem; font-weight: 800;
+    box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--accent);
+}
+.m-ava img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.m-ava svg { width: 18px; height: 18px; }
+
+.mention-list { max-height: 320px; }
+        
     </style>
     
 </head>
@@ -3854,7 +3881,7 @@ const ADMIN_SECTIONS = ["bin", "directory", "addcourse", "hiddencourses", "dibss
         pending = null;
         resetProfileState();
         resetRequestForm();
-        annList = []; annShowArchive = false; annShowPinned = false; openAnnId = ""; annFilter = ""; annSearchTerm = ""; carIdx = 0; dlSel = todayIso(); mentionUsers = []; mentionSel = []; repoPhotos = {}; resetBinForm();
+        annList = []; annShowArchive = false; annShowPinned = false; openAnnId = ""; annFilter = ""; annSearchTerm = ""; carIdx = 0; dlSel = todayIso(); mentionUsers = []; mentionSel = []; repoPhotos = {}; photosTriedFor = ""; resetBinForm();
         dibsList = []; dsysArchive = false; officerData = null; ofState = null; $("org-chart").textContent = ""; $("off-term").classList.add("hidden"); $("of-fields").textContent = ""; $("of-archive").textContent = "";        
         courseList = []; courseOpen = ""; courseSearchTerm = ""; $("course-search").value = ""; closeCourseModal(); resetCourseForm();
         isAdmin = false;
@@ -5011,7 +5038,23 @@ function renderPoll(box, a) {
 })();
     const EVERYONE = { email: "All users", firstName: "everyone", everyone: true };
     let mentionUsers = [], mentionSel = [], mMatches = [], mIdx = 0, mStart = 0, mQuery = "";
+    let photosTriedFor = "";
+    function ensurePhotos() {
+        if (!isAdmin || photosTriedFor === currentEmail) return;
+        photosTriedFor = currentEmail;
+        authCall("admin_photos").then(r => { if (r.status === "success") repoPhotos = r.photos || {}; }).catch(() => {});
+    }
+    function mentionAva(u, photo) {
+        const a = mk("span", "m-ava");
+        if (u.everyone) {
+            a.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
+        } else if (photo && /^data:image\//.test(photo)) {
+            const img = document.createElement("img"); img.src = photo; img.alt = ""; a.appendChild(img);
+        } else a.textContent = initialsFor(u);
+        return a;
+    }
     async function loadMentionUsers() {
+        ensurePhotos();
         if (mentionUsers.length) return;
         try {
             const r = await authCall("admin_users");
@@ -5058,8 +5101,11 @@ function renderPoll(box, a) {
         mMatches.forEach((u, i) => {
             const b = mk("button", "m-item" + (i === mIdx ? " active" : ""));
             b.type = "button";
-            b.appendChild(mk("b", "", u.everyone ? "@everyone" : nameOf(u)));
-            b.appendChild(mk("small", "", u.everyone ? "Notify all users by email" : (u.nickname ? "\u201c" + u.nickname + "\u201d \u00b7 " : "") + u.email));
+            b.appendChild(mentionAva(u, u.everyone ? "" : repoPhotos[u.email]));
+            const tx = mk("span", "m-text");
+            tx.appendChild(mk("b", "", u.everyone ? "@everyone" : nameOf(u)));
+            tx.appendChild(mk("small", "", u.everyone ? "Notify all users by email" : (u.nickname ? "\u201c" + u.nickname + "\u201d \u00b7 " : "") + u.email));
+            b.appendChild(tx);
             b.addEventListener("mousedown", ev => { ev.preventDefault(); mentionPick(u); });
             box.appendChild(b);
         });
@@ -5674,8 +5720,11 @@ function cmtComposer(annId, parentId, placeholder, onSent, onCancel, prefill) {
         ml.textContent = "";
         matches.forEach((u, i) => {
             const b = mk("button", "m-item" + (i === idx ? " active" : "")); b.type = "button";
-            b.appendChild(mk("b", "", nameOf(u)));
-            if (u.nickname) b.appendChild(mk("small", "", "\u201c" + u.nickname + "\u201d"));
+            b.appendChild(mentionAva(u, u.photo));
+            const tx = mk("span", "m-text");
+            tx.appendChild(mk("b", "", nameOf(u)));
+            if (u.nickname) tx.appendChild(mk("small", "", "\u201c" + u.nickname + "\u201d"));
+            b.appendChild(tx);
             b.addEventListener("mousedown", ev => { ev.preventDefault(); pickM(u); });
             ml.appendChild(b);
         });
@@ -7815,8 +7864,11 @@ function personField(label, getEmail, setEmail) {
         list.textContent = "";
         matches.forEach((u, i) => {
             const b = mk("button", "m-item" + (i === idx ? " active" : "")); b.type = "button";
-            b.appendChild(mk("b", "", ofUserLabel(u)));
-            b.appendChild(mk("small", "", u.email));
+            b.appendChild(mentionAva(u, repoPhotos[u.email]));
+            const tx = mk("span", "m-text");
+            tx.appendChild(mk("b", "", ofUserLabel(u)));
+            tx.appendChild(mk("small", "", u.email));
+            b.appendChild(tx);
             b.addEventListener("mousedown", ev => { ev.preventDefault(); pick(u); });
             list.appendChild(b);
         });
