@@ -2867,15 +2867,39 @@ html[data-theme="night"] .sdrop.invalid .sdrop-label, html[data-theme="night"] .
 }
 .cmt-ava img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-/* ===== Calendar: Today cell gets a light beige fill ===== */
-.cal-cell.today { background: #f3ebe1; }
+/* ===== Calendar: Today = filled date badge, Selected = light beige cell, Today button filled ===== */
 
-/* keep the selected-day tint working when Today is also selected */
-.cal-cell.today.sel { background: #ebdfd0; }
+/* 1) Undo the earlier beige on the Today cell */
+.cal-cell.today { background: var(--surface); }
+html[data-theme="night"] .cal-cell.today { background: var(--surface); }
 
-/* Night mode: a soft dark beige so it still reads as beige */
-html[data-theme="night"] .cal-cell.today { background: #2b2620; }
-html[data-theme="night"] .cal-cell.today.sel { background: #3a322a; }
+/* 2) Today: the date number sits in a color-filled rounded rectangle */
+.cal-cell.today .cal-num {
+    display: inline-block;
+    align-self: flex-start;
+    padding: 1px 8px;
+    color: var(--on-accent);
+    background: var(--accent);
+    border-radius: var(--r-md);
+}
+
+/* 3) Selected day: light beige cell */
+.cal-cell.sel,
+.cal-cell.today.sel { background: #f3ebe1; border-color: var(--accent-text); }
+html[data-theme="night"] .cal-cell.sel,
+html[data-theme="night"] .cal-cell.today.sel { background: #2b2620; }
+
+/* 4) Today button: color-filled */
+#dl-today {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent);
+}
+#dl-today:hover:not(:disabled) {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+    color: var(--on-accent);
+}
         
     </style>
     
