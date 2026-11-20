@@ -2866,6 +2866,16 @@ html[data-theme="night"] .sdrop.invalid .sdrop-label, html[data-theme="night"] .
     #ann-modal-comments .cmt.reply { padding: 12px 12px; gap: 10px; }
 }
 .cmt-ava img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* ===== Calendar: Today cell gets a light beige fill ===== */
+.cal-cell.today { background: #f3ebe1; }
+
+/* keep the selected-day tint working when Today is also selected */
+.cal-cell.today.sel { background: #ebdfd0; }
+
+/* Night mode: a soft dark beige so it still reads as beige */
+html[data-theme="night"] .cal-cell.today { background: #2b2620; }
+html[data-theme="night"] .cal-cell.today.sel { background: #3a322a; }
         
     </style>
     
