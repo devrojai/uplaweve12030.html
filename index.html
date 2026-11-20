@@ -1785,7 +1785,7 @@ html[data-theme="night"] .drawer-foot .btn-danger:hover { background: var(--acce
 
     /* 1) Announcement Bin: icons go BELOW the text field, lower left */
     #b-text { padding-bottom: 10px; }
-#b-status { position: static; margin: -6px 0 24px 2px; justify-content: flex-start; }
+    #b-status { position: static; margin: 18px 0 24px 2px; justify-content: flex-start; }   
     
     /* 2, 3, 5) Announcement cards: one-line topic that slides, glow + NEW + pin close together */
     .ann-card .ann-top { align-items: center; gap: 2px; }
@@ -2650,8 +2650,6 @@ html[data-theme="night"] .ann-card.past:hover { border-left-color: #ffffff; }
 .cmt-compose .file-list { margin-top: 8px; }
 
 /* Announcement field: red when empty, hint sits right under it */
-#bin-form .field:has(#b-text) { margin-bottom: 2px; }
-.bin-hint { margin: 0 2px 14px; }
 .field.invalid textarea,
 .field.invalid textarea:focus { border-color: #c62828; box-shadow: 0 0 0 3px rgba(198,40,40,.18); }
 .field.invalid textarea ~ label { color: #c62828; }
@@ -2967,6 +2965,26 @@ html[data-theme="night"] .field.invalid #b-editor ~ label { color: #ff6b6b; }
 
 /* All calendar pop-ups use the wider size (they now include the time row) */
 .datepop { width: 340px; }
+
+/* Times / keys on cards */
+.ann-keys { margin: 0 0 10px; }
+.ann-keys .ann-key { margin-bottom: 4px; }
+
+/* Glowing circle: part of the topic string, right after the last letter */
+.ann-card .ann-titlewrap .ann-title { padding: 5px 8px 5px 0; margin: -3px 0; }
+.ann-card .ann-titlewrap .ann-title .st-btn { display: inline-grid; margin: 0 0 0 8px; vertical-align: -1px; }
+#ann-modal-title { display: block; }
+#ann-modal-title .st-btn { display: inline-grid; margin: 0 0 0 8px; vertical-align: middle; }
+
+/* Comment attachment icons */
+.cmt-files-ico { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.cmt-fico { width: 34px; height: 34px; padding: 0; display: grid; place-items: center; color: var(--on-accent); background: var(--accent); border: 0; border-radius: var(--r-md); cursor: pointer; transition: background .2s, transform .2s var(--ease); }
+.cmt-fico svg { width: 18px; height: 18px; pointer-events: none; }
+.cmt-fico:hover { background: var(--accent-hover); transform: scale(1.07); }
+.cmt-fico:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+
+/* Directory profile pop-up: photo no longer hidden behind the banner */
+.um-hero { position: relative; z-index: 1; }
         
     </style>
     
@@ -3390,7 +3408,6 @@ html[data-theme="night"] .field.invalid #b-editor ~ label { color: #ff6b6b; }
                     <div class="mention-list hidden" id="mention-list"></div>
                 </div>
                 <div class="st-group" id="b-status" role="group" aria-label="Class status"></div>
-                <p class="hint bin-hint">Type @ followed by a first name, surname or nickname (e.g. @juan) to tag a user, or @everyone to notify all users. They'll be notified by email.</p>
                 <div class="file-upload-area">
     <div class="file-row">
         <button type="button" class="btn sm" id="b-file-btn">Attach Files</button>
@@ -4683,19 +4700,19 @@ function closeUser() {
         const d = new Date(s);
         return isNaN(d) ? "" : isoOf(d.getFullYear(), d.getMonth(), d.getDate());
     }
-        function prettyDate(iso) {
-        const [y, m, d] = String(iso).split("-").map(Number);
-        return new Date(y, m - 1, d).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
-    }
-
-    // Formats the "posted on" value (whatever the server sends) as Month Day, Year
-    function longDate(v) {
-        const s = String(v || "").trim();
-        if (!s) return "";
-        const m = /^(\d{4}-\d{2}-\d{2})(?:$|\s)/.exec(s);
-        const iso = m ? m[1] : normIso(s);
-        return iso ? prettyDate(iso) : s;
-    }
+    
+const NARROW = matchMedia("(max-width: 520px)");
+function prettyDate(iso, short) {
+    const [y, m, d] = String(iso).split("-").map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString("en-US", { month: short ? "short" : "long", day: "numeric", year: "numeric" });
+}
+function longDate(v, short) {
+    const s = String(v || "").trim();
+    if (!s) return "";
+    const m = /^(\d{4}-\d{2}-\d{2})(?:$|\s)/.exec(s);
+    const iso = m ? m[1] : normIso(s);
+    return iso ? prettyDate(iso, short) : s;
+}
 
     function dueLabel(a) {
     if (!a.deadline) return null;
@@ -5077,6 +5094,7 @@ function prettyTime(t) { t = normTime(t); if (!t) return ""; const x = t24to12(t
         let y = 0, m = 0, ms, ys, gridBox, hs, ns, apw, ap = "PM";
         const show = () => {
             input.value = get() ? prettyDate(get()) + (getT() ? " \u00b7 " + prettyTime(getT()) : "") : "";
+            input.closest(".field").classList.remove("invalid");
             syncFields(); binDirty();
         };
         const close = () => dpClose(pop);
@@ -5446,7 +5464,8 @@ function mentionPick(u) {
   if (!text) { $("b-text").closest(".field").classList.add("invalid"); bad = true; }
     if (!course) { dropError("b-course", true); bad = true; }
   else if (binStatus && !selCourseId) { dropError("b-course", true); setMessage(bm, "Pick a course from the list so only its students can see this class status.", ERR); bad = true; }
-  if (bad) return;
+    if (!!binStart !== !!binEnd) { fieldError(binStart ? "b-pend" : "b-pstart", "Required"); bad = true; }
+    if (bad) return;
   const courseIds = binCourseIds.slice();
   if (binStatus && selCourseId && !courseIds.includes(selCourseId)) courseIds.push(selCourseId);        
         const poll = readPoll();
@@ -5459,7 +5478,6 @@ function mentionPick(u) {
     else setMessage(bm, e, ERR);
     return;
 }
-        if (!!binStart !== !!binEnd) return setMessage(bm, "A period needs both a beginning date and an end date.", ERR);
         if (binStart && binEnd < binStart) return setMessage(bm, "The end date can't be before the beginning date.", ERR);
         if (binStart && binEnd === binStart && (binEndT || "23:59") < (binStartT || "23:59")) return setMessage(bm, "The end time can't be before the beginning time.", ERR);
         const wasEdit = !!editingId;
@@ -5674,23 +5692,27 @@ pre.className = "file-text";
         setLoading(btn, false);
     }
 
-    function fillAnnMeta(el, a, withFiles) {
-        el.textContent = "";
-        const line = (cls, label, text) => {
-            const d = mk("div", "ann-key " + cls);
-            d.appendChild(mk("strong", "", label));
-            d.appendChild(document.createTextNode(" " + text));
-            el.appendChild(d);
-        };
-        const tm = v => { const t = prettyTime(v); return t ? " \u00b7 " + t : ""; };
-        if (a.deadline) line("deadline", "Deadline:", prettyDate(a.deadline) + tm(a.deadlineTime));
-        if (a.periodStart && a.periodEnd) line("period", "Period:", prettyDate(a.periodStart) + tm(a.periodStartTime) + " – " + prettyDate(a.periodEnd) + tm(a.periodEndTime));        let posted = "Posted by " + a.author + " on " + longDate(a.created);
-        if (withFiles && a.files && a.files.length) posted += " · 📎 " + a.files.length + " file" + (a.files.length > 1 ? "s" : "");
-                const pd = mk("div", "ann-posted");
-        pd.insertAdjacentHTML("afterbegin", PENCIL_SVG);
-        pd.appendChild(document.createTextNode(posted));
-        el.appendChild(pd);
-    }
+   function fillAnnMeta(el, a, withFiles, keysOnly) {
+    el.textContent = "";
+    const sh = NARROW.matches;
+    const line = (cls, label, text) => {
+        const d = mk("div", "ann-key " + cls);
+        d.appendChild(mk("strong", "", label));
+        d.appendChild(document.createTextNode(" " + text));
+        el.appendChild(d);
+    };
+    const tm = v => { const t = prettyTime(v); return t ? " \u00b7 " + t : ""; };
+    if (a.deadline) line("deadline", "Deadline:", prettyDate(a.deadline, sh) + tm(a.deadlineTime));
+    if (a.periodStart && a.periodEnd) line("period", "Period:", prettyDate(a.periodStart, sh) + tm(a.periodStartTime) + " – " + prettyDate(a.periodEnd, sh) + tm(a.periodEndTime));
+    if (keysOnly) return;
+    const who = sh && a.authorNick ? a.authorNick : a.author;
+    let posted = "Posted by " + who + " on " + longDate(a.created, sh);
+    if (withFiles && a.files && a.files.length) posted += " · 📎 " + a.files.length + " file" + (a.files.length > 1 ? "s" : "");
+    const pd = mk("div", "ann-posted");
+    pd.insertAdjacentHTML("afterbegin", PENCIL_SVG);
+    pd.appendChild(document.createTextNode(posted));
+    el.appendChild(pd);
+}
     
     let annModalFromCourse = false;
     function openAnnModal(a, fromCourse) {
@@ -5734,7 +5756,7 @@ pre.className = "file-text";
         }
 
         const edited = $("ann-modal-edited");
-        setEdited(edited, a.edited ? "Edited by the author on " + longDate(a.edited) : "");        
+        setEdited(edited, a.edited ? "Edited by the author on " + longDate(a.edited, NARROW.matches) : "");
         const actions = $("ann-modal-actions");
         actions.textContent = "";
         
@@ -5840,8 +5862,10 @@ pre.className = "file-text";
     document.addEventListener("keydown", e => { if (e.key === "Escape") closeReaders(); });
     
        const PIN_PATH = '<path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/>';
-    const ARCH_PATH = '<rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path class="arch-slot" d="M10 12h4"/>';
-    function iconBtn(kind, on, label, handler) {
+        const IMG_ICO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>';
+        const FILE_ICO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>';
+        const ARCH_PATH = '<rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path class="arch-slot" d="M10 12h4"/>';
+        function iconBtn(kind, on, label, handler) {
         const b = mk("button", "icon-btn " + kind + "-ico" + (on ? " on" : "")); b.type = "button";
         b.title = label; b.setAttribute("aria-label", label); b.setAttribute("aria-pressed", String(on));
         b.innerHTML = '<svg viewBox="0 0 24 24" fill="' + (on ? "currentColor" : "none") + '" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + (kind === "pin" ? PIN_PATH : ARCH_PATH) + '</svg>';
@@ -6041,9 +6065,22 @@ function cmtComposer(annId, parentId, placeholder, onSent, onCancel, prefill) {
     return box;
 }
 
+const cmtCache = {};
+async function fetchComments(id) {
+    const r = await authCall("comments_list", { id });
+    if (r.status === "success") cmtCache[id] = { list: r.comments || [], photos: r.photos || {}, t: Date.now() };
+    return r;
+}
+function prefetchComments(a) {
+    const c = cmtCache[a.id];
+    if (c && Date.now() - c.t < 15000) return;
+    fetchComments(a.id).catch(() => {});
+}
+        
 function renderComments(a, list, photos) {
     if (cmtAnnId !== a.id) return;
     if (photos) cmtPhotos = photos;
+    cmtCache[a.id] = { list, photos: cmtPhotos, t: Date.now() };
     const box = $("ann-modal-comments"); box.textContent = "";
     const top = list.filter(c => !c.parentId), replies = {};
     list.filter(c => c.parentId).forEach(c => { (replies[c.parentId] = replies[c.parentId] || []).push(c); });
@@ -6066,10 +6103,12 @@ function renderComments(a, list, photos) {
         body.appendChild(meta);
         if (c.message) { const tx = mk("div", "cmt-text"); richText(tx, c.message, c.mentions || []); body.appendChild(tx); }
         if (c.files && c.files.length) {
-            const fl = mk("div", "attach-list cmt-files");
+            const fl = mk("div", "cmt-files-ico");
             c.files.forEach(f => {
-                const b = mk("button", "attach-btn", ((f.type || "").indexOf("image/") === 0 ? "\uD83D\uDDBC " : "\uD83D\uDCCE ") + f.name);
-                b.type = "button";
+                const isImg = (f.type || "").indexOf("image/") === 0;
+                const b = mk("button", "cmt-fico"); b.type = "button";
+                b.title = f.name; b.setAttribute("aria-label", (isImg ? "View photo " : "View file ") + f.name);
+                b.innerHTML = isImg ? IMG_ICO : FILE_ICO;
                 b.addEventListener("click", e => { e.stopPropagation(); openFileModal(Object.assign({}, f, { action: "comment_file" })); });
                 fl.appendChild(b);
             });
@@ -6116,14 +6155,21 @@ async function loadComments(a) {
     const box = $("ann-modal-comments"), id = a.id;
     cmtAnnId = id;
     box.textContent = "";
-    box.appendChild(mk("div", "skeleton row-sk"));
+    const cached = cmtCache[id];
+    if (cached) renderComments(a, cached.list, cached.photos);          // show instantly
+    else box.appendChild(mk("div", "skeleton row-sk"));
     try {
-        const r = await authCall("comments_list", { id });
+        const r = await fetchComments(id);                               // refresh quietly
         if (cmtAnnId !== id) return;
-        if (r.status === "success") renderComments(a, r.comments || [], r.photos);
-        else { box.textContent = ""; box.appendChild(mk("p", "repo-count", r.message)); }
+        if (r.status === "success") {
+            const fresh = cmtCache[id];
+            if (!cached || JSON.stringify(cached.list) !== JSON.stringify(fresh.list)) {
+                const ta = box.querySelector("textarea");
+                if (!cached || !ta || !ta.value) renderComments(a, fresh.list, fresh.photos);
+            }
+        } else if (!cached) { box.textContent = ""; box.appendChild(mk("p", "repo-count", r.message)); }
     } catch (err) {
-        if (err.message !== "auth" && cmtAnnId === id) { box.textContent = ""; box.appendChild(mk("p", "repo-count", netError(err))); }
+        if (err.message !== "auth" && cmtAnnId === id && !cached) { box.textContent = ""; box.appendChild(mk("p", "repo-count", netError(err))); }
     }
 }
     
@@ -6137,8 +6183,8 @@ async function loadComments(a) {
         const titleWrap = mk("div", "ann-titlewrap");
         const h = mk("h3", "ann-title", a.title);
         const sb = stBadge(a.mode);
+        if (sb) { h.appendChild(document.createTextNode("\u2060")); h.appendChild(sb); }   // circle sits inside the string, right after the last letter
         titleWrap.appendChild(h);
-        if (sb) titleWrap.appendChild(sb);
         
 if (isNewAnn(a)) titleWrap.appendChild(mk("span", "new-tag", "NEW"));
         top.appendChild(titleWrap);
@@ -6152,6 +6198,11 @@ if (isNewAnn(a)) titleWrap.appendChild(mk("span", "new-tag", "NEW"));
         const per = periodLabel(a);
         if (per) tags.appendChild(mk("span", "badge " + per.cls, per.text));
         c.appendChild(tags);
+        if (a.deadline || (a.periodStart && a.periodEnd)) {
+        const keys = mk("div", "ann-keys");
+        fillAnnMeta(keys, a, false, true);
+        c.appendChild(keys);
+    }
 
         const body = mk("div", "ann-body");
         richText(body, a.message, a.mentions);
@@ -6167,6 +6218,9 @@ if (isNewAnn(a)) titleWrap.appendChild(mk("span", "new-tag", "NEW"));
             }
         });
 
+        c.addEventListener("pointerenter", () => prefetchComments(a));
+        c.addEventListener("touchstart", () => prefetchComments(a), { passive: true });
+        
         return c;
     }
 
