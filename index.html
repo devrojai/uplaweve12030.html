@@ -2831,6 +2831,9 @@ html[data-theme="night"] .sdrop.invalid .sdrop-label, html[data-theme="night"] .
 .m-ava svg { width: 18px; height: 18px; }
 
 .mention-list { max-height: 320px; }
+
+.cmt-ava { overflow: hidden; }
+.cmt-ava img { width: 100%; height: 100%; object-fit: cover; display: block; }
         
     </style>
     
@@ -5661,6 +5664,7 @@ function isNewAnn(a) {
 
 /* ===== COMMENTS ===== */
 let cmtAnnId = "";
+let cmtPhotos = {};
 
 function cmtTime(s) {
     const m = /^(\d{4}-\d{2}-\d{2})[ T](\d{2}):(\d{2})/.exec(String(s || ""));
@@ -5701,9 +5705,7 @@ function cmtComposer(annId, parentId, placeholder, onSent, onCancel, prefill) {
         return b;
     };
     const attach = iconBtn("cmt-clip", "Attach files", '<path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>');
-    const sendB = iconBtn("cmt-send", "Send", '<path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/>');
-    sendB.addEventListener("click", () => send());
-    bar.append(ta, attach, sendB);
+    bar.append(ta, attach);
 
     const list = mk("div", "file-list");
     const fi = mk("input"); fi.type = "file"; fi.multiple = true; fi.className = "hidden";
@@ -5784,8 +5786,7 @@ function cmtComposer(annId, parentId, placeholder, onSent, onCancel, prefill) {
         setMessage(msg, "", "");
         try {
             const r = await authCall("comment_add", { id: annId, parentId, message: text, files });
-            if (r.status === "success") { onSent(r.comments || []); return; }
-            setMessage(msg, r.message, ERR);
+            if (r.status === "success") { onSent(r.comments || [], r.photos); return; }            setMessage(msg, r.message, ERR);
         } catch (err) { if (err.message !== "auth") setMessage(msg, netError(err), ERR); }
         busy = false; ta.readOnly = false; box.classList.remove("sending");
     }
@@ -5803,8 +5804,9 @@ function cmtComposer(annId, parentId, placeholder, onSent, onCancel, prefill) {
     return box;
 }
 
-function renderComments(a, list) {
+function renderComments(a, list, photos) {
     if (cmtAnnId !== a.id) return;
+    if (photos) cmtPhotos = photos;
     const box = $("ann-modal-comments"); box.textContent = "";
     const top = list.filter(c => !c.parentId), replies = {};
     list.filter(c => c.parentId).forEach(c => { (replies[c.parentId] = replies[c.parentId] || []).push(c); });
@@ -5816,7 +5818,10 @@ function renderComments(a, list) {
     // rootId = the top-level comment this one belongs to (replies to replies stay in the same thread)
     function item(c, isReply, rootId) {
         const el = mk("div", "cmt" + (isReply ? " reply" : ""));
-        el.appendChild(mk("div", "cmt-ava", personInitials({ name: c.author })));
+        const ava = mk("div", "cmt-ava"), ph = cmtPhotos[c.pid];
+        if (ph && /^data:image\//.test(ph)) { const im = document.createElement("img"); im.src = ph; im.alt = ""; ava.appendChild(im); }
+        else ava.textContent = personInitials({ name: c.author });
+        el.appendChild(ava);
         const body = mk("div", "cmt-body");
         const meta = mk("div", "cmt-meta");
         meta.appendChild(mk("b", "", shortName(c.author)));
@@ -5839,8 +5844,7 @@ function renderComments(a, list) {
             if (slot.firstChild) { slot.textContent = ""; return; }
             // tag the person being replied to (not yourself)
             const tag = c.mine ? "" : "@" + c.author + " ";
-            const comp = cmtComposer(a.id, rootId, "Write a reply\u2026", cs => renderComments(a, cs), () => { slot.textContent = ""; }, tag);
-            slot.appendChild(comp);
+            const comp = cmtComposer(a.id, rootId, "Write a reply\u2026", (cs, ph) => renderComments(a, cs, ph), () => { slot.textContent = ""; }, tag);            slot.appendChild(comp);
             const ta = comp.querySelector("textarea");
             ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
             ta.dispatchEvent(new Event("input"));
@@ -5853,8 +5857,7 @@ function renderComments(a, list) {
                 db.disabled = true;
                 try {
                     const r = await authCall("comment_delete", { id: c.id });
-                    if (r.status === "success") { renderComments(a, r.comments || []); return; }
-                    notify(r.message || "Couldn't delete the comment.");
+                    if (r.status === "success") { renderComments(a, r.comments || [], r.photos); return; }                    notify(r.message || "Couldn't delete the comment.");
                 } catch (err) { if (err.message !== "auth") notify(netError(err)); }
                 db.disabled = false;
             });
@@ -5869,7 +5872,7 @@ function renderComments(a, list) {
 
     if (!top.length) box.appendChild(mk("div", "cmt-empty", "No comments yet. Start the discussion."));
     top.forEach(c => box.appendChild(item(c, false, c.id)));
-    box.appendChild(cmtComposer(a.id, "", "Write a comment\u2026", cs => renderComments(a, cs)));
+box.appendChild(cmtComposer(a.id, "", "Write a comment\u2026", (cs, ph) => renderComments(a, cs, ph)));
 }
 
 async function loadComments(a) {
@@ -5880,7 +5883,7 @@ async function loadComments(a) {
     try {
         const r = await authCall("comments_list", { id });
         if (cmtAnnId !== id) return;
-        if (r.status === "success") renderComments(a, r.comments || []);
+        if (r.status === "success") renderComments(a, r.comments || [], r.photos);
         else { box.textContent = ""; box.appendChild(mk("p", "repo-count", r.message)); }
     } catch (err) {
         if (err.message !== "auth" && cmtAnnId === id) { box.textContent = ""; box.appendChild(mk("p", "repo-count", netError(err))); }
