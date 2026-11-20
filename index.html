@@ -2833,6 +2833,38 @@ html[data-theme="night"] .sdrop.invalid .sdrop-label, html[data-theme="night"] .
 .mention-list { max-height: 320px; }
 
 .cmt-ava { overflow: hidden; }
+/* ===== Comments: more inner spacing ===== */
+
+/* main comment card */
+#ann-modal-comments .cmt:not(.reply) {
+    padding: 18px 20px;
+    gap: 14px;
+    margin-top: 16px;
+}
+
+/* reply cards */
+#ann-modal-comments .cmt.reply {
+    padding: 14px 16px;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+/* space between the text and the Reply / Delete buttons */
+#ann-modal-comments .cmt-text { margin-top: 6px; }
+#ann-modal-comments .cmt-acts { margin-top: 12px; gap: 8px; }
+
+/* space around the reply box and the replies list inside the parent card */
+#ann-modal-comments .cmt-reply-slot { margin-top: 14px; }
+#ann-modal-comments .cmt-replies { margin-top: 14px; }
+
+/* a little more room inside the pill-shaped text box */
+#ann-modal-comments .cmt-bar { padding: 6px 10px 6px 14px; }
+
+/* phones: slightly tighter so it doesn't eat the screen */
+@media (max-width: 520px) {
+    #ann-modal-comments .cmt:not(.reply) { padding: 14px 14px; gap: 10px; }
+    #ann-modal-comments .cmt.reply { padding: 12px 12px; gap: 10px; }
+}
 .cmt-ava img { width: 100%; height: 100%; object-fit: cover; display: block; }
         
     </style>
