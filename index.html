@@ -3010,7 +3010,8 @@ html[data-theme="night"] .field.invalid #b-editor ~ label { color: #ff6b6b; }
 .info-card .cm-foot { padding-top: 12px; }
 
 .info-person { display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: var(--surface2); border: 1px solid var(--line); border-radius: var(--r-lg); }
-.info-ava { flex: none; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: var(--accent); color: var(--on-accent); font-size: .85rem; font-weight: 800; box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.info-ava { flex: none; width: 44px; height: 44px; display: grid; place-items: center; overflow: hidden; border-radius: 50%; background: var(--accent); color: var(--on-accent); font-size: .85rem; font-weight: 800; box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.info-ava img { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 50%; }
 .info-person-main { min-width: 0; flex: 1; }
 .info-person-name { font-weight: 700; line-height: 1.25; color: var(--ink); word-break: break-word; }
 .info-person-sub { margin-top: 1px; font-size: var(--fs-n1); color: var(--muted); }
@@ -3021,7 +3022,17 @@ html[data-theme="night"] .field.invalid #b-editor ~ label { color: #ff6b6b; }
 .info-list .info-person:first-child { border-top: 0; }
 .info-list .info-person:hover { background: var(--surface2); }
 .info-list .info-ava { width: 36px; height: 36px; font-size: .7rem; box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--accent); }
-
+.info-ver { padding: 12px 14px; background: var(--surface2); border: 1px solid var(--line); border-radius: var(--r-lg); }
+.info-ver + .info-ver { margin-top: 10px; }
+.info-ver-head { display: flex; align-items: center; gap: 12px; }
+.info-ver-head .info-ava { width: 34px; height: 34px; font-size: .68rem; box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--accent); }
+.info-ver-when { font-size: var(--fs-n1); color: var(--muted); }
+.info-ver-tag { margin: 12px 0 6px; font-size: .65rem; font-weight: 800; letter-spacing: 1.1px; text-transform: uppercase; color: var(--accent-text); }
+.info-ver-box { max-height: 180px; overflow-y: auto; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: var(--r-md); }
+.info-ver-title { font-weight: 700; color: var(--accent-text); word-break: break-word; }
+.info-ver-text { margin-top: 4px; white-space: pre-wrap; word-break: break-word; font-size: .9rem; }
+.info-none { padding: 16px 14px; text-align: center; font-size: var(--fs-n1); color: var(--muted); border: 1px dashed var(--line-strong); border-radius: var(--r-lg); background: var(--surface2); }
+        
 /* Pop-up: even space between deadline/period and the announcement body */
 #ann-modal-meta { margin: 0 0 16px; }
 #ann-modal-meta:empty { display: none; }
@@ -5999,9 +6010,16 @@ pre.className = "file-text";
     badge.classList.toggle("hidden", !a.course);
 
     const when = s => { const p = cmtTime(s).split(" \u00b7 "); return { date: p[0], time: p[1] || "\u2014" }; };
+    const avas = [];   // avatars waiting for a profile picture
+
+    const ava = (name, mine) => {
+        const el = mk("div", "info-ava", personInitials({ name }));
+        avas.push({ el, name, mine });
+        return el;
+    };
     const person = (name, sub, me) => {
         const r = mk("div", "info-person");
-        r.appendChild(mk("div", "info-ava", personInitials({ name })));
+        r.appendChild(ava(name, me));
         const m = mk("div", "info-person-main");
         m.appendChild(mk("div", "info-person-name", shortName(name)));
         if (sub) m.appendChild(mk("div", "info-person-sub", sub));
@@ -6023,14 +6041,49 @@ pre.className = "file-text";
     if (kind === "posted") {
         const w = when(a.created);
         $("info-ico").innerHTML = IC_AUTHOR; $("info-title").textContent = "Posted by";
-        body.appendChild(person(a.author, "Author"));
+        body.appendChild(person(a.author, "Author", a.mine));
         body.appendChild(tiles([["Date", w.date], ["Time", w.time]]));
+
     } else if (kind === "edited") {
-        // only the author can edit an announcement, so the editor is the author
-        const w = when(a.edited), p = when(a.created);
+        const hist = (a.history || []).slice().reverse();          // newest edit first
+        const last = when(a.edited), first = when(a.created);
+        const lastBy = hist.length ? (hist[0].byName || hist[0].by || a.author) : a.author;
         $("info-ico").innerHTML = IC_CLOCK; $("info-title").textContent = "Edited by";
-        body.appendChild(person(a.author, "Editor"));
-        body.appendChild(tiles([["Date", w.date], ["Time", w.time], ["Originally posted", p.date + " \u00b7 " + p.time, true]]));
+        body.appendChild(person(lastBy, "Last edited by", a.mine && !hist.length));
+        body.appendChild(tiles([
+            ["Last edited", last.date + " \u00b7 " + last.time, true],
+            ["Originally posted by", shortName(a.author)],
+            ["Originally posted", first.date + " \u00b7 " + first.time]
+        ]));
+
+        const sec = mk("div", "cm-sec");
+        const head = mk("div", "cm-sec-title", "Edit history");
+        head.appendChild(mk("span", "cm-count", String(hist.length)));
+        sec.appendChild(head);
+        if (!hist.length) {
+            sec.appendChild(mk("div", "info-none", "Earlier versions weren\u2019t recorded for this announcement."));
+        }
+        hist.forEach(h => {
+            const w = when(h.at), who = h.byName || h.by || a.author;
+            const v = mk("div", "info-ver");
+            const vh = mk("div", "info-ver-head");
+            vh.appendChild(ava(who, false));
+            const vm = mk("div", "info-person-main");
+            vm.appendChild(mk("div", "info-person-name", shortName(who)));
+            vm.appendChild(mk("div", "info-ver-when", "Edited on " + w.date + " \u00b7 " + w.time));
+            vh.appendChild(vm);
+            v.appendChild(vh);
+            v.appendChild(mk("div", "info-ver-tag", "Version before this edit"));
+            const box = mk("div", "info-ver-box");
+            box.appendChild(mk("div", "info-ver-title", h.title || ""));
+            const tx = mk("div", "info-ver-text");
+            richText(tx, h.message || "", h.mentions || []);
+            box.appendChild(tx);
+            v.appendChild(box);
+            sec.appendChild(v);
+        });
+        body.appendChild(sec);
+
     } else {
         const rb = (a.readBy || []).slice().sort((x, y) => (y.mine ? 1 : 0) - (x.mine ? 1 : 0));
         $("info-ico").innerHTML = IC_EYE; $("info-title").textContent = "Read by";
@@ -6043,6 +6096,26 @@ pre.className = "file-text";
         body.appendChild(sec);
     }
     $("info-modal").classList.remove("hidden");
+
+    // Profile pictures: yours instantly, everyone else once the user list arrives
+    const paint = (el, photo) => {
+        if (!photo || !/^data:image\//.test(photo)) return;
+        el.textContent = "";
+        const im = document.createElement("img"); im.src = photo; im.alt = "";
+        el.appendChild(im);
+    };
+    avas.filter(x => x.mine).forEach(x => paint(x.el, profile.photo));
+    loadCmtUsers().then(users => {
+        const key = s => String(s || "").toLowerCase().replace(/\s+/g, " ").trim();
+        avas.forEach(x => {
+            if (x.mine) return;
+            const k = key(x.name);
+            const u = users.find(u => key(nameOf(u)) === k
+                || key([u.firstName, u.lastName].filter(Boolean).join(" ")) === k
+                || key(shortName(nameOf(u))) === k);
+            if (u) paint(x.el, u.photo);
+        });
+    });
 }
     
     function closeInfo() { $("info-modal").classList.add("hidden"); }
