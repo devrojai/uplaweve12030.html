@@ -1799,6 +1799,13 @@ html[data-theme="night"] .drawer-foot .btn-danger:hover { background: var(--acce
     object-fit: contain;
 }
 .cmt-att.photo.loaded .cmt-att-thumb { min-width: 0; min-height: 0; background: transparent; }
+
+/* portrait photos: limit the width instead of the height */
+.cmt-att.photo.portrait .cmt-att-thumb img {
+    max-height: none;
+    max-width: 220px;      /* keep this the same as the landscape max-height */
+}
+
 .cmt-att-cap {
     padding: 6px 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     font-size: .68rem; font-weight: 700; color: var(--muted);
@@ -1824,6 +1831,7 @@ html[data-theme="night"] .cmt-att-go { color: #fff; }
 
 @media (max-width: 520px) {
     .cmt-att-thumb img { max-height: 180px; }
+    .cmt-att.photo.portrait .cmt-att-thumb img { max-height: none; max-width: 180px; }
     .cmt-att.file { flex: 1 1 100%; }
 }
 
@@ -6459,8 +6467,11 @@ function cmtAttachments(files) {
                         if (c) {
                             const im = document.createElement("img");
                             im.alt = f.name;
-                            im.onload = () => { thumb.textContent = ""; thumb.appendChild(im); tile.classList.add("loaded"); };
-                            im.src = "data:" + c.type + ";base64," + c.data;
+                            im.onload = () => {
+                                thumb.textContent = ""; thumb.appendChild(im);
+                                tile.classList.add("loaded");
+                                if (im.naturalHeight > im.naturalWidth) tile.classList.add("portrait");   // taller than wide
+                            };                            im.src = "data:" + c.type + ";base64," + c.data;
                         }
                     } catch (err) { /* keep the icon */ }
                 })();
