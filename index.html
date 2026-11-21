@@ -1813,6 +1813,32 @@ html[data-theme="night"] .cmt-att-go { color: #fff; }
     .cmt-att.photo { width: 108px; height: 108px; }
     .cmt-att.file { flex: 1 1 100%; }
 }
+
+/* ===== Comment composer: attachment chips ===== */
+.cmt-compose .file-list { gap: 6px; }
+.cmt-compose .file-chip {
+    position: relative; display: block;
+    padding: 8px 40px 8px 12px;
+    background: var(--surface2); border: 1px solid var(--line); border-radius: var(--r-lg);
+}
+.cmt-chip-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cmt-compose .file-chip .fname {
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-size: .8rem; font-weight: 700; line-height: 1.35; color: var(--ink);
+}
+.cmt-compose .file-chip .fsize {
+    font-size: .68rem; font-weight: 700; letter-spacing: .4px; color: var(--muted);
+}
+.cmt-chip-x {
+    position: absolute; top: 6px; right: 6px;
+    width: 22px; height: 22px; padding: 0; display: grid; place-items: center;
+    color: var(--accent-text); background: var(--accent-soft);
+    border: 0; border-radius: 50%; cursor: pointer;
+    transition: background .2s, color .2s, transform .15s var(--ease);
+}
+.cmt-chip-x svg { width: 12px; height: 12px; pointer-events: none; }
+.cmt-chip-x:hover { color: var(--on-accent); background: var(--accent); transform: scale(1.1); }
+.cmt-chip-x:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
         
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
@@ -6312,10 +6338,13 @@ function cmtComposer(annId, parentId, placeholder, onSent, onCancel, prefill) {
         list.textContent = "";
         files.forEach((f, i) => {
             const chip = mk("div", "file-chip");
-            chip.append(mk("span", "fname", f.name), mk("span", "fsize", formatFileSize(f.size)));
-            const rm = mk("button", "fremove", "Remove"); rm.type = "button";
+            const main = mk("div", "cmt-chip-main");
+            main.append(mk("span", "fname", f.name), mk("span", "fsize", formatFileSize(f.size)));
+            const rm = mk("button", "cmt-chip-x"); rm.type = "button";
+            rm.title = "Remove"; rm.setAttribute("aria-label", "Remove " + f.name);
+            rm.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>';
             rm.addEventListener("click", () => { files.splice(i, 1); paint(); });
-            chip.appendChild(rm);
+            chip.append(main, rm);
             list.appendChild(chip);
         });
     };
