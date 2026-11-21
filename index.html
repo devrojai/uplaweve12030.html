@@ -1775,6 +1775,45 @@ html[data-theme="night"] .drawer-foot .btn-danger:hover { background: var(--acce
 .cmt-reply-slot:empty { display: none; }
 .cmt-reply-slot { margin-top: 6px; }
         
+/* ===== Comment attachments ===== */
+.cmt-atts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+.cmt-att { position: relative; padding: 0; cursor: pointer; text-align: left; color: var(--ink); font: inherit; -webkit-tap-highlight-color: transparent; transition: transform .2s var(--ease), box-shadow .2s, border-color .2s; }
+.cmt-att:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--accent-text); }
+.cmt-att:active { transform: scale(.98); }
+.cmt-att:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+
+/* photos */
+.cmt-att.photo { width: 132px; height: 132px; overflow: hidden; background: var(--surface2); border: 1px solid var(--line-strong); border-radius: var(--r-lg); }
+.cmt-att-thumb { position: absolute; inset: 0; display: grid; place-items: center; color: var(--accent-text); background: var(--accent-soft) center / cover no-repeat; transition: transform .35s var(--ease); }
+.cmt-att-thumb svg { width: 34px; height: 34px; opacity: .7; }
+.cmt-att.photo.loaded .cmt-att-thumb svg { display: none; }
+.cmt-att.photo:hover .cmt-att-thumb { transform: scale(1.06); }
+.cmt-att-cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 10px 7px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .68rem; font-weight: 700; color: #fff; background: linear-gradient(to top, rgba(0,0,0,.65), transparent); opacity: 0; transition: opacity .2s; }
+.cmt-att.photo:hover .cmt-att-cap, .cmt-att.photo:focus-visible .cmt-att-cap { opacity: 1; }
+@media (hover: none) { .cmt-att-cap { opacity: 1; } }
+
+/* files */
+.cmt-att.file { --k: var(--accent); display: flex; align-items: center; gap: 12px; flex: 0 1 280px; min-width: 0; max-width: 100%; padding: 9px 12px 9px 9px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-lg); }
+.cmt-att.k-pdf  { --k: #c62828; }
+.cmt-att.k-doc  { --k: #1565c0; }
+.cmt-att.k-xls  { --k: #2e7d32; }
+.cmt-att.k-ppt  { --k: #ef6c00; }
+.cmt-att.file:hover { border-color: var(--k); }
+.cmt-att-ico { flex: none; width: 42px; height: 42px; display: grid; place-items: center; background: var(--k); border-radius: var(--r-md); box-shadow: 0 3px 8px color-mix(in srgb, var(--k) 35%, transparent); }
+.cmt-att-ext { font-size: .7rem; font-weight: 800; letter-spacing: .6px; line-height: 1; color: #fff; }
+.cmt-att-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.cmt-att-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .8rem; font-weight: 700; color: var(--ink); }
+.cmt-att-meta { font-size: .65rem; font-weight: 700; letter-spacing: .6px; color: var(--muted); }
+.cmt-att-go { flex: none; width: 26px; height: 26px; display: grid; place-items: center; color: var(--k); background: color-mix(in srgb, var(--k) 12%, transparent); border-radius: 50%; transition: background .2s, color .2s; }
+.cmt-att-go svg { width: 14px; height: 14px; }
+.cmt-att.file:hover .cmt-att-go { background: var(--k); color: #fff; }
+html[data-theme="night"] .cmt-att-go { color: #fff; }
+
+@media (max-width: 520px) {
+    .cmt-att.photo { width: 108px; height: 108px; }
+    .cmt-att.file { flex: 1 1 100%; }
+}
+        
 /* ================= NEW: reduced motion (keep this LAST) ================= */
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
@@ -6328,6 +6367,75 @@ function prefetchComments(a) {
     if (c && Date.now() - c.t < 15000) return;
     fetchComments(a.id).catch(() => {});
 }
+
+    /* ===== Comment attachments: photo thumbnails + file cards ===== */
+const cmtImgCache = {};   // file id -> { data, type }, so a photo is only downloaded once
+const OPEN_ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>';
+
+function attExt(name) { const m = /\.([A-Za-z0-9]+)$/.exec(String(name || "")); return m ? m[1].toUpperCase() : "FILE"; }
+function attKind(f) {
+    const ext = attExt(f.name).toLowerCase();
+    if ((f.type || "").indexOf("image/") === 0 || /^(png|jpe?g|gif|webp)$/.test(ext)) return "img";
+    if (ext === "pdf") return "pdf";
+    if (/^docx?$/.test(ext)) return "doc";
+    if (/^(xlsx?|csv)$/.test(ext)) return "xls";
+    if (/^pptx?$/.test(ext)) return "ppt";
+    return "file";
+}
+
+function cmtAttachments(files) {
+    const wrap = mk("div", "cmt-atts");
+    files.forEach(f => {
+        const kind = attKind(f), ext = attExt(f.name);
+        const openIt = e => {
+            e.stopPropagation();
+            openFileModal(Object.assign({}, f, { action: "comment_file" }, cmtImgCache[f.id] || {}));
+        };
+
+        if (kind === "img") {
+            const tile = mk("button", "cmt-att photo"); tile.type = "button";
+            tile.title = f.name; tile.setAttribute("aria-label", "View photo " + f.name);
+            const thumb = mk("span", "cmt-att-thumb");
+            thumb.innerHTML = IMG_ICO;
+            const cap = mk("span", "cmt-att-cap", f.name);
+            tile.append(thumb, cap);
+            tile.addEventListener("click", openIt);
+            wrap.appendChild(tile);
+
+            // load the picture quietly in the background (small photos only)
+            if ((Number(f.size) || 0) <= 2 * 1024 * 1024) {
+                (async () => {
+                    try {
+                        let c = cmtImgCache[f.id];
+                        if (!c) {
+                            const r = await authCall("comment_file", { id: f.id });
+                            if (r.status === "success" && r.file && r.file.data) {
+                                c = cmtImgCache[f.id] = { data: r.file.data, type: r.file.type || f.type || "image/jpeg" };
+                            }
+                        }
+                        if (c) {
+                            thumb.style.backgroundImage = 'url("data:' + c.type + ';base64,' + c.data + '")';
+                            tile.classList.add("loaded");
+                        }
+                    } catch (err) { /* keep the icon */ }
+                })();
+            }
+        } else {
+            const card = mk("button", "cmt-att file k-" + kind); card.type = "button";
+            card.title = f.name; card.setAttribute("aria-label", "View file " + f.name);
+            const ico = mk("span", "cmt-att-ico");
+            ico.appendChild(mk("span", "cmt-att-ext", ext.slice(0, 4)));
+            const main = mk("span", "cmt-att-main");
+            main.appendChild(mk("span", "cmt-att-name", f.name));
+            main.appendChild(mk("span", "cmt-att-meta", ext + " \u00b7 " + formatFileSize(Number(f.size) || 0)));
+            const go = mk("span", "cmt-att-go"); go.innerHTML = OPEN_ARROW;
+            card.append(ico, main, go);
+            card.addEventListener("click", openIt);
+            wrap.appendChild(card);
+        }
+    });
+    return wrap;
+}
         
 function renderComments(a, list, photos) {
     if (cmtAnnId !== a.id) return;
@@ -6354,18 +6462,7 @@ function renderComments(a, list, photos) {
         meta.appendChild(mk("span", "cmt-time", cmtTime(c.created)));
         body.appendChild(meta);
         if (c.message) { const tx = mk("div", "cmt-text"); richText(tx, c.message, c.mentions || []); body.appendChild(tx); }
-        if (c.files && c.files.length) {
-            const fl = mk("div", "cmt-files-ico");
-            c.files.forEach(f => {
-                const isImg = (f.type || "").indexOf("image/") === 0;
-                const b = mk("button", "cmt-fico"); b.type = "button";
-                b.title = f.name; b.setAttribute("aria-label", (isImg ? "View photo " : "View file ") + f.name);
-                b.innerHTML = isImg ? IMG_ICO : FILE_ICO;
-                b.addEventListener("click", e => { e.stopPropagation(); openFileModal(Object.assign({}, f, { action: "comment_file" })); });
-                fl.appendChild(b);
-            });
-            body.appendChild(fl);
-        }
+        if (c.files && c.files.length) body.appendChild(cmtAttachments(c.files));
         const acts = mk("div", "cmt-acts"), slot = mk("div", "cmt-reply-slot");
         const rb = mk("button", "linkish", "Reply"); rb.type = "button";
         rb.addEventListener("click", () => {
