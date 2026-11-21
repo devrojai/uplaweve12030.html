@@ -6287,7 +6287,31 @@ async function loadCmtUsers() {
 
 // Text box with a paperclip on the right. Enter sends. Typing @ suggests people to tag.
 // parentId "" = new comment, otherwise a reply. prefill = text to start with (e.g. "@Name ").
-function cmtComposer(annId, parentId, placeholder, onSent, onCancel, prefill) {
+
+    // Big photos are resized (max 1600px, JPEG) before upload so they load fast for everyone
+function shrinkPhoto(file) {
+    return new Promise(resolve => {
+        if (!/^image\/(png|jpe?g|webp)$/i.test(file.type) || file.size < 400 * 1024) return resolve(file);
+        const url = URL.createObjectURL(file), img = new Image();
+        img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+            const k = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
+            const c = document.createElement("canvas");
+            c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+            const ctx = c.getContext("2d");
+            ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, c.width, c.height);
+            ctx.drawImage(img, 0, 0, c.width, c.height);
+            c.toBlob(b => {
+                if (!b || b.size >= file.size) return resolve(file);
+                resolve(new File([b], file.name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" }));
+            }, "image/jpeg", 0.85);
+        };
+        img.src = url;
+    });
+}
+    
+    function cmtComposer(annId, parentId, placeholder, onSent, onCancel, prefill) {
     const box = mk("div", "cmt-compose"), files = [];
     let busy = false;
 
@@ -6372,9 +6396,10 @@ function cmtComposer(annId, parentId, placeholder, onSent, onCancel, prefill) {
 
     attach.addEventListener("click", () => fi.click());
     fi.addEventListener("change", async () => {
-        const picked = Array.from(fi.files); fi.value = "";
+        let picked = Array.from(fi.files); fi.value = "";
         if (!picked.length) return;
         if (files.length + picked.length > 5) return setMessage(msg, "Up to 5 files per comment.", ERR);
+        picked = await Promise.all(picked.map(shrinkPhoto));
         if (files.concat(picked).reduce((s, f) => s + f.size, 0) > MAX_TOTAL_FILE_SIZE) return setMessage(msg, "Files exceed the 10 MB limit.", ERR);
         try { files.push(...await Promise.all(picked.map(readFileAsBase64))); setMessage(msg, "", ""); paint(); }
         catch (err) { setMessage(msg, err.message, ERR); }
@@ -6454,7 +6479,7 @@ function cmtAttachments(files) {
             wrap.classList.add("has-photo");
 
             // load the picture quietly in the background (small photos only)
-            if ((Number(f.size) || 0) <= 2 * 1024 * 1024) {
+            if ((Number(f.size) || 0) <= 12 * 1024 * 1024) {
                 (async () => {
                     try {
                         let c = cmtImgCache[f.id];
