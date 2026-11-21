@@ -3011,6 +3011,22 @@ html[data-theme="night"] .field.invalid #b-editor ~ label { color: #ff6b6b; }
 #ann-modal-meta { margin: 0 0 16px; }
 #ann-modal-meta:empty { display: none; }
 #ann-modal-meta .ann-key:last-child { margin-bottom: 0; }
+
+/* ===== Info icons: beside the course badge in the pop-up, small and grey ===== */
+.ann-badge-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; max-width: 100%; }
+.ann-badge-row .badge { flex: none; }
+
+.ann-ic { width: 22px; height: 22px; color: #ffffff; background: #5f5f5f; }
+.ann-ic svg { width: 12px; height: 12px; }
+.ann-ic:hover { background: #3a3a3a; transform: scale(1.08); }
+@media (max-width: 520px) {
+    .ann-ic { width: 20px; height: 20px; }
+    .ann-ic svg { width: 11px; height: 11px; }
+}
+
+/* Night: light grey */
+html[data-theme="night"] .ann-ic { color: #1b1b1b; background: #b9b5ae; }
+html[data-theme="night"] .ann-ic:hover { background: #d6d2cc; }
         
     </style>
     
@@ -3637,8 +3653,8 @@ html[data-theme="night"] .field.invalid #b-editor ~ label { color: #ff6b6b; }
     <div class="ann-top modal-head">
                 <div class="ann-titlewrap">
     <h3 id="ann-modal-title" class="ann-title"></h3>
-        <span id="ann-modal-ic" class="ann-ic-wrap"></span>
-    <span id="ann-modal-st"></span>
+          <span id="ann-modal-ic" class="ann-ic-wrap"></span>
+         <span id="ann-modal-st"></span>
 </div>
                 <span id="ann-modal-badge" class="badge"></span>
             </div>
@@ -6250,7 +6266,6 @@ async function loadComments(a) {
         
         const top = mk("div", "ann-top");
         const titleWrap = mk("div", "ann-titlewrap");
-        titleWrap.appendChild(infoIcons(a));
         const h = mk("h3", "ann-title", a.title);
         const sb = stBadge(a.mode);
         if (sb) { h.appendChild(document.createTextNode("\u2060")); h.appendChild(sb); }   // circle sits inside the string, right after the last letter
