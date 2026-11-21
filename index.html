@@ -1782,15 +1782,28 @@ html[data-theme="night"] .drawer-foot .btn-danger:hover { background: var(--acce
 .cmt-att:active { transform: scale(.98); }
 .cmt-att:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
 
-/* photos */
-.cmt-att.photo { width: 132px; height: 132px; overflow: hidden; background: var(--surface2); border: 1px solid var(--line-strong); border-radius: var(--r-lg); }
-.cmt-att-thumb { position: absolute; inset: 0; display: grid; place-items: center; color: var(--accent-text); background: var(--accent-soft) center / cover no-repeat; transition: transform .35s var(--ease); }
+/* photos: whole picture, height capped */
+.cmt-atts.has-photo { align-items: flex-start; }
+.cmt-att.photo {
+    display: flex; flex-direction: column; max-width: 100%;
+    background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-lg); overflow: hidden;
+}
+.cmt-att-thumb {
+    display: grid; place-items: center; min-width: 132px; min-height: 96px;
+    color: var(--accent-text); background: var(--accent-soft);
+}
 .cmt-att-thumb svg { width: 34px; height: 34px; opacity: .7; }
-.cmt-att.photo.loaded .cmt-att-thumb svg { display: none; }
-.cmt-att.photo:hover .cmt-att-thumb { transform: scale(1.06); }
-.cmt-att-cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 10px 7px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .68rem; font-weight: 700; color: #fff; background: linear-gradient(to top, rgba(0,0,0,.65), transparent); opacity: 0; transition: opacity .2s; }
-.cmt-att.photo:hover .cmt-att-cap, .cmt-att.photo:focus-visible .cmt-att-cap { opacity: 1; }
-@media (hover: none) { .cmt-att-cap { opacity: 1; } }
+.cmt-att-thumb img {
+    display: block; width: auto; height: auto;
+    max-width: 100%; max-height: 220px;      /* change 220px to make photos taller or shorter */
+    object-fit: contain;
+}
+.cmt-att.photo.loaded .cmt-att-thumb { min-width: 0; min-height: 0; background: transparent; }
+.cmt-att-cap {
+    padding: 6px 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-size: .68rem; font-weight: 700; color: var(--muted);
+    background: var(--surface2); border-top: 1px solid var(--line);
+}
 
 /* files */
 .cmt-att.file { --k: var(--accent); display: flex; align-items: center; gap: 12px; flex: 0 1 280px; min-width: 0; max-width: 100%; padding: 9px 12px 9px 9px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-lg); }
@@ -1810,7 +1823,7 @@ html[data-theme="night"] .drawer-foot .btn-danger:hover { background: var(--acce
 html[data-theme="night"] .cmt-att-go { color: #fff; }
 
 @media (max-width: 520px) {
-    .cmt-att.photo { width: 108px; height: 108px; }
+    .cmt-att-thumb img { max-height: 180px; }
     .cmt-att.file { flex: 1 1 100%; }
 }
 
@@ -6430,6 +6443,7 @@ function cmtAttachments(files) {
             tile.append(thumb, cap);
             tile.addEventListener("click", openIt);
             wrap.appendChild(tile);
+            wrap.classList.add("has-photo");
 
             // load the picture quietly in the background (small photos only)
             if ((Number(f.size) || 0) <= 2 * 1024 * 1024) {
@@ -6443,8 +6457,10 @@ function cmtAttachments(files) {
                             }
                         }
                         if (c) {
-                            thumb.style.backgroundImage = 'url("data:' + c.type + ';base64,' + c.data + '")';
-                            tile.classList.add("loaded");
+                            const im = document.createElement("img");
+                            im.alt = f.name;
+                            im.onload = () => { thumb.textContent = ""; thumb.appendChild(im); tile.classList.add("loaded"); };
+                            im.src = "data:" + c.type + ";base64," + c.data;
                         }
                     } catch (err) { /* keep the icon */ }
                 })();
