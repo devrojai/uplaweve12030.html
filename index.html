@@ -2999,13 +2999,28 @@ html[data-theme="night"] .field.invalid #b-editor ~ label { color: #ff6b6b; }
 .ann-ic:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
 @media (max-width: 520px) { .ann-ic { width: 26px; height: 26px; } }
 
-/* Info pop-up */
+/* Info pop-ups (Posted by / Edited by / Read by) */
 #info-modal { z-index: 91; }
-.info-card { text-align: center; }
-.info-card h3 { margin-top: 4px; }
-.info-text { margin: 8px 0 4px; line-height: 1.6; color: var(--ink); }
-.info-text b { color: var(--accent-text); }
-.info-card .readers-list { text-align: left; }
+.modal-card.info-card { width: 440px; max-width: 95vw; max-height: 90vh; padding: 0; overflow: hidden; display: flex; flex-direction: column; text-align: left; }
+.info-card .cm-head { padding-right: 28px; }
+.info-card .cm-title { margin: 0; font-size: 1.3rem; line-height: 1.25; }
+.info-card .cm-head-main { min-width: 0; max-width: 100%; }
+.info-card .cm-head-main .badge { max-width: 100%; white-space: normal; word-break: break-word; }
+.info-card .cm-body { gap: 20px; }
+.info-card .cm-foot { padding-top: 12px; }
+
+.info-person { display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: var(--surface2); border: 1px solid var(--line); border-radius: var(--r-lg); }
+.info-ava { flex: none; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: var(--accent); color: var(--on-accent); font-size: .85rem; font-weight: 800; box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.info-person-main { min-width: 0; flex: 1; }
+.info-person-name { font-weight: 700; line-height: 1.25; color: var(--ink); word-break: break-word; }
+.info-person-sub { margin-top: 1px; font-size: var(--fs-n1); color: var(--muted); }
+.info-you { flex: none; margin-left: auto; padding: 2px 10px; font-size: .68rem; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; color: var(--on-accent); background: var(--accent); border-radius: 999px; }
+
+.info-list { overflow: hidden; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); }
+.info-list .info-person { padding: 10px 14px; background: transparent; border: 0; border-top: 1px solid var(--line); border-radius: 0; }
+.info-list .info-person:first-child { border-top: 0; }
+.info-list .info-person:hover { background: var(--surface2); }
+.info-list .info-ava { width: 36px; height: 36px; font-size: .7rem; box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--accent); }
 
 /* Pop-up: even space between deadline/period and the announcement body */
 #ann-modal-meta { margin: 0 0 16px; }
@@ -3735,11 +3750,18 @@ html[data-theme="night"] .ann-ic:hover { background: #d6d2cc; }
 
 <div class="modal hidden" id="info-modal" role="dialog" aria-modal="true">
     <div class="modal-card info-card">
-        <div class="modal-ico" id="info-ico"></div>
-        <h3 id="info-title"></h3>
-        <div id="info-body"></div>
-        <div class="modal-actions modal-actions-end">
-            <button type="button" class="btn ghost sm" id="info-close">Close</button>
+        <div class="cm-head">
+            <div class="cm-ico" id="info-ico"></div>
+            <div class="cm-head-main">
+                <h3 class="cm-title" id="info-title"></h3>
+                <span class="badge" id="info-badge"></span>
+            </div>
+        </div>
+        <div class="cm-body" id="info-body"></div>
+        <div class="cm-foot">
+            <div class="ann-actions modal-actions-end">
+                <button type="button" class="btn ghost sm" id="info-close">Close</button>
+            </div>
         </div>
     </div>
 </div>
@@ -5971,31 +5993,58 @@ pre.className = "file-text";
     }
 
     function openInfo(kind, a) {
-        const body = $("info-body"); body.textContent = "";
-        const line = (label, name, when) => {
-            const p = mk("p", "info-text");
-            p.appendChild(document.createTextNode(label + " "));
-            p.appendChild(mk("b", "", name));
-            p.appendChild(document.createTextNode(" on "));
-            p.appendChild(mk("b", "", when));
-            body.appendChild(p);
-        };
-        if (kind === "posted") {
-            $("info-ico").innerHTML = IC_AUTHOR; $("info-title").textContent = "Posted by";
-            line("Posted by", shortName(a.author), cmtTime(a.created));
-        } else if (kind === "edited") {
-            // only the author can edit an announcement, so the editor is the author
-            $("info-ico").innerHTML = IC_CLOCK; $("info-title").textContent = "Edited by";
-            line("Edited by", shortName(a.author), cmtTime(a.edited));
-        } else {
-            const rb = (a.readBy || []).slice().sort((x, y) => (y.mine ? 1 : 0) - (x.mine ? 1 : 0));
-            $("info-ico").innerHTML = IC_EYE; $("info-title").textContent = "Read by (" + rb.length + ")";
-            const list = mk("div", "readers-list");
-            rb.forEach(n => list.appendChild(mk("div", "readers-item" + (n.mine ? " me" : ""), shortName(n.name) + (n.mine ? " (you)" : ""))));
-            body.appendChild(list);
-        }
-        $("info-modal").classList.remove("hidden");
+    const body = $("info-body"); body.textContent = "";
+    const badge = $("info-badge");
+    badge.textContent = a.course || "";
+    badge.classList.toggle("hidden", !a.course);
+
+    const when = s => { const p = cmtTime(s).split(" \u00b7 "); return { date: p[0], time: p[1] || "\u2014" }; };
+    const person = (name, sub, me) => {
+        const r = mk("div", "info-person");
+        r.appendChild(mk("div", "info-ava", personInitials({ name })));
+        const m = mk("div", "info-person-main");
+        m.appendChild(mk("div", "info-person-name", shortName(name)));
+        if (sub) m.appendChild(mk("div", "info-person-sub", sub));
+        r.appendChild(m);
+        if (me) r.appendChild(mk("span", "info-you", "You"));
+        return r;
+    };
+    const tiles = items => {
+        const g = mk("div", "cm-tiles");
+        items.forEach(([k, v, wide]) => {
+            const t = mk("div", "cm-tile" + (wide ? " wide" : ""));
+            t.appendChild(mk("div", "cm-tile-k", k));
+            t.appendChild(mk("div", "cm-tile-v", v || "\u2014"));
+            g.appendChild(t);
+        });
+        return g;
+    };
+
+    if (kind === "posted") {
+        const w = when(a.created);
+        $("info-ico").innerHTML = IC_AUTHOR; $("info-title").textContent = "Posted by";
+        body.appendChild(person(a.author, "Author"));
+        body.appendChild(tiles([["Date", w.date], ["Time", w.time]]));
+    } else if (kind === "edited") {
+        // only the author can edit an announcement, so the editor is the author
+        const w = when(a.edited), p = when(a.created);
+        $("info-ico").innerHTML = IC_CLOCK; $("info-title").textContent = "Edited by";
+        body.appendChild(person(a.author, "Editor"));
+        body.appendChild(tiles([["Date", w.date], ["Time", w.time], ["Originally posted", p.date + " \u00b7 " + p.time, true]]));
+    } else {
+        const rb = (a.readBy || []).slice().sort((x, y) => (y.mine ? 1 : 0) - (x.mine ? 1 : 0));
+        $("info-ico").innerHTML = IC_EYE; $("info-title").textContent = "Read by";
+        const sec = mk("div", "cm-sec");
+        const head = mk("div", "cm-sec-title", "Readers");
+        head.appendChild(mk("span", "cm-count", String(rb.length)));
+        const list = mk("div", "info-list");
+        rb.forEach(n => list.appendChild(person(n.name, "", n.mine)));
+        sec.append(head, list);
+        body.appendChild(sec);
     }
+    $("info-modal").classList.remove("hidden");
+}
+    
     function closeInfo() { $("info-modal").classList.add("hidden"); }
     $("info-close").addEventListener("click", closeInfo);
     $("info-modal").addEventListener("click", e => { if (e.target === e.currentTarget) closeInfo(); });
