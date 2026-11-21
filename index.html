@@ -3027,6 +3027,9 @@ html[data-theme="night"] .field.invalid #b-editor ~ label { color: #ff6b6b; }
 /* Night: light grey */
 html[data-theme="night"] .ann-ic { color: #1b1b1b; background: #b9b5ae; }
 html[data-theme="night"] .ann-ic:hover { background: #d6d2cc; }
+
+.ann-badge-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; max-width: 100%; }
+.ann-badge-row .badge { flex: none; }
         
     </style>
     
@@ -3651,13 +3654,13 @@ html[data-theme="night"] .ann-ic:hover { background: #d6d2cc; }
     <div class="modal hidden" id="ann-modal" role="dialog" aria-modal="true">
 <div class="modal-card modal-wide">
     <div class="ann-top modal-head">
-                <div class="ann-titlewrap">
+        
+<div class="ann-titlewrap">
     <h3 id="ann-modal-title" class="ann-title"></h3>
-          <span id="ann-modal-ic" class="ann-ic-wrap"></span>
-         <span id="ann-modal-st"></span>
+    <span id="ann-modal-st"></span>
 </div>
-                <span id="ann-modal-badge" class="badge"></span>
-            </div>
+    <div class="ann-badge-row"><span id="ann-modal-badge" class="badge"></span><span id="ann-modal-ic" class="ann-ic-wrap"></span></div>
+    </div>
             <div id="ann-modal-meta" class="ann-meta modal-gap"></div>
             <div id="ann-modal-body" class="ann-modal-body modal-gap"></div>
             <div id="ann-modal-poll" class="modal-gap"></div>
