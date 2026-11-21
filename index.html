@@ -4575,7 +4575,17 @@ if (acts.children.length) box.appendChild(acts);
     $("user-modal").classList.remove("hidden");
     try {
         const r = await authCall("admin_user", { target: email });
-        if (r.status === "success" && detailFor === email) renderDetail(r.user, r.user.photo || "");
+        if (r.status === "success" && detailFor === email) {
+            const strip = x => { const c = Object.assign({}, x); delete c.photo; delete c.header; delete c.headerPos; return JSON.stringify(c); };
+            if (strip(r.user) === strip(u) || grantBusy) {
+                // Nothing but the photo changed: update only the photo so the buttons are never replaced
+                const ph = document.querySelector("#user-modal-body .detail-photo");
+                if (ph) avatarInto(ph, r.user, r.user.photo || "");
+            } else {
+                Object.assign(u, r.user);
+                renderDetail(u, r.user.photo || "");
+            }
+        }
     } catch (err) { if (err.message !== "auth") console.error(err); }
 }
 function closeUser() {
@@ -4583,7 +4593,11 @@ function closeUser() {
     $("user-modal").classList.add("hidden");
 }
 
-    async function grantAdminAccess(u, btn) {
+    let grantBusy = false;
+    
+async function grantAdminAccess(u, btn) {
+    if (grantBusy) return;
+    grantBusy = true;
     setLoading(btn, true);
     try {
         const r = await authCall("admin_grant", { target: u.email });
@@ -4594,10 +4608,13 @@ function closeUser() {
             btn.textContent = "Approval Pending";
             btn.classList.add("submitted");
             btn.disabled = true;
+            grantBusy = false;
             return;
         }
+        
         notify(r.message || "Couldn't send the request.");
     } catch (err) { if (err.message !== "auth") notify(netError(err)); }
+    grantBusy = false;
     setLoading(btn, false);
 }
 
